@@ -6,6 +6,12 @@ Assert(P, str) == P
 CONSTANT WellFormed2a(_)
 CONSTANT WellFormed2b(_)
 
+\* TODO remove unused
+IsMax(x, S) == \A y \in S : x >= y
+
+Max(S) == CHOOSE x \in S : IsMax(x, S)
+Min(S) == CHOOSE x \in S : \A y \in S : x <= y
+
 -----------------------------------------------------------------------------
 (* Algorithm specification *)
 
@@ -31,6 +37,9 @@ CONSTANT WellFormed2b(_)
 
     SameBallot(x, y) ==
         \A b \in Ballot : B(x, b) <=> B(y, b)
+
+    SameValue(x, y) ==
+        \A v \in Value : V(x, v) <=> V(y, v)
 
 \*    \* Maximal ballot number of any messages known to acceptor a
 \*    MaxBal(a, mbal) ==
