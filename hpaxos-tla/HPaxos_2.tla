@@ -102,6 +102,21 @@ Min(S) == CHOOSE x \in S : \A y \in S : x <= y
     Fresh(alpha, x) == \* alpha : Learner, x : 1b
         \A m \in Con2as(alpha, x) : \A v \in Value : V(x, v) <=> V(m, v)
 
+    D(alpha, x, m) ==
+        \* /\ TwoA(m) \* implied by the following since the intersection is non-empty 
+        /\ m.lrns \cap Con(alpha, x) # {}
+
+    \* TODO define Latest in terms of Max, as existence of Max is proven?
+    Latest(P) ==
+        { x \in P :
+            \A bx \in Ballot :
+                B(x, bx) =>
+                \A y \in P, by \in Ballot :
+                    B(y, by) => by <= bx }
+
+    Fresh000(alpha, x) == \* alpha : Learner, x : 1b
+        \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
+
     \* Quorum of messages referenced by 2a for a learner instance
     q1b(alpha, x) == \* x : 2a
         LET Q == { m \in Tran(x) :
