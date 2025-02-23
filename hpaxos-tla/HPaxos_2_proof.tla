@@ -356,18 +356,18 @@ PROOF
 <1>10. QED BY <1>1, <1>3, <1>7, <1>8, <1>9
            DEF NextTLA, SafeAcceptorAction, LearnerAction
 
-LEMMA Known2bMonotone ==
+LEMMA Known2aMonotone ==
     TypeOK /\ NextTLA =>
     \A L \in Learner, bal \in Ballot, val \in Value :
-        Known2b(L, bal, val) \subseteq Known2b(L, bal, val)'
+        Known2a(L, bal, val) \subseteq Known2a(L, bal, val)'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA,
                     NEW L \in Learner, NEW BB \in Ballot, NEW VV \in Value,
-                    NEW S \in Known2b(L, BB, VV)
-             PROVE  S \in Known2b(L, BB, VV)'
+                    NEW S \in Known2a(L, BB, VV)
+             PROVE  S \in Known2a(L, BB, VV)'
     OBVIOUS
 <1> TypeOK' BY TypeOKInvariant
-<1> USE DEF Known2b
+<1> USE DEF Known2a
 <1>1. CASE \E p \in Proposer : ProposerAction(p)
   <2> PICK bal \in Ballot : SendProposal(bal)
       BY <1>1 DEF ProposerAction
@@ -458,13 +458,13 @@ PROOF
 <1>1. CASE \E p \in Proposer : ProposerAction(p)
   <2> PICK bal \in Ballot : SendProposal(bal)
       BY <1>1 DEF ProposerAction
-  <2> QED BY Known2bMonotone DEF SendProposal
+  <2> QED BY Known2aMonotone DEF SendProposal
 <1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
   <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
       BY <1>3
-  <2> QED BY Known2bMonotone DEF Process
+  <2> QED BY Known2aMonotone DEF Process
 <1>7. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
-      BY <1>7, Known2bMonotone DEF LearnerRecv
+      BY <1>7, Known2aMonotone DEF LearnerRecv
 <1>8. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
             LearnerDecide(lrn, bal, val)
   <2> PICK lrn \in Learner, bal \in Ballot, val \in Value :
@@ -472,9 +472,9 @@ PROOF
         /\ decision' = [decision EXCEPT ![<<lrn, bal>>] = decision[lrn, bal] \cup {val}]
         /\ UNCHANGED << msgs, known_msgs, recent_msgs, BVal >>
       BY <1>8, Zenon DEF LearnerDecide
-  <2>0. QED BY Known2bMonotone DEF TypeOK
+  <2>0. QED BY Known2aMonotone DEF TypeOK
 <1>9. CASE \E a \in FakeAcceptor : FakeAcceptorAction(a)
-      BY <1>9, Known2bMonotone DEF FakeAcceptorAction, FakeSendControlMessage
+      BY <1>9, Known2aMonotone DEF FakeAcceptorAction, FakeSendControlMessage
 <1>10. QED BY <1>1, <1>3, <1>7, <1>8, <1>9
           DEF NextTLA, SafeAcceptorAction, LearnerAction
 
