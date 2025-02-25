@@ -1028,6 +1028,17 @@ PROOF
 <1> QED BY Zenon, <1>1, <1>3, <1>6, <1>7
         DEF NextTLA, SafeAcceptorAction, FakeAcceptorAction
 
+LEMMA EntQuorumIntersection ==
+    ASSUME NEW alpha \in Learner, NEW beta \in Learner,
+           <<alpha, beta>> \in Ent,
+           NEW Qalpha \in SUBSET Message, NEW Qbeta \in SUBSET Message,
+           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
+           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive
+    PROVE  \E p \in SafeAcceptor, ma \in Qalpha, mb \in Qbeta :
+            /\ ma.acc = p
+            /\ mb.acc = p
+BY TrustLiveAssumption, LearnerGraphAssumptionValidity DEF Ent
+
 LEMMA MsgsSafeAcceptorSpecImpliesCaughtSpec ==
     ASSUME TypeOK, KnownMsgsSpec, MsgsSafeAcceptorSpec3
     PROVE  CaughtSpec
