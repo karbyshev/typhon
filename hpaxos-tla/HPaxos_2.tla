@@ -59,7 +59,10 @@ Min(S) == CHOOSE x \in S : \A y \in S : x <= y
                 /\ ~Proposal(m1)
                 /\ m.acc = m1.acc
                 /\ m # m1
-                /\ m.prev = m1.prev }
+                /\ m \notin PrevTran(m1)
+                /\ m1 \notin PrevTran(m)
+\*                /\ m.prev = m1.prev
+         }
 
     Caught(x) == { m.acc : m \in CaughtMsg(x) }
 
@@ -117,21 +120,58 @@ Min(S) == CHOOSE x \in S : \A y \in S : x <= y
     Fresh000(alpha, x) == \* alpha : Learner, x : 1b
         \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
 
-    \* Quorum of messages referenced by 2a for a learner instance
-    q1b(alpha, x) == \* x : 2a
-        LET Q == { m \in Tran(x) :
-                    /\ OneB(m)
-                    /\ Fresh(alpha, m)
-                    /\ \A b \in Ballot : B(m, b) <=> B(x, b) }
-        IN { m.acc : m \in Q }
+    qd_aux[alpha, x, d, i \in Nat] ==
+        IF i = 0 THEN [y \in Message |-> {}]
+        ELSE [y \in Message |-> {}]
+\*        (IF i = 1 THEN
+\*                    [y \in Tran(x) |->
+\*                        { m \in Tran(y) :
+\*                            /\ SameBallot(m, y)
+\*                            /\ OneB(m)
+\*                            /\ Fresh000(alpha, m) }
+\*                    ]
+\*                ELSE [y \in Tran(x) |->
+\*                    { m \in Tran(y) :
+\*                        /\ SameBallot(m, y)
+\*                        /\ [lr |-> alpha,
+\*                            q |-> { z.acc : z \in qd_aux[i - 1][y] }] \in TrustLive }]
+\*                )
 
-    \* Quorum of 2a-messages referenced by the given 2b for a learner instance  
-    q2a(alpha, x) == \* x : 2b
-        LET Q == { m \in Tran(x) :
-                    /\ TwoA(m)
-                    /\ alpha \in m.lrns
-                    /\ \A b \in Ballot : B(m, b) <=> B(x, b) }
-        IN { m.acc : m \in Q }
+    \* Quorum of messages referenced by 2a for a learner instance
+    qd(alpha, x, d) ==
+        LET helper[i \in Nat] ==
+            IF i = 0 THEN [y \in Message |-> {}]
+            ELSE
+                (IF i = 1 THEN
+                    [y \in Tran(x) |->
+                        { m \in Tran(y) :
+                            /\ SameBallot(m, y)
+                            /\ OneB(m)
+                            /\ Fresh000(alpha, m) }
+                    ]
+                ELSE [y \in Tran(x) |->
+                    { m \in Tran(y) :
+                        /\ SameBallot(m, y)
+                        /\ [lr |-> alpha,
+                            q |-> { z.acc : z \in helper[i - 1][y] }] \in TrustLive }]
+                )
+        IN helper[d][x]
+
+    depthIdx(alpha, x) ==
+        {d \in 1..N_L : [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, x, d)}] \in TrustLive }
+
+    depth(alpha, x) ==
+        Max({0} \cup depthIdx(alpha, x))
+
+    q(alpha, x) == qd(alpha, x, depth(alpha, x))
+
+    maxDepth(alpha) ==
+        LET I == { n \in 1..N_L :
+                    \E f \in [1..n -> Message] :
+                        \A i, j \in 1..n : i < j =>
+                               /\ f[i] \in Tran(f[j])
+                               /\ Con(alpha, f[i]) # Con(alpha, f[j])}
+        IN Max(I)
 
     ChainRef(m) ==
         \/ m.prev = NoMessage
@@ -146,6 +186,9 @@ Min(S) == CHOOSE x \in S : \A y \in S : x <= y
         /\ m \in Message
         /\ \E b \in Ballot : B(m, b) \* TODO prove it
         /\ ChainRef(m)
+\*        /\ m.lrns = { l \in Learner : depth(l, m) > 0 } \* notice that it implies that m.lrns = {} for 1b messages
+        \* TODO check if equivalent to the above one
+        /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
         /\ OneB(m) => WellFormed1b(m)
         /\ TwoA(m) =>
             \* TODO check if this can be removed (most likely, is is not required for safety).
@@ -153,32 +196,26 @@ Min(S) == CHOOSE x \in S : \A y \in S : x <= y
             /\ m.refs # {}
             \* Since the message structure embodies the learner values in our formalization,
             \* we must validate the correctness of these values.
-            /\ m.lrns = { l \in Learner : [lr |-> l, q |-> q1b(l, m)] \in TrustLive }
             /\ WellFormed2a(m)
-        /\ TwoB(m) =>
-            \* TODO check if this can be removed (most likely, it is not required for safety).
-            \* Implied by the condition m.lrns # {}
-            /\ m.refs # {}
-            \* Since the message structure embodies the learner values in our formalization,
-            \* we must validate the correctness of these values.
-            /\ m.lrns = { l \in Learner : [lr |-> l, q |-> q2a(l, m)] \in TrustLive }
-            /\ WellFormed2b(m)
 
-    Known2b(alpha, b, v) ==
+    Known2a(alpha, b, v) ==
         { x \in known_msgs[alpha] :
-            /\ TwoB(x)
+            /\ TwoA(x)
             /\ alpha \in x.lrns
             /\ B(x, b)
             /\ V(x, v) }
 
     ChosenIn(alpha, b, v) ==
-        \E S \in SUBSET Known2b(alpha, b, v) :
-            [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
+        \E S \in SUBSET Known2a(alpha, b, v) :
+\*            /\ \A x \in S : depth(alpha, x) >= maxDepth(alpha)
+            \* TODO check if equivalent to the above
+            /\ \A x \in S : [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+            /\ [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
 
     ReplyType(m, t) ==
         \/ OneA(m) /\ t = "1b"
         \/ OneB(m) /\ t = "2a"
-        \/ TwoA(m) /\ t = "2b"
+\*        \/ TwoA(m) /\ t = "2b"
   }
 
   macro Send(m) { msgs := msgs \cup {m} }
@@ -214,10 +251,6 @@ Min(S) == CHOOSE x \in S : \A y \in S : x <= y
         when ReplyType(m, T);
         when ~WellFormed(new) ;
         when ~OneA(m) ;
-        recent_msgs[self] := recent_msgs[self] \cup {m}
-      }
-      or {
-        when TwoB(m) ; \* implies ~ReplyType(m, T)
         recent_msgs[self] := recent_msgs[self] \cup {m}
       }
     }
@@ -275,7 +308,7 @@ Min(S) == CHOOSE x \in S : \A y \in S : x <= y
 }
 
 ****************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "b10276bc" /\ chksum(tla) = "5b536528")
+\* BEGIN TRANSLATION (chksum(pcal) = "c175b0b0" /\ chksum(tla) = "f9c20dfd")
 VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision, BVal
 
 (* define statement *)
@@ -291,6 +324,9 @@ V(m, val) == \E x \in Get1a(m) : val = BVal[x.bal]
 
 SameBallot(x, y) ==
     \A b \in Ballot : B(x, b) <=> B(y, b)
+
+SameValue(x, y) ==
+    \A v \in Value : V(x, v) <=> V(y, v)
 
 
 
@@ -310,7 +346,10 @@ CaughtMsg(x) ==
             /\ ~Proposal(m1)
             /\ m.acc = m1.acc
             /\ m # m1
-            /\ m.prev = m1.prev }
+            /\ m \notin PrevTran(m1)
+            /\ m1 \notin PrevTran(m)
+
+     }
 
 Caught(x) == { m.acc : m \in CaughtMsg(x) }
 
@@ -353,21 +392,79 @@ Con2as(alpha, x) ==
 Fresh(alpha, x) ==
     \A m \in Con2as(alpha, x) : \A v \in Value : V(x, v) <=> V(m, v)
 
+D(alpha, x, m) ==
 
-q1b(alpha, x) ==
-    LET Q == { m \in Tran(x) :
-                /\ OneB(m)
-                /\ Fresh(alpha, m)
-                /\ \A b \in Ballot : B(m, b) <=> B(x, b) }
-    IN { m.acc : m \in Q }
+    /\ m.lrns \cap Con(alpha, x) # {}
+
+Latest(P) ==
+    { x \in P :
+        \A bx \in Ballot :
+            B(x, bx) =>
+            \A y \in P, by \in Ballot :
+                B(y, by) => by <= bx }
+
+Fresh000(alpha, x) ==
+    \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
 
 
-q2a(alpha, x) ==
-    LET Q == { m \in Tran(x) :
-                /\ TwoA(m)
-                /\ alpha \in m.lrns
-                /\ \A b \in Ballot : B(m, b) <=> B(x, b) }
-    IN { m.acc : m \in Q }
+
+
+
+
+
+
+qd_aux[alpha, x, d, i \in Nat] ==
+    IF i = 0 THEN [y \in Message |-> {}]
+    ELSE [y \in Message |-> {}]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+qd(alpha, x, d) ==
+    LET helper[i \in Nat] ==
+        IF i = 0 THEN [y \in Message |-> {}]
+        ELSE
+            (IF i = 1 THEN
+                [y \in Tran(x) |->
+                    { m \in Tran(y) :
+                        /\ SameBallot(m, y)
+                        /\ OneB(m)
+                        /\ Fresh000(alpha, m) }
+                ]
+            ELSE [y \in Tran(x) |->
+                { m \in Tran(y) :
+                    /\ SameBallot(m, y)
+                    /\ [lr |-> alpha,
+                        q |-> { z.acc : z \in helper[i - 1][y] }] \in TrustLive }]
+            )
+    IN helper[d][x]
+
+depthIdx(alpha, x) ==
+    {d \in 1..N_L : [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, x, d)}] \in TrustLive }
+
+depth(alpha, x) ==
+    Max({0} \cup depthIdx(alpha, x))
+
+q(alpha, x) == qd(alpha, x, depth(alpha, x))
+
+maxDepth(alpha) ==
+    LET I == { n \in 1..N_L :
+                \E f \in [1..n -> Message] :
+                    \A i, j \in 1..n : i < j =>
+                           /\ f[i] \in Tran(f[j])
+                           /\ Con(alpha, f[i]) # Con(alpha, f[j])}
+    IN Max(I)
 
 ChainRef(m) ==
     \/ m.prev = NoMessage
@@ -382,6 +479,9 @@ WellFormed(m) ==
     /\ m \in Message
     /\ \E b \in Ballot : B(m, b)
     /\ ChainRef(m)
+
+
+    /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
     /\ OneB(m) => WellFormed1b(m)
     /\ TwoA(m) =>
 
@@ -389,32 +489,25 @@ WellFormed(m) ==
         /\ m.refs # {}
 
 
-        /\ m.lrns = { l \in Learner : [lr |-> l, q |-> q1b(l, m)] \in TrustLive }
         /\ WellFormed2a(m)
-    /\ TwoB(m) =>
 
-
-        /\ m.refs # {}
-
-
-        /\ m.lrns = { l \in Learner : [lr |-> l, q |-> q2a(l, m)] \in TrustLive }
-        /\ WellFormed2b(m)
-
-Known2b(alpha, b, v) ==
+Known2a(alpha, b, v) ==
     { x \in known_msgs[alpha] :
-        /\ TwoB(x)
+        /\ TwoA(x)
         /\ alpha \in x.lrns
         /\ B(x, b)
         /\ V(x, v) }
 
 ChosenIn(alpha, b, v) ==
-    \E S \in SUBSET Known2b(alpha, b, v) :
-        [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
+    \E S \in SUBSET Known2a(alpha, b, v) :
+
+
+        /\ \A x \in S : [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+        /\ [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
 
 ReplyType(m, t) ==
     \/ OneA(m) /\ t = "1b"
     \/ OneB(m) /\ t = "2a"
-    \/ TwoA(m) /\ t = "2b"
 
 
 vars == << msgs, known_msgs, recent_msgs, prev_msg, decision, BVal >>
@@ -447,7 +540,7 @@ safe_acceptor(self) == /\ \E m \in msgs:
                                                refs |-> recent_msgs[self] \cup {m},
                                                lrns |-> LL] IN
                                      /\ Assert(new \in Message, 
-                                               "Failure of assertion at line 181, column 7 of macro called at line 234, column 9.")
+                                               "Failure of assertion at line 247, column 7 of macro called at line 296, column 9.")
                                      /\ \/ /\ ReplyType(m, T)
                                            /\ WellFormed(new)
                                            /\ prev_msg' = [prev_msg EXCEPT ![self] = new]
@@ -456,9 +549,6 @@ safe_acceptor(self) == /\ \E m \in msgs:
                                         \/ /\ ReplyType(m, T)
                                            /\ ~WellFormed(new)
                                            /\ ~OneA(m)
-                                           /\ recent_msgs' = [recent_msgs EXCEPT ![self] = recent_msgs[self] \cup {m}]
-                                           /\ UNCHANGED <<msgs, prev_msg>>
-                                        \/ /\ TwoB(m)
                                            /\ recent_msgs' = [recent_msgs EXCEPT ![self] = recent_msgs[self] \cup {m}]
                                            /\ UNCHANGED <<msgs, prev_msg>>
                        /\ UNCHANGED << decision, BVal >>
