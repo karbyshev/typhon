@@ -79,6 +79,47 @@ LEMMA TranBallot ==
     PROVE  b2 <= b1
 PROOF BY Tran_trans DEF B, Get1a
 
+\*    Latest(P) ==
+\*        { x \in P :
+\*            \A bx \in Ballot :
+\*                B(x, bx) =>
+\*                \A y \in P, by \in Ballot :
+\*                    B(y, by) => by <= bx }
+
+\* TODO
+
+LEMMA LatestSubset ==
+    ASSUME NEW P \in SUBSET Message
+    PROVE  Latest(P) \in SUBSET P
+PROOF BY DEF Latest
+
+LEMMA LatestNonEmpty ==
+    ASSUME NEW P \in SUBSET { m \in Message : WellFormed(m) },
+           P # {}
+    PROVE  Latest(P) # {}
+PROOF
+<1> QED
+
+SmallestIndex(seq, P(_), k) ==
+    P(seq[k]) /\ \A i \in 0..(k-1) : ~P(seq[i])
+
+LEMMA SmallestIndexExists ==
+    ASSUME NEW S, NEW P(_),
+           NEW n \in Nat, NEW seq \in [0..n -> S],
+           NEW n0 \in 0..n,
+           P(seq[n0])
+    PROVE  \E i \in 0..n : SmallestIndex(seq, P, i)
+PROOF
+<1> DEFINE A(x) == x \in 0..n /\ P(seq[x])
+<1> SUFFICES \E k \in Nat : A(k) /\ \A i \in 0..(k - 1) : ~A(i)
+    BY DEF SmallestIndex
+<1> n0 \in Nat
+    OBVIOUS
+<1> A(n0)
+    OBVIOUS
+<1> HIDE DEF A
+<1> QED BY SmallestNatural, Isa
+
 -----------------------------------------------------------------------------
 \* Check equivalence of two well-formedness conditions
 
