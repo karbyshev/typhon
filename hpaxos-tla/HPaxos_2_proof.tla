@@ -101,24 +101,40 @@ PROOF
 <1> QED
 
 SmallestIndex(seq, P(_), k) ==
-    P(seq[k]) /\ \A i \in 0..(k-1) : ~P(seq[i])
+    P(seq[k]) /\ \A i \in 1..(k-1) : ~P(seq[i])
 
 LEMMA SmallestIndexExists ==
     ASSUME NEW S, NEW P(_),
-           NEW n \in Nat, NEW seq \in [0..n -> S],
-           NEW n0 \in 0..n,
+           NEW n \in Nat, NEW seq \in [1..n -> S],
+           NEW n0 \in 1..n,
            P(seq[n0])
-    PROVE  \E i \in 0..n : SmallestIndex(seq, P, i)
+    PROVE  \E i \in 1..n : SmallestIndex(seq, P, i)
 PROOF
-<1> DEFINE A(x) == x \in 0..n /\ P(seq[x])
-<1> SUFFICES \E k \in Nat : A(k) /\ \A i \in 0..(k - 1) : ~A(i)
-    BY DEF SmallestIndex
-<1> n0 \in Nat
+<1> DEFINE A(x) == x \in 0..n - 1 /\ P(seq[x + 1])
+<1>1. SUFFICES \E k \in Nat :
+                /\ A(k)
+                /\ k = 0 \/ \A i \in 0 .. (k - 1) : ~A(i)
+  <2> PICK k \in Nat :
+            /\ A(k)
+            /\ k = 0 \/ \A i \in 0 .. (k - 1) : ~A(i)
+      BY <1>1
+  <2> WITNESS k + 1 \in 1..n
+  <2>1. P(seq[k + 1])
+        OBVIOUS
+  <2>2. ASSUME NEW i \in 1..k PROVE ~P(seq[i])
+    <3> CASE k = 0 OBVIOUS
+    <3> CASE k > 0
+      <4> i - 1 \in 0..n - 1
+          OBVIOUS
+      <4> QED OBVIOUS
+    <3> QED OBVIOUS
+  <2> QED BY <2>1, <2>2 DEF SmallestIndex
+<1> n0 - 1 \in Nat
     OBVIOUS
-<1> A(n0)
+<1> A(n0 - 1)
     OBVIOUS
 <1> HIDE DEF A
-<1> QED BY SmallestNatural, Isa
+<1> QED BY <1>1, SmallestNatural, IsaM("blast")
 
 -----------------------------------------------------------------------------
 \* Check equivalence of two well-formedness conditions
