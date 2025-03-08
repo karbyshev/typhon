@@ -5,6 +5,9 @@ CONSTANT TrustLive
 ASSUME TrustLiveAssumption ==
     TrustLive \in SUBSET [lr : Learner, q : ByzQuorum]
 
+ASSUME TrustLiveNonEmpty ==
+    \A L \in TrustLive : L.q # {}
+
 CONSTANT TrustSafe
 ASSUME TrustSafeAssumption ==
     TrustSafe \in SUBSET [from : Learner, to : Learner, q : ByzQuorum]
