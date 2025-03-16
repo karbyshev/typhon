@@ -4,7 +4,7 @@ EXTENDS HQuorum, HLearner, HLearnerGraph, TLAPS
 LEMMA TrustSafeSelfAgreement ==
     ASSUME NEW E \in TrustSafe
     PROVE  [from |-> E.from, to |-> E.from, q |-> E.q] \in TrustSafe
-BY LearnerGraphAssumptionSymmetry, LearnerGraphAssumptionTransitivity, Zenon
+BY LearnerGraphAssumptionSymmetry, LearnerGraphAssumptionTransitivity
 
 LEMMA EntanglementSym ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner, <<L1, L2>> \in Ent
@@ -15,7 +15,7 @@ LEMMA EntanglementSelf ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner, <<L1, L2>> \in Ent
     PROVE  <<L1, L1>> \in Ent
 PROOF BY LearnerGraphAssumptionSymmetry,
-         LearnerGraphAssumptionTransitivity, Zenon DEF Ent
+         LearnerGraphAssumptionTransitivity DEF Ent
 
 LEMMA EntanglementTrustLive ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner,
@@ -32,7 +32,7 @@ LEMMA EntaglementTrustLiveNonEmpty ==
            <<L1, L2>> \in Ent,
            [lr |-> L1, q |-> Q] \in TrustLive
     PROVE  \E N \in SafeAcceptor : N \in Q
-PROOF BY EntanglementTrustLive, EntanglementSelf, Zenon
+PROOF BY EntanglementTrustLive, EntanglementSelf
 
 LEMMA EntanglementTransitive ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner, NEW L3 \in Learner,
