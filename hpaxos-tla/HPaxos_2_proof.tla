@@ -220,6 +220,14 @@ LEMMA WellFormedConditionEquiv3 ==
                 B(m, bm) /\ B(y, by) => by < bm)
 PROOF BY TranBallot DEF Ballot
 
+LEMMA WellFormedCondition111 ==
+    ASSUME NEW m \in Message,
+           WellFormed(m),
+           OneB(m)
+    PROVE  \A y \in Tran(m) : m # y /\ ~OneA(y) =>
+            \A bm, by \in Ballot :
+                B(m, bm) /\ B(y, by) => by < bm
+
 -----------------------------------------------------------------------------
 TypeOK ==
     /\ msgs \in SUBSET Message
@@ -284,9 +292,16 @@ MsgsSafeAcceptorPrevRefSpec ==
         \A m \in SentBy(A) :
             m.prev # NoMessage => m.prev \in m.refs
 
+\* TODO replace it with the following below
 MsgsSafeAcceptorPrevTranSpec ==
     \A A \in SafeAcceptor :
         \A m1 \in SentBy(A) :
+            \A m2 \in PrevTran(m1) :
+                m2 \in Tran(m1)
+
+KnownMsgsPrevTranSpec ==
+    \A AL \in SafeAcceptor \cup Learner :
+        \A m1 \in known_msgs[AL] :
             \A m2 \in PrevTran(m1) :
                 m2 \in Tran(m1)
 
