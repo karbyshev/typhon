@@ -1131,9 +1131,9 @@ PROOF BY MessageSpec
       DEF MsgsSafeAcceptorSpec3, CaughtSpec, Caught, CaughtMsg,
           KnownMsgsSpec, SentBy, Proposal, OneA, TypeOK
 
-LEMMA QuorumIntersection ==
-    ASSUME TypeOK,
-           NEW alpha \in Learner, NEW beta \in Learner,
+\* TODO check and clean
+LEMMA LiveQuorumConIntersection ==
+    ASSUME NEW alpha \in Learner, NEW beta \in Learner,
            NEW M \in Message,
            NEW Qalpha \in SUBSET Message, NEW Qbeta \in SUBSET Message,
            NEW S \in ByzQuorum,
@@ -1145,6 +1145,55 @@ LEMMA QuorumIntersection ==
             /\ ma.acc = p
             /\ mb.acc = p
 PROOF
+<1> /\ [from |-> alpha, to |-> beta, q |-> S] \in TrustSafe
+    /\ S \cap Caught(M) = {}
+    BY DEF ConByQuorum
+<1> PICK acc \in S : /\ acc \in { mm.acc : mm \in Qalpha }
+                     /\ acc \in { mm.acc : mm \in Qbeta }
+    BY TrustLiveAssumption, LearnerGraphAssumptionValidity
+<1> QED BY BQAssumption
+
+\* TODO rename Ent -> ""
+LEMMA EntLiveQuorumConIntersection ==
+    ASSUME NEW alpha \in Learner, NEW beta \in Learner,
+           NEW M \in Message,
+           NEW Qalpha \in SUBSET Tran(M), NEW Qbeta \in SUBSET Tran(M),
+           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
+           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
+           beta \in Con(alpha, M)
+    PROVE  \E p \in Acceptor, ma \in Qalpha, mb \in Qbeta :
+            /\ p \notin Caught(M)
+            /\ ma.acc = p
+            /\ mb.acc = p
+PROOF
+<1> PICK S \in ByzQuorum : ConByQuorum(alpha, beta, M, S)
+    BY DEF Con
+<1> Qalpha \in SUBSET Message
+    BY Tran_Message
+<1> Qbeta \in SUBSET Message
+    BY Tran_Message
+<1> PICK p \in S, ma \in Qalpha, mb \in Qbeta :
+            /\ p \notin Caught(M)
+            /\ ma.acc = p
+            /\ mb.acc = p
+    BY LiveQuorumConIntersection
+<1> QED BY BQAssumption
+
+LEMMA LiveQuorumConIntersectionBis ==
+    ASSUME TypeOK,
+           NEW alpha \in Learner, NEW beta \in Learner,
+           NEW M \in Message,
+           NEW Qalpha \in SUBSET Message, NEW Qbeta \in SUBSET Message,
+           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
+           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
+           beta \in Con(alpha, M)
+    PROVE  \E p \in Acceptor, ma \in Qalpha, mb \in Qbeta :
+            /\ p \notin Caught(M)
+            /\ ma.acc = p
+            /\ mb.acc = p
+PROOF
+<1> PICK S \in ByzQuorum : ConByQuorum(alpha, beta, M, S)
+    BY DEF Con
 <1> /\ [from |-> alpha, to |-> beta, q |-> S] \in TrustSafe
     /\ S \cap Caught(M) = {}
     BY DEF ConByQuorum
@@ -1250,7 +1299,7 @@ PROOF
             /\ m1b.acc = p
             /\ m2a.acc = p
     <3> HIDE DEF Q2
-    <3> QED BY QuorumIntersection, BQAssumption, Isa
+    <3> QED BY LiveQuorumConIntersection, BQAssumption
   <2> TwoA(m2a)
       BY <2>8 DEF Known2a
   <2> L1 \in m2a.lrns
