@@ -413,10 +413,18 @@ PROOF
 <1>9. QED BY <1>1, <1>3, <1>6, <1>7, <1>8
           DEF NextTLA, SafeAcceptorAction, LearnerAction
 
+LEMMA Qd_monotone ==
+    ASSUME NEW alpha \in Learner,
+           NEW m \in Message,
+           NEW d \in Nat,
+           BVal' = BVal
+    PROVE  qd(alpha, m, d) = qd(alpha, m, d)'
+PROOF BY Isa DEF V, qd, Fresh000, SameValue, V
+
 LEMMA WellFormed_monotone ==
-    ASSUME NEW m \in Message, WellFormed(m), BVal' = BVal
-    PROVE WellFormed(m)'
-PROOF BY DEF WellFormed, WellFormed1b, q, Fresh, Con2as, Buried, V
+    ASSUME BVal' = BVal
+    PROVE  \A m \in Message : WellFormed(m) <=> WellFormed(m)'
+PROOF BY Qd_monotone DEF WellFormed
 
 LEMMA KnownMsgMonotone ==
     TypeOK /\ NextTLA =>
