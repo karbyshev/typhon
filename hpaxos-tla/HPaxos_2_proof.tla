@@ -250,6 +250,10 @@ LEMMA WellFormedCondition111 ==
                 B(m, bm) /\ B(y, by) => by < bm
 
 -----------------------------------------------------------------------------
+MaxDepthSpec ==
+    \A alpha \in Learner: maxDepth(alpha) \in Nat /\ maxDepth(alpha) >= 1
+
+-----------------------------------------------------------------------------
 TypeOK ==
     /\ msgs \in SUBSET Message
     /\ known_msgs \in [Acceptor \cup Learner -> SUBSET Message]
@@ -558,17 +562,21 @@ PROOF
            DEF NextTLA, SafeAcceptorAction, LearnerAction
 
 LEMMA DecisionSpecInvariant ==
-    TypeOK /\ NextTLA /\
-    DecisionSpec => DecisionSpec'
+    BVal' = BVal /\ TypeOK /\ NextTLA /\
+    KnownMsgsSpec /\
+    MaxDepthSpec /\ DecisionSpec => DecisionSpec'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA, DecisionSpec,
+                    MaxDepthSpec,
                     NEW L \in Learner, NEW BB \in Ballot, NEW VV \in Value,
+                    BVal' = BVal,
                     VV \in decision[L, BB]'
              PROVE  ChosenIn(L, BB, VV)'
     BY DEF DecisionSpec
 <1> TypeOK' BY TypeOKInvariant
 <1> USE DEF DecisionSpec
 <1> USE DEF ChosenIn
+<1> USE DEF MaxDepthSpec
 <1>1. CASE \E p \in Proposer : ProposerAction(p)
   <2> PICK bal \in Ballot : SendProposal(bal)
       BY <1>1 DEF ProposerAction
@@ -1867,7 +1875,7 @@ LEMMA YYY ==
            V(M, V_M),
            beta \in M.lrns,
            \* TODO
-           \A l \in Learner: maxDepth(l) \in Nat /\ maxDepth(l) >= 1,
+           MaxDepthSpec,
            MsgsSafeAcceptorPrevTranLinearSpec,
            KnownMsgsPrevTranSpec,
            KnownMsgsSpec,
@@ -1888,6 +1896,8 @@ PROOF
     BY DEF KnownMsgsSpec, TypeOK
 <1> WellFormed(M)
     BY DEF KnownMsgsSpec
+<1> maxDepth(alpha) \in Nat
+    BY DEF MaxDepthSpec
 
 \***** BASE CASE
 <1>0. P(0)
@@ -1958,7 +1968,7 @@ PROOF
         OBVIOUS
     <3> SUFFICES HeterogeneousSpecCond(alpha, bal, M, V_M, [x \in 1..1 |-> w0], 1)
         OBVIOUS
-    <3> QED BY Tran_refl DEF HeterogeneousSpecCond
+    <3> QED BY Tran_refl DEF HeterogeneousSpecCond, MaxDepthSpec
   <2> PICK w0 \in S : \A z \in S : w0.B_m =< z.B_m
       BY WhateverMin
   <2> HeterogeneousSpecCondMin(alpha, bal, M, V_M, [x \in 1..1 |-> w0], 1)
