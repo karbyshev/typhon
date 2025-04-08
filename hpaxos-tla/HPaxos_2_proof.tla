@@ -114,6 +114,7 @@ LEMMA LatestSubset ==
     PROVE  Latest(P) \in SUBSET P
 PROOF BY DEF Latest
 
+\* TODO fix: requires IsFinite(P)
 LEMMA LatestNonEmpty ==
     ASSUME NEW P \in SUBSET { m \in Message : WellFormed(m) },
            P # {}
