@@ -1278,7 +1278,7 @@ PROOF
     BY TrustLiveAssumption, LearnerGraphAssumptionValidity
 <1> QED BY BQAssumption
 
-LEMMA EntConnected ==
+LEMMA EntConnectedByQuorum ==
     ASSUME CaughtSpec,
            NEW alpha \in Learner, NEW beta \in Learner,
            <<alpha, beta>> \in Ent,
@@ -1286,6 +1286,15 @@ LEMMA EntConnected ==
            NEW m \in known_msgs[AL]
     PROVE  ConByQuorum(alpha, beta, m, SafeAcceptor)
 PROOF BY BQAssumption DEF ConByQuorum, Ent, CaughtSpec
+
+LEMMA EntConnected ==
+    ASSUME CaughtSpec,
+           NEW alpha \in Learner, NEW beta \in Learner,
+           <<alpha, beta>> \in Ent,
+           NEW AL \in SafeAcceptor \cup Learner,
+           NEW m \in known_msgs[AL]
+    PROVE  beta \in Con(alpha, m)
+PROOF BY EntConnectedByQuorum, BQAssumption DEF Con
 
 \*LEMMA ConnectedTrans ==
 \*    ASSUME NEW alpha \in Learner,
