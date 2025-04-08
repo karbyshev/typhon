@@ -67,14 +67,31 @@ LEMMA V_def ==
     PROVE V(m, BVal[b])
 PROOF BY Get1a_TypeOK DEF V, B
 
-\* TODO
-LEMMA SameBallotValue ==
+\* TODO remove if not used
+LEMMA SameBallot_sym ==
     ASSUME NEW x \in Message,
            NEW y \in Message,
            SameBallot(x, y)
+    PROVE  SameBallot(y, x)
+BY DEF SameBallot
+
+\* TODO remove if not used
+LEMMA SameValue_sym ==
+    ASSUME NEW x \in Message,
+           NEW y \in Message,
+           SameValue(x, y)
+    PROVE  SameValue(y, x)
+BY DEF SameValue
+
+LEMMA SameBallotValue ==
+    ASSUME BVal \in [Ballot -> Value],
+           NEW x \in Message,
+           NEW y \in Message,
+           NEW bal \in Ballot, B(x, bal),
+           SameBallot(x, y)
     PROVE  SameValue(x, y)
 PROOF
-<1> QED
+<1> QED BY V_func, V_def DEF SameBallot, SameValue
 
 LEMMA TranBallot ==
     ASSUME NEW m1 \in Message, NEW m2 \in Tran(m1),
