@@ -474,6 +474,13 @@ PROOF
 <1>10. QED BY <1>1, <1>3, <1>7, <1>8, <1>9
            DEF NextTLA, SafeAcceptorAction, LearnerAction
 
+LEMMA Decision_monotone ==
+    TypeOK /\ NextTLA =>
+    \A LB \in Learner \X Ballot :
+        decision[LB] \subseteq decision[LB]'
+PROOF
+<1> QED
+
 LEMMA Known2aMonotone ==
     TypeOK /\ NextTLA =>
     \A L \in Learner, bal \in Ballot, val \in Value :
@@ -574,19 +581,25 @@ PROOF
              PROVE  ChosenIn(L, BB, VV)'
     BY DEF DecisionSpec
 <1> TypeOK' BY TypeOKInvariant
+<1> Known2a(L, BB, VV) \subseteq Message
+    BY DEF Known2a, KnownMsgsSpec, TypeOK
 <1> USE DEF DecisionSpec
 <1> USE DEF ChosenIn
 <1> USE DEF MaxDepthSpec
 <1>1. CASE \E p \in Proposer : ProposerAction(p)
   <2> PICK bal \in Ballot : SendProposal(bal)
       BY <1>1 DEF ProposerAction
-  <2> QED BY Known2aMonotone DEF SendProposal
+  <2> UNCHANGED decision
+      BY DEF SendProposal
+  <2> QED BY Qd_monotone, Known2aMonotone
 <1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
   <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
       BY <1>3
-  <2> QED BY Known2aMonotone DEF Process, Acceptor
+  <2> UNCHANGED decision
+      BY DEF Process
+  <2> QED BY Qd_monotone, Known2aMonotone
 <1>7. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
-      BY <1>7, Known2aMonotone DEF LearnerRecv
+      BY <1>7, Qd_monotone, Known2aMonotone DEF LearnerRecv
 <1>8. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
             LearnerDecide(lrn, bal, val)
   <2> PICK lrn \in Learner, bal \in Ballot, val \in Value :
@@ -594,11 +607,12 @@ PROOF
         /\ decision' = [decision EXCEPT ![<<lrn, bal>>] = decision[lrn, bal] \cup {val}]
         /\ UNCHANGED << msgs, known_msgs, recent_msgs, BVal >>
       BY <1>8 DEF LearnerDecide
-  <2>0. QED BY Known2aMonotone DEF TypeOK
+  <2> QED BY Qd_monotone, Known2aMonotone DEF TypeOK
 <1>9. CASE \E a \in FakeAcceptor : FakeAcceptorAction(a)
-      BY <1>9, Known2aMonotone DEF FakeAcceptorAction, FakeSendControlMessage
+      BY <1>9, Qd_monotone, Known2aMonotone
+      DEF FakeAcceptorAction, FakeSendControlMessage
 <1>10. QED BY <1>1, <1>3, <1>7, <1>8, <1>9
-          DEF NextTLA, SafeAcceptorAction, LearnerAction
+           DEF NextTLA, SafeAcceptorAction, LearnerAction
 
 LEMMA SafeAcceptorPrevSpec1Invariant ==
     TypeOK /\ NextTLA /\
