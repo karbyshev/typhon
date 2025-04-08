@@ -1823,6 +1823,7 @@ PROOF
 <1> QED BY <1>0, <1>1, NatInduction, Isa
 \*<1> QED \*BY Tran_trans, Tran_Message DEF qd
 
+\* TODO
 LEMMA QuorumProperty3 ==
     ASSUME NEW alpha \in Learner,
            NEW x \in Message,
@@ -1833,7 +1834,19 @@ LEMMA QuorumProperty3 ==
            NEW d1 \in Nat, d < d1,
            x \in qd(alpha, x1, d1)
     PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, x, d) }] \in TrustLive
-OBVIOUS
+PROOF
+<1> QED
+
+\* TODO
+LEMMA QuorumProperty4 ==
+    ASSUME NEW alpha \in Learner,
+           NEW m \in Message,
+           NEW d \in Nat, d >= 1,
+           NEW d1 \in Nat, d1 >= d
+    PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d1) }] \in TrustLive =>
+           [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d) }] \in TrustLive
+PROOF
+<1> QED
 
 \*LEMMA WTF0 == FALSE
 \*PROOF
@@ -1883,6 +1896,14 @@ LEMMA QdEq1 ==
                             /\ OneB(m)
                             /\ Fresh000(alpha, m) }
 PROOF
+<1> QED
+
+LEMMA ChosenBalVal ==
+    ASSUME NEW alpha \in Learner,
+           NEW bal \in Ballot,
+           NEW val \in Value,
+           ChosenIn(alpha, bal, val)
+    PROVE  \A x \in Message : B(x, bal) => V(x, val)
 <1> QED
 
 LEMMA YYY ==
