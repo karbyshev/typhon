@@ -963,8 +963,19 @@ PROOF
                     ~Proposal(m2),
                     m1.acc = A, m2.acc = A
              PROVE  m1 \in PrevTran(m2)
-    BY UniqueMessageSent, PrevTran_refl
-       DEF MsgsSafeAcceptorPrevTranLinearSpec, SentBy, Proposal, OneA, TypeOK
+    <2> SUFFICES ASSUME NEW A \in SafeAcceptor,
+                        NEW m1 \in SentBy(A)',
+                        NEW m2 \in SentBy(A)'
+                 PROVE  m1 \in PrevTran(m2) \/ m2 \in PrevTran(m1)
+        BY DEF MsgsSafeAcceptorPrevTranLinearSpec
+    <2> USE DEF MsgsSafeAcceptorPrevTranLinearSpec
+    <2> m1 \in Message /\ m2 \in Message
+        BY DEF SentBy, TypeOK 
+    <2> CASE m1 \in msgs /\ m2 \in msgs
+        BY DEF SentBy, OneA, Proposal
+    <2> CASE m1 \in msgs' \ msgs /\ m2 \in msgs' \ msgs
+        BY UniqueMessageSent, PrevTran_refl DEF SentBy, OneA, Proposal
+    <2> QED BY DEF SentBy, OneA, Proposal
 <1> m1 \in SentBy(A)
     BY DEF SentBy, Proposal, OneA
 <1> prev_msg[A] # NoMessage
@@ -1067,7 +1078,7 @@ PROOF
   <2> acc = A
       BY DEF Send, SentBy, TypeOK
   <2> prev_msg[A] \in Message
-      BY DEF TypeOK
+      BY DEF TypeOK, Acceptor
   <2> prev_msg[A] \in m1.refs
       BY DEF MsgsSafeAcceptorPrevRefSpec, SentBy, Proposal, OneA
   <2> m1 \notin Tran(prev_msg[A])
