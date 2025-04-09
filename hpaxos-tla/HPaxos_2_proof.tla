@@ -850,37 +850,60 @@ PROOF
 <1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
   <2> PICK acc \in SafeAcceptor, m \in msgs : Process(acc, m)
       BY <1>3
+  <2> Recv(acc, m)
+      BY DEF Process
+  <2> BVal' = BVal
+      BY DEF Process
+  <2> WellFormed(m)
+      BY DEF Process
+  <2> m \in Message
+      BY DEF WellFormed
   <2> known_msgs[AL]' \in SUBSET msgs'
-     BY DEF Process, Send, Recv
+      BY Sent_monotone DEF Recv, TypeOK, Acceptor
   <2> KnownRefs(AL, M)'
-      BY DEF Process, KnownRefs, Recv
+      BY DEF KnownRefs, Recv, TypeOK, Acceptor
   <2> WellFormed(M)'
-      BY WellFormed_monotone DEF Process, Recv, TypeOK
-  <2> Tran(M) \in SUBSET known_msgs[AL]'
+    <3> CASE M \in known_msgs[AL]
+        BY WellFormed_monotone DEF TypeOK
     <3> CASE M \notin known_msgs[AL]
-      <4> USE DEF Process
-      <4> M = m BY DEF Recv
-      <4> AL = acc BY DEF Recv
-      <4> M \in Message BY DEF WellFormed
-      <4> QED BY Tran_eq, KnownMsgMonotone DEF Recv, KnownRefs
-    <3> QED BY DEF Process, Recv
+      <4> M = m
+          BY DEF Recv, TypeOK, Acceptor
+      <4> QED BY WellFormed_monotone DEF TypeOK
+    <3> QED OBVIOUS
+  <2> Tran(M) \in SUBSET known_msgs[AL]'
+    <3> CASE M \in known_msgs[AL]
+        BY DEF Recv, TypeOK, Acceptor
+    <3> CASE M \notin known_msgs[AL]
+      <4> M = m
+          BY DEF Recv, TypeOK, Acceptor
+      <4> QED BY Tran_eq, KnownMsgMonotone DEF Recv, KnownRefs, TypeOK, Acceptor
+    <3> QED OBVIOUS
   <2> \E b \in Ballot : B(M, b)
       BY DEF WellFormed
   <2> QED OBVIOUS
 <1>6. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
   <2> PICK lrn \in Learner, m \in msgs : LearnerRecv(lrn, m)
       BY <1>6
-  <2> USE DEF LearnerRecv
+  <2> Recv(lrn, m)
+      BY DEF LearnerRecv
+  <2> BVal' = BVal
+      BY DEF LearnerRecv
+  <2> WellFormed(m)
+      BY DEF LearnerRecv
+  <2> m \in Message
+      BY DEF WellFormed
   <2> known_msgs[AL]' \in SUBSET msgs'
-      BY DEF Recv
+      BY Sent_monotone DEF Recv, TypeOK, Acceptor
   <2> KnownRefs(AL, M)'
-      BY DEF KnownRefs, Recv
+      BY DEF KnownRefs, Recv, TypeOK, Acceptor
   <2> WellFormed(M)'
-      BY WellFormed_monotone DEF TypeOK, Recv
+      BY WellFormed_monotone DEF TypeOK, Recv, Acceptor
   <2> Tran(M) \in SUBSET known_msgs[AL]'
+    <3> CASE M \in known_msgs[AL]
+        BY DEF Recv, TypeOK, Acceptor
     <3> CASE M \notin known_msgs[AL]
-      <4> QED BY Tran_eq DEF Recv, KnownRefs, TypeOK
-    <3> QED BY DEF Recv
+        BY Tran_eq DEF Recv, KnownRefs, TypeOK, Acceptor
+    <3> QED OBVIOUS
   <2> \E b \in Ballot : B(M, b)
       BY DEF WellFormed
   <2> QED OBVIOUS
