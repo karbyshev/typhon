@@ -406,6 +406,31 @@ PROOF
 <1>9. QED BY <1>1, <1>3, <1>7, <1>8
           DEF NextTLA, SafeAcceptorAction
 
+LEMMA Sent_monotone ==
+    TypeOK /\ NextTLA => msgs \in SUBSET msgs'
+PROOF
+<1> SUFFICES ASSUME TypeOK, NextTLA
+             PROVE  msgs \in SUBSET msgs'
+    OBVIOUS
+<1> TypeOK' BY TypeOKInvariant
+<1>1. CASE \E p \in Proposer : ProposerAction(p)
+  <2> PICK p \in Proposer, bal \in Ballot : SendProposal(bal)
+      BY <1>1 DEF ProposerAction
+  <2> QED BY DEF SendProposal, Send
+<1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
+  <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
+      BY <1>3
+  <2> QED BY DEF Process, Send
+<1>6. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
+      BY <1>6 DEF LearnerRecv
+<1>7. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
+            LearnerDecide(lrn, bal, val)
+      BY <1>7 DEF LearnerDecide
+<1>8. CASE \E a \in FakeAcceptor : FakeAcceptorAction(a)
+      BY <1>8 DEF FakeAcceptorAction, FakeSendControlMessage, Send
+<1>9. QED BY <1>1, <1>3, <1>6, <1>7, <1>8
+          DEF NextTLA, SafeAcceptorAction, LearnerAction
+
 LEMMA UniqueMessageSent ==
     TypeOK /\ NextTLA =>
     \A m1, m2 \in msgs' \ msgs :
