@@ -106,7 +106,7 @@ Min(S) == CHOOSE x \in S : \A y \in S : x <= y
         \A m \in Con2as(alpha, x) : \A v \in Value : V(x, v) <=> V(m, v)
 
     D(alpha, x, m) ==
-        \* /\ TwoA(m) \* implied by the following since the intersection is non-empty 
+        \* /\ TwoA(m) \* implied by the following since the intersection is non-empty
         /\ m.lrns \cap Con(alpha, x) # {}
 
     \* TODO define Latest in terms of Max, as existence of Max is proven?
