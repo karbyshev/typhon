@@ -308,6 +308,7 @@ LEMMA WellFormedConditionEquiv3 ==
                 B(m, bm) /\ B(y, by) => by < bm)
 PROOF BY TranBallot DEF Ballot
 
+\* TODO rename
 LEMMA WellFormedCondition111 ==
     ASSUME NEW m \in Message,
            WellFormed(m),
@@ -315,6 +316,8 @@ LEMMA WellFormedCondition111 ==
     PROVE  \A y \in Tran(m) : m # y /\ ~OneA(y) =>
             \A bm, by \in Ballot :
                 B(m, bm) /\ B(y, by) => by < bm
+PROOF BY WellFormedCondition2, WellFormedCondition3
+      DEF WellFormed, WellFormed1b, Proposal, OneA
 
 -----------------------------------------------------------------------------
 MaxDepthSpec ==
