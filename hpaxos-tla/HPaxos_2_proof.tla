@@ -1428,6 +1428,13 @@ PROOF BY EntConnectedByQuorum, BQAssumption DEF Con
 \*    PROVE  alpha \in Con(gamma, m)
 \*PROOF BY LearnerGraphAssumptionTransitivity DEF Con, ConByQuorum
 
+LEMMA ConnectedLearner ==
+    ASSUME NEW alpha \in Learner,
+           NEW x \in Message
+    PROVE  Con(alpha, x) \in SUBSET Learner
+PROOF BY DEF Con 
+
+\* TODO unify naming
 LEMMA ConnectedSym ==
     ASSUME NEW alpha \in Learner,
            NEW beta \in Learner,
@@ -1450,6 +1457,27 @@ LEMMA ConTran ==
     PROVE  Con(alpha, y) \in SUBSET Con(alpha, x)
 PROOF
 <1> QED
+
+LEMMA Con_compat ==
+    ASSUME NEW x \in Message
+    PROVE  \A alpha, beta \in Learner :
+            beta \in Con(alpha, x) => Con(alpha, x) = Con(beta, x)
+PROOF
+<1> SUFFICES ASSUME NEW alpha \in Learner,
+                    NEW beta \in Con(alpha, x),
+                    NEW gamma \in Con(beta, x)
+             PROVE  gamma \in Con(alpha, x)
+    BY ConnectedSym, ConnectedLearner
+<1> PICK Sbeta \in ByzQuorum : ConByQuorum(alpha, beta, x, Sbeta)
+    BY DEF Con
+<1> PICK Sgamma \in ByzQuorum : ConByQuorum(beta, gamma, x, Sgamma)
+    BY DEF Con
+<1> DEFINE Q == Sbeta \cup Sgamma
+<1> Q \in ByzQuorum
+    BY DEF ByzQuorum
+<1> SUFFICES ConByQuorum(alpha, gamma, x, Q)
+    BY DEF Con
+<1> QED BY LearnerGraphAssumptionTransitivity, LearnerGraphAssumptionClosure DEF ConByQuorum 
 
 LEMMA NotCaughtXXX ==
     ASSUME KnownMsgsPrevTranSpec,
