@@ -1458,16 +1458,14 @@ LEMMA CaughtTran ==
     ASSUME NEW y \in Message,
            NEW x \in Tran(y)
     PROVE  Caught(x) \in SUBSET Caught(y)
-PROOF
-<1> QED
+PROOF BY Tran_trans DEF Caught, CaughtMsg
 
 LEMMA ConTran ==
     ASSUME NEW y \in Message,
            NEW alpha \in Learner,
            NEW x \in Tran(y)
     PROVE  Con(alpha, y) \in SUBSET Con(alpha, x)
-PROOF
-<1> QED
+PROOF BY CaughtTran DEF Con, ConByQuorum
 
 LEMMA Con_compat ==
     ASSUME NEW x \in Message
