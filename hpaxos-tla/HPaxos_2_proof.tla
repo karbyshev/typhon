@@ -2138,7 +2138,7 @@ PROOF
     <3> ~OneA(ma)
          BY MessageTypeSpec DEF Known2a
     <3> ~OneA(mb)
-\*        BY QuorumProperty2 \* TODO fix
+         BY QuorumProperty2, MessageTypeSpec
     <3> ma \in Tran(mb)
       <4> ma \in Tran(mb) \/ mb \in Tran(ma)
           BY DEF MsgsSafeAcceptorPrevTranLinearSpec, KnownMsgsPrevTranSpec, SentBy
@@ -2158,6 +2158,7 @@ PROOF
   <2> SUFFICES \E seq \in [1..1 -> Whatever] :
                 \A x \in 1..1 : HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x)
       OBVIOUS
+  <2> WITNESS [x \in 1..1 |-> w0] \in [1..1 -> Whatever]
   <2> QED OBVIOUS
 
 \***** INDUCTION STEP
