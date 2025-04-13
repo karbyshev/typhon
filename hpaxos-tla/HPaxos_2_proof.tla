@@ -7,6 +7,9 @@ EXTENDS HPaxos_2, HMessage_proof, HLearnerGraph_proof,
         TLAPS
 
 -----------------------------------------------------------------------------
+\* TODO this can be further generalized to arbitrary linear orders,
+\* and partial orders with IsMax defined by
+\* IsMax(x, S) == \A y \in S : x =< y => x = y
 LEMMA NatFiniteSetMaxExists ==
     ASSUME NEW A \in SUBSET Nat,
            A # {},
@@ -19,7 +22,7 @@ PROOF
     OBVIOUS
 <1>0. P({}) OBVIOUS
 <1>1. ASSUME NEW T, NEW x, IsFiniteSet(T), P(T), x \notin T PROVE P(T \cup {x})
-    BY <1>1 DEF IsMax
+      BY <1>1 DEF IsMax
 <1> HIDE DEF P
 <1>3. QED BY <1>0, <1>1, FS_Induction, IsaM("blast")
 
