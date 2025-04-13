@@ -1314,11 +1314,31 @@ LEMMA EntQuorumIntersection ==
 BY TrustLiveAssumption, LearnerGraphAssumptionValidity DEF Ent
 
 LEMMA MsgsSafeAcceptorSpecImpliesCaughtSpec ==
-    ASSUME TypeOK, KnownMsgsSpec, MsgsSafeAcceptorSpec3
+    ASSUME TypeOK, KnownMsgsSpec, MsgsSafeAcceptorPrevTranLinearSpec
     PROVE  CaughtSpec
-PROOF BY MessageSpec
-      DEF MsgsSafeAcceptorSpec3, CaughtSpec, Caught, CaughtMsg,
-          KnownMsgsSpec, SentBy, Proposal, OneA, TypeOK
+PROOF
+<1> SUFFICES ASSUME NEW AL \in SafeAcceptor \cup Learner,
+                    NEW M \in known_msgs[AL],
+                    Caught(M) \cap SafeAcceptor # {}
+             PROVE  FALSE
+    BY DEF CaughtSpec
+<1> PICK acc \in Caught(M) \cap SafeAcceptor : TRUE
+    OBVIOUS
+<1> PICK msg \in CaughtMsg(M) :
+            /\ ~Proposal(msg)
+            /\ msg.acc = acc
+    BY DEF Caught, CaughtMsg
+<1> msg \in Tran(M)
+    BY DEF CaughtMsg
+<1> PICK msg1 \in Tran(M) :
+            /\ ~Proposal(msg1)
+            /\ msg.acc = msg1.acc
+            /\ msg # msg1
+            /\ msg \notin PrevTran(msg1)
+            /\ msg1 \notin PrevTran(msg)
+    BY DEF CaughtMsg
+<1> QED BY MessageSpec
+        DEF MsgsSafeAcceptorPrevTranLinearSpec, KnownMsgsSpec, SentBy, Proposal, OneA
 
 \* TODO check and clean
 LEMMA LiveQuorumConIntersection ==
