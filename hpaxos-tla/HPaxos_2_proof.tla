@@ -1301,21 +1301,6 @@ LEMMA KnownMsgsPrevTranSpecInvariant ==
 PROOF
 <1> QED
 
-\* TODO
-LEMMA VisibleFromOneB ==
-    ASSUME NEW x \in Message,
-           WellFormed(x),
-           OneB(x),
-           NEW Bx \in Ballot,
-           B(x, Bx),
-           NEW y \in Tran(x),
-           ~Proposal(y),
-           NEW By \in Ballot,
-           B(y, By)
-    PROVE  By < Bx
-PROOF
-<1> QED
-
 \* TODO rename Quorum -> LiveQuorum
 LEMMA EntQuorumIntersection ==
     ASSUME NEW alpha \in Learner, NEW beta \in Learner,
