@@ -1,9 +1,53 @@
 -------------------------- MODULE HPaxos_2_proof ----------------------------
 EXTENDS HPaxos_2, HMessage_proof, HLearnerGraph_proof,
         Sequences, SequenceTheorems,
+        FunctionTheorems,
         FiniteSets, FiniteSetTheorems,
         WellFoundedInduction, 
         TLAPS
+
+-----------------------------------------------------------------------------
+LEMMA NatFiniteSetMaxExists ==
+    ASSUME NEW A \in SUBSET Nat,
+           A # {},
+           IsFiniteSet(A)
+    PROVE  \E max \in A : IsMax(max, A)
+PROOF
+<1> DEFINE P(X) ==
+            X \in SUBSET Nat /\ X # {} => \E max \in X : IsMax(max, X)
+<1> SUFFICES ASSUME NEW S, IsFiniteSet(S) PROVE P(S)
+    OBVIOUS
+<1>0. P({}) OBVIOUS
+<1>1. ASSUME NEW T, NEW x, IsFiniteSet(T), P(T), x \notin T PROVE P(T \cup {x})
+    BY <1>1 DEF IsMax
+<1> HIDE DEF P
+<1>3. QED BY <1>0, <1>1, FS_Induction, IsaM("blast")
+
+\* TODO move to separate file
+LEMMA MaxUnique ==
+    ASSUME NEW S,
+           \A x, y \in S : x =< y /\ y =< x => x = y,
+           NEW A \in SUBSET S,
+           NEW x \in A, NEW y \in A,
+           IsMax(x, A),
+           IsMax(y, A)
+    PROVE  x = y
+PROOF BY DEF IsMax
+
+LEMMA BallotFiniteSetMaxExists ==
+    ASSUME NEW A \in SUBSET Ballot,
+           A # {},
+           IsFiniteSet(A)
+    PROVE  \E max \in A : IsMax(max, A)
+PROOF BY NatFiniteSetMaxExists DEF Ballot
+
+LEMMA BallotMaxUnique ==
+    ASSUME NEW A \in SUBSET Ballot,
+           NEW x \in A, NEW y \in A,
+           IsMax(x, A),
+           IsMax(y, A)
+    PROVE  x = y
+PROOF BY MaxUnique DEF Ballot 
 
 -----------------------------------------------------------------------------
 LEMMA CaughtMsgSpec ==
@@ -100,15 +144,6 @@ LEMMA TranBallot ==
     PROVE  b2 <= b1
 PROOF BY Tran_trans DEF B, Get1a
 
-\*    Latest(P) ==
-\*        { x \in P :
-\*            \A bx \in Ballot :
-\*                B(x, bx) =>
-\*                \A y \in P, by \in Ballot :
-\*                    B(y, by) => by <= bx }
-
-\* TODO
-
 LEMMA LatestSubset ==
     ASSUME NEW P \in SUBSET Message
     PROVE  Latest(P) \in SUBSET P
@@ -121,6 +156,34 @@ LEMMA LatestNonEmpty ==
     PROVE  Latest(P) # {}
 PROOF
 <1> QED
+
+LEMMA LatestNonEmpty_bis ==
+    ASSUME NEW P \in SUBSET { m \in Message : WellFormed(m) },
+           P # {},
+           IsFiniteSet(P)
+    PROVE  Latest(P) # {}
+PROOF
+<1> DEFINE f_bis == [ m \in P |-> CHOOSE bal \in Ballot : B(m, bal) ]
+<1> f_bis \in [ P -> Ballot ]
+    BY DEF WellFormed
+<1> DEFINE Q == Range(f_bis)
+<1> Q \in SUBSET Ballot
+    BY DEF WellFormed, Range
+<1> Q # {}
+    BY B_func DEF WellFormed, Range
+<1> f_bis \in Surjection(P, Q)
+    BY Fun_RangeProperties
+<1> IsFiniteSet(Q)
+    BY Zenon, FS_Surjection
+<1> PICK bal1 \in Q : IsMax(bal1, Q)
+    BY BallotFiniteSetMaxExists
+<1> bal1 \in Ballot
+    BY DEF Range
+<1> PICK m1 \in P : f_bis[m1] = bal1
+    BY DEF Surjection
+<1> m1 \in Latest(P)
+    BY B_func DEF Latest, WellFormed, IsMax, Range
+<1> QED OBVIOUS
 
 SmallestIndex(seq, P(_), k) ==
     P(seq[k]) /\ \A i \in 1..(k-1) : ~P(seq[i])
@@ -1671,31 +1734,6 @@ PROOF
 \*           foo > 0
 \*    PROVE  foo \in S
 \*OBVIOUS
-
-LEMMA NatFiniteSetMaxExists ==
-    ASSUME NEW A \in SUBSET Nat,
-           A # {},
-           IsFiniteSet(A)
-    PROVE  \E max \in A : IsMax(max, A)
-PROOF
-<1> DEFINE P(X) ==
-            X \in SUBSET Nat /\ X # {} => \E max \in X : IsMax(max, X)
-<1> SUFFICES ASSUME NEW S, IsFiniteSet(S) PROVE P(S)
-    OBVIOUS
-<1>0. P({}) OBVIOUS
-<1>1. ASSUME NEW T, NEW x, IsFiniteSet(T), P(T), x \notin T PROVE P(T \cup {x})
-    BY <1>1 DEF IsMax
-<1> HIDE DEF P
-<1>3. QED BY <1>0, <1>1, FS_Induction, IsaM("blast")
-
-LEMMA MaxUnique ==
-    ASSUME NEW A \in SUBSET Nat,
-           NEW x \in A, NEW y \in A,
-           IsMax(x, A),
-           IsMax(y, A)
-    PROVE  x = y
-PROOF
-<1> QED BY DEF IsMax
 
 \* TODO rename
 LEMMA PPP ==
