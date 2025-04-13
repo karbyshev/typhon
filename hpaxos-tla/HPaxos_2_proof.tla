@@ -2041,7 +2041,8 @@ LEMMA ChosenBalVal ==
 <1> QED
 
 LEMMA YYY ==
-    ASSUME NEW alpha \in Learner, NEW beta \in Learner, NEW L0 \in Learner,
+    ASSUME BVal \in [Ballot -> Value],
+           NEW alpha \in Learner, NEW beta \in Learner, NEW L0 \in Learner,
            NEW bal \in Ballot,
            NEW val \in Value,
            <<alpha, beta>> \in Ent,
@@ -2050,6 +2051,7 @@ LEMMA YYY ==
            NEW B_M \in Ballot,
            NEW V_M \in Value,
            bal < B_M,
+           val # V_M,
            B(M, B_M),
            V(M, V_M),
            beta \in M.lrns,
@@ -2058,6 +2060,7 @@ LEMMA YYY ==
            MsgsSafeAcceptorPrevTranLinearSpec,
            KnownMsgsPrevTranSpec,
            KnownMsgsSpec,
+           CaughtSpec,
            TypeOK
     PROVE  \A i \in 0..maxDepth(alpha) :
             \E seq \in [1 .. i + 1 -> Whatever] :
@@ -2169,6 +2172,8 @@ PROOF
       OBVIOUS
   <2> (k + 1) - 1 = k
       OBVIOUS
+  <2> k \in 1..k
+      OBVIOUS
   <2> PICK seq \in [1 .. k -> Whatever]:
             \A x \in 1 .. k:
                 HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x)
@@ -2180,6 +2185,8 @@ PROOF
   <2> S # {}
     <3> \A x \in 1 .. k : HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x)
         BY DEF HeterogeneousSpecCondMin
+    <3> HeterogeneousSpecCond(alpha, bal, M, V_M, seq, k)
+        OBVIOUS
     <3> seq[k] \in Whatever
         OBVIOUS
     <3> \A x \in 1..k :
@@ -2201,25 +2208,68 @@ PROOF
             /\ seq[x].m \in Tran(M)
             /\ seq[x].r \in Tran(M)
             /\ seq[x].s \in Tran(M)
+      <4> seq[1].m \in Tran(M)
+          BY DEF HeterogeneousSpecCond
+      \* from cond 8
+      <4> \A i \in 1..k :
+            seq[i].r \in Tran(seq[i].m)
+          BY QuorumProperty1 DEF HeterogeneousSpecCond
+      \* from cond 4
+      <4> \A i \in 2..k :
+            seq[i].m \in Tran(seq[1].r)
+          BY DEF HeterogeneousSpecCond
+      \* from cond 9
+      <4> \A i \in 1..k :
+            seq[i].s \in Tran(seq[i].r)
+          BY DEF HeterogeneousSpecCond
+      <4> QED BY Tran_trans
     \* From the previous, we conclude
     <3> \A x \in 1..k : WellFormed(seq[x].r)
+        BY DEF KnownMsgsSpec
     <3> \A x \in 1..k : V(seq[x].m, V_M)
         BY DEF HeterogeneousSpecCond
     <3> V(seq[k].m, V_M)
         OBVIOUS
+    <3> WellFormed(seq[k].s)
+        BY DEF KnownMsgsSpec
     <3> B(seq[k].s, bal)
         BY DEF HeterogeneousSpecCond
+    \* ..therefore
     <3> V(seq[k].s, val)
-        \* we have that s is of ballot "bal", which is a solution ballot for the value "val"
-        \* BY SameBallotValue DEF ChosenIn, HeterogeneousSpecCond, SameValue, SameBallot
+        BY ChosenBalVal
     <3> seq[k].r \in known_msgs[L0]
+        BY DEF KnownMsgsSpec
     <3> V(seq[k].r, V_M)
-        \* r is from quorum of m, therefore r is of the same ballot as m, therefore the value of r equals that of m (which is V_M)
-\*        BY SameBallotValue, QuorumProperties DEF HeterogeneousSpecCond
+    \* Follows from
+\*        \* cond 8:
+\*        /\ r \in qd(gamma, m, 1)
+\*        \* cond 14:
+\*        /\ V(m, V_M)
+      <4> B(seq[k].r, seq[k].B_m)
+          OBVIOUS \* proven above
+      <4> B(seq[k].m, seq[k].B_m)
+          OBVIOUS
+      <4> SameBallot(seq[k].r, seq[k].m)
+          BY B_func DEF SameBallot
+      \* r is from quorum of m, therefore r is of the same ballot as m, therefore the value of r equals that of m (which is V_M)
+       <4> QED BY SameBallotValue DEF SameValue
     \* goal: to show V(s_k) # V(r_k)
     <3> seq[k].s \in Tran(seq[k].r)
         BY DEF HeterogeneousSpecCond
+
     <3> alpha \in seq[k].s.lrns
+      \* By cond 12 we have
+      <4> [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq[k].s, maxDepth(alpha) - k + 1) }] \in TrustLive
+          BY DEF HeterogeneousSpecCond
+      <4> maxDepth(alpha) - k + 1 >= 1
+          OBVIOUS
+      \* Therefore, by QuorumProperty4,
+      <4> [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq[k].s, 1) }] \in TrustLive
+          BY QuorumProperty4
+      \* ..which by definition of WellFormed-ness for seq[k].s results in
+      <4> QED BY DEF WellFormed
+
+\*        BY DEF HeterogeneousSpecCond
 \*    <3> val # V(r)
     <3> \A i \in 1..k : seq[i].r \in Tran(seq[i].m)
       <4> SUFFICES ASSUME NEW i \in 1..k PROVE seq[i].r \in Tran(seq[i].m)
@@ -2229,21 +2279,21 @@ PROOF
       <4> qd(seq[i].gamma, seq[i].m, 1) \in SUBSET Tran(seq[i].m)
           BY QuorumProperty1
       <4> QED OBVIOUS
-    \* By definition of fresh'ness
-    <3>10. {mm \in Tran(seq[k].r) : D(seq[k].gamma, seq[k].r, mm)} # {}
-       \* <4> \* gamma is connected to alpha as of r :   BY ConTran
-       <4> CASE k = 1
-          \* This follows from Ent(alpha, seq[0].gamma)
-          <5> QED
-       <4> CASE k > 1
-         <5> seq[k - 1].r \in Message
+
+    \* We prove the following useful property of alpha and gamma:
+    <3>ag \A i \in 1..k :
+            alpha \in Con(seq[k].gamma, seq[k].r)
+      <4> CASE k = 1
+        <5> <<alpha, seq[k].gamma>> \in Ent
+            BY DEF HeterogeneousSpecCond
+        <5> QED BY ConnectedSym, EntConnected
+      <4> CASE k > 1
+        <5> seq[k - 1].r \in Message
              BY WhateverSpec
-\*         <5> k - 1 \in Nat
-\*             BY <4>1
-       \* We have: m_k \in Tran(r_{k-1}) and r_k \in Tran(m_k) from QuorumProperties and (8)
-       \* Hence: r_k \in Tran(r_{k-1})
-       \* Therefore: Con(alpha, r_{k-1}) \in SUBSET Con(alpha, r_k) BY ConTran
-       \* Since we have by (5) gamma_{k} \in Con(alpha, r_{k-1}), conclude the goal
+         \* We have: m_k \in Tran(r_{k-1}) and r_k \in Tran(m_k) from QuorumProperties and (8)
+         \* Hence: r_k \in Tran(r_{k-1})
+         \* Therefore: Con(alpha, r_{k-1}) \in SUBSET Con(alpha, r_k) BY ConTran
+         \* Since we have by (5) gamma_{k} \in Con(alpha, r_{k-1}), conclude the goal
          <5> seq[k].m \in Tran(seq[k - 1].r)
              BY DEF HeterogeneousSpecCond
          <5> seq[k].r \in Tran(seq[k - 1].r)
@@ -2252,46 +2302,79 @@ PROOF
              BY DEF HeterogeneousSpecCond
          <5> seq[k].gamma \in Con(alpha, seq[k].r)
              BY ConTran
-       \* we conclude that ..
-         <5> alpha \in Con(seq[k].gamma, seq[k].r)
-             BY ConnectedSym
-         <5> QED BY DEF D
+         \* we conclude that ..
+         <5> QED BY ConnectedSym
+\*         <5>1. alpha \in Con(seq[k].gamma, seq[k].r)
       <4> QED OBVIOUS
 
-\*KnownMsgsSpec ==
-\*    \A AL \in SafeAcceptor \cup Learner :
-\*        /\ known_msgs[AL] \in SUBSET msgs
-\*        /\ \A M \in known_msgs[AL] :
-\*            /\ KnownRefs(AL, M)
-\*            /\ WellFormed(M)
-\*            /\ Tran(M) \in SUBSET known_msgs[AL]
-\*            /\ \E b \in Ballot : B(M, b)
+    \* We show that the set of 2a affecting the value of fresh r is non-empty, with s being its element
+    <3> DEFINE r_fresh_set == {mm \in Tran(seq[k].r) : D(seq[k].gamma, seq[k].r, mm)}
+    <3>9. seq[k].s \in r_fresh_set
+      <4> SUFFICES D(seq[k].gamma, seq[k].r, seq[k].s)
+          BY DEF HeterogeneousSpecCond
+      <4> SUFFICES alpha \in Con(seq[k].gamma, seq[k].r)
+          BY DEF D
+      <4> QED BY <3>ag
 
-    <3>11. \A x \in {mm \in Tran(seq[k].r) : D(seq[k].gamma, seq[k].r, mm)} : WellFormed(x)
+    <3>10. r_fresh_set # {}
+      BY <3>9
+
+    \* Since r is known, all the elements of the fresh set are known messages
+    <3>11. \A x \in r_fresh_set : WellFormed(x)
            BY DEF KnownMsgsSpec
-    <3>12. {mm \in Tran(seq[k].r) : D(seq[k].gamma, seq[k].r, mm)} \in SUBSET Message
+    <3>12. r_fresh_set \in SUBSET Message
            BY DEF KnownMsgsSpec, TypeOK
-    <3>13. Latest({mm \in Tran(seq[k].r) : D(seq[k].gamma, seq[k].r, mm)}) # {}
-          BY <3>10, <3>11, <3>12, LatestNonEmpty
+    <3>13. r_fresh_set \in SUBSET known_msgs[L0]
+           BY DEF KnownMsgsSpec
+    <3>14. Latest(r_fresh_set) # {}
+           BY <3>10, <3>11, <3>12, LatestNonEmpty
+
     \* Below, we construct m0, B_m0, gamma0, r0, s0 which are fields of seq[k+1]
-    <3> PICK m0 \in Tran(seq[k].r) : D(seq[k].gamma, seq[k].r, m0)
-        BY <3>13, LatestSubset
+    \* Define m0 as a latest fresh message of r    
+    <3> PICK m0 \in Latest(r_fresh_set) : TRUE
+        BY <3>14, LatestSubset
+
+    \* m0 has the following properties
     <3> WellFormed(m0)
-        BY DEF KnownMsgsSpec
+        BY LatestSubset, <3>11, <3>12
     <3> m0 \in Message
-        BY DEF KnownMsgsSpec, TypeOK
+        BY LatestSubset, <3>12
     <3> m0 \in known_msgs[L0]
-        BY DEF KnownMsgsSpec
-    \* TODO define lrns() function that returns {} for Proposal messages
+        BY LatestSubset, <3>12, <3>13
+    <3> m0 \in Tran(seq[k].r)
+        BY LatestSubset, <3>12
     <3> ~Proposal(m0)
+    \* TODO define lrns() function that returns {} for Proposal messages
+    \* then use the defined lrns to conclude that m0 is non-proposal, since lrns(m0) # {}
+
     <3> m0.lrns \cap Con(seq[k].gamma, seq[k].r) # {}
         BY DEF D
-    \* That concludes the definition of m[k + 1]
     \* m0 has a ballot number:
     <3> PICK B_m0 \in Ballot : B(m0, B_m0)
         BY DEF WellFormed
 
+    \* By construction of m0 and definition of Fresh000, m0 and r have the same value
+    <3> SameValue(m0, seq[k].r)
+        BY DEF Fresh000
+    \* ..which is V_M
+    <3> V(m0, V_M)
+        BY DEF SameValue
+
+    <3> bal < B_m0
+      \* Since m0 is a latest message, we get non-strict inequality
+      <4> bal =< B_m0
+          BY <3>9 DEF Latest
+      <4> SUFFICES ASSUME bal = B_m0 PROVE FALSE
+          BY DEF Ballot
+      \* now we use the facts that m0 is of value V_M and s has value val, which are not equal by the lemma assumption 
+      <4> QED BY SameBallotValue, V_def, V_func DEF SameBallot, SameValue
+
+    <3> B_m0 < seq[k].B_m
+        BY WellFormedCondition111
+
+    \* Auxiliary clause that proves <4>4 below.
     <3>cond4. \A i \in 1..k : m0 \in Tran(seq[i].r)
+      \* We have shown above that
       \* By construction of m0,
       <4> SUFFICES \A i \in 1..k - 1 : m0 \in Tran(seq[i].r)
           OBVIOUS
@@ -2301,15 +2384,19 @@ PROOF
       \* First,
       <4> m0 \in Tran(seq[k].m)
         \* By construction of m0 and the fact that seq[k].r \in Tran(seq[k].m), we conclude
-          BY Tran_trans
+          BY LatestSubset, Tran_trans, <3>12
       \* which by transitivity of Tran and the fact that all are soundly typed
       <4> \A i \in 1..k - 1 : seq[i].r \in Message
           BY WhateverSpec
       \* gives
       <4> QED BY Tran_trans
 
+    \* By lemma about Con compatibility, we prove that the gamma and alpha Con-sets are equal
+    <3> Con(seq[k].gamma, seq[k].r) = Con(alpha, seq[k].r)
+        BY <3>ag, Con_compat, ConnectedSym
+
     \* Now define gamma[k + 1]:
-    <3> PICK gamma0 \in m0.lrns \cap Con(seq[k].gamma, seq[k].r) : TRUE
+    <3> PICK gamma0 \in m0.lrns \cap Con(alpha, seq[k].r) : TRUE
         OBVIOUS
     <3> gamma0 \in Learner
         BY DEF WellFormed
@@ -2338,6 +2425,7 @@ PROOF
     <3> TwoA(m0)
         BY QdEq0, MessageTypeSpec
 
+    \* Auxiliary clause that proves <4>3 below.
     <3>cond3. \A i \in 1..k : B_m0 < seq[i].B_m
       \* First, by cond 4 proven above,
       <4> \A i \in 1..k : m0 \in Tran(seq[i].r)
@@ -2351,25 +2439,19 @@ PROOF
       \* Therefore,
       <4> QED BY WellFormedCondition111 DEF OneA, Proposal
 
-\*LEMMA QuorumProperty1 ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW x \in Message,
-\*           NEW d \in Nat
-\*    PROVE  \A y \in qd(alpha, x, d) :
-\*            /\ y \in Tran(x)
-\*            /\ ~Proposal(y)
-\*PROOF
-\*<1> QED
-
-    \* Using, Q2 defined above, we now define s0 and r0    
-    \* Define Q1 as a quorum of s[k] depth (maxDepth(alpha) - k)
-    <3> maxDepth(alpha) - k \in Nat
+    \* Using, Q2 defined above, we now define s0 and r0
+    \* Define Q1 as a quorum of s[k] depth (maxDepth(alpha) - k + 1)
+    <3> maxDepth(alpha) - k + 1 \in Nat
         OBVIOUS
-    <3> DEFINE Q1 == qd(alpha, seq[k].s, (maxDepth(alpha) - k))
+    <3> DEFINE Q1 == qd(alpha, seq[k].s, maxDepth(alpha) - k + 1)
     <3> [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
-\*       BY QuorumProperty3
+        BY DEF HeterogeneousSpecCond \* cond 12
+    <3> Q1 \in SUBSET Tran(seq[k].s)
+        BY QuorumProperty1
+    \* Therefore..
     <3> Q1 \in SUBSET Tran(seq[k].r)
-    <3> gamma0 \in Con(alpha, seq[k].r)
+        BY Tran_trans DEF HeterogeneousSpecCond \* cond 9
+
     <3> PICK p \in Acceptor, s0 \in Q1, r0 \in Q2 :
             /\ p \notin Caught(seq[k].r)
             /\ s0.acc = p
@@ -2377,16 +2459,19 @@ PROOF
       <4> HIDE DEF Q2, Q1
       <4> QED BY EntLiveQuorumConIntersection
     <3> r0 \in Message /\ s0 \in Message
+        BY DEF KnownMsgsSpec, TypeOK
     <3> ~Proposal(s0)
-    \* BY qd Property1
+        BY QuorumProperty1
     <3> ~Proposal(r0)
+        BY QuorumProperty1
     <3> B(r0, B_m0)
         BY QuorumProperty2
     <3> B(s0, bal)
         BY QuorumProperty2
+
     \* we need to show that:
-    <3> /\ bal < B_m0 \* 1)
-        /\ B_m0 < seq[k].B_m \* 2)
+\*    <3> /\ bal < B_m0 \* 1)
+\*        /\ B_m0 < seq[k].B_m \* 2)
 
 \*LEMMA TranBallot ==
 \*    ASSUME NEW m1 \in Message, NEW m2 \in Tran(m1),
@@ -2410,7 +2495,7 @@ PROOF
 \*    PROVE  x \in Tran(y) \/ y \in Tran(x)
 
     <3> s0 \in Tran(r0)
-        \* From 1), we conclude
+        \* From bal < B_m0, we conclude
         BY NotCaughtXXX, TranBallot DEF Ballot \* TODO avoid unfolding Ballot here and elsewhere by formulating that the order is total
     <3> DEFINE w0 == [m |-> m0, B_m |-> B_m0, r |-> r0, s |-> s0, gamma |-> gamma0]
     <3> w0 \in Whatever
@@ -2441,12 +2526,12 @@ PROOF
             OBVIOUS
       <4>1. k + 1 # 0
             OBVIOUS
-      <4>2. bal < seq0[k + 1].B_m \* property 1) above
+      <4>2. bal < seq0[k + 1].B_m \* property bal < B_m0 above
             OBVIOUS
-      <4>3. \A i \in 1..((k + 1) - 1) : seq0[k + 1].B_m < seq0[i].B_m \* property 2) above
-            OBVIOUS
-      <4>4. seq0[k + 1].m \in Tran(seq0[(k + 1) - 1].r)
-            OBVIOUS
+      <4>3. \A i \in 1..((k + 1) - 1) : seq0[k + 1].B_m < seq0[i].B_m
+            BY <3>cond3, AppendProperties
+      <4>4. \A i \in 1..(k + 1) - 1 : seq0[k + 1].m \in Tran(seq0[i].r)
+            BY <3>cond4, AppendProperties
       <4>5. seq0[k + 1].gamma \in Con(alpha, seq0[(k + 1) - 1].r)
             OBVIOUS
       <4>6. k + 1 > 2 => seq0[k + 1].gamma \notin Con(alpha, seq0[(k + 1) - 2].r)
@@ -2488,19 +2573,82 @@ PROOF
         <5>1. CASE k_star = k
               BY <5>1 DEF SmallestIndex
         <5>2. CASE k_star < k
+
+\*HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x) ==
+\*    LET m == seq[x].m
+\*        B_m == seq[x].B_m
+\*        r == seq[x].r
+\*        s == seq[x].s
+\*        gamma == seq[x].gamma
+\*    IN
+\*        \* auxiliary:
+\*        /\ B(m, B_m)
+\*        \* cond 1:
+\*        /\ x = 1 => <<alpha, gamma>> \in Ent
+\*        \* cond 2:
+\*        /\ bal < B_m
+\*        \* cond 3:
+\*        /\ x > 1 => \A i \in 1..(x - 1) : B_m < seq[i].B_m
+\*        \* cond 4:
+\*        /\ \A i \in 1..(x - 1) : m \in Tran(seq[i].r)
+\*        \* cond 5:
+\*        /\ x > 1 => gamma \in Con(alpha, seq[x - 1].r)
+\*        \* cond 6:
+\*        /\ x > 2 => gamma \notin Con(alpha, seq[x - 2].r)
+\*        \* cond 7:
+\*        /\ gamma \in m.lrns
+\*        \* cond 8:
+\*        /\ r \in qd(gamma, m, 1)
+\*        \* cond 9:
+\*        /\ s \in Tran(r)
+\*        \* cond 10:
+\*        /\ x > 1 => s \in Tran(seq[x - 1].s)
+\*        \* cond 11:
+\*        /\ r.acc = s.acc
+\*        \* cond 12:
+\*        /\ x =< maxDepth(alpha) =>
+\*            [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, s, maxDepth(alpha) - x + 1) }] \in TrustLive
+\*        \* cond 13:
+\*        /\ B(s, bal)
+\*        \* cond 14:
+\*        /\ V(m, V_M)
+\*        \* cond 15:
+\*        /\ x = 1 => m \in Tran(M)
+
           <6> k_star + 1 =< k
               BY <5>2
           <6> k_star + 1 > 1
               OBVIOUS
           <6> (k_star + 1) - 1 = k_star
               OBVIOUS
+          <6> k_star \in 1..k
+              OBVIOUS
+          <6> 1..k_star \in SUBSET 1..k 
+              OBVIOUS
           <6> seq[k_star].r \in Message
-          <6> DEFINE Q1_star == qd(alpha, seq[k_star].s, (maxDepth(alpha) - k_star))
+              BY DEF WhateverSpec
+\*          <6> HeterogeneousSpecCond(alpha, bal, M, V_M, seq, k_star + 1)
+\*              OBVIOUS
+          <6> HeterogeneousSpecCond(alpha, bal, M, V_M, seq, k_star)
+              OBVIOUS
+\*          <6> maxDepth(alpha) - (k_star + 1) + 1 = maxDepth(alpha) - k_star
+\*              OBVIOUS
+          <6> k_star =< maxDepth(alpha)
+              OBVIOUS
+          <6> DEFINE Q1_star == qd(alpha, seq[k_star].s, (maxDepth(alpha) - k_star + 1))
           <6> [lr |-> alpha, q |-> { mm.acc : mm \in Q1_star }] \in TrustLive
+              BY DEF HeterogeneousSpecCond
+          <6> Q1_star \in SUBSET Tran(seq[k_star].s)
+              BY QuorumProperty1
+          \* ..from which we conclude
           <6> Q1_star \in SUBSET Tran(seq[k_star].r)
+              BY Tran_trans DEF HeterogeneousSpecCond
           <6> gamma0 \in Con(alpha, seq[k_star].r)
               BY DEF SmallestIndex
-          <6> Q2 \in SUBSET Tran(seq[k_star].r)    
+          \* We DEFINE Q2 == qd(gamma0, m0, 1)
+          \* and <3>cond4 \A i \in 1..k : m0 \in Tran(seq[i].r)
+          <6> Q2 \in SUBSET Tran(seq[k_star].r)
+              BY QuorumProperty1, <3>cond4, Tran_trans
           <6> PICK p_star \in Acceptor, s_star \in Q1_star, r_star \in Q2 :
                 /\ p_star \notin Caught(seq[k_star].r)
                 /\ s_star.acc = p_star
@@ -2550,11 +2698,18 @@ PROOF
             <7>2. bal < seq_star[k_star + 1].B_m
                   OBVIOUS
             <7>3. \A i \in 1..(k_star + 1) - 1 : seq_star[k_star + 1].B_m < seq_star[i].B_m
-                  OBVIOUS
-            <7>4. seq_star[k_star + 1].m \in Tran(seq_star[k_star].r)
+                  BY <3>cond3
+            <7>4. \A i \in 1..(k_star + 1) - 1 : seq_star[k_star + 1].m \in Tran(seq_star[i].r)
+                  BY <3>cond4
             <7>5. seq_star[k_star + 1].gamma \in Con(alpha, seq_star[k_star].r)
                   OBVIOUS
+
+            \* BY definition:      
+\*            <5> DEFINE R(w) == gamma0 \in Con(alpha, w.r)
+\*            <5> PICK k_star \in 1..k : SmallestIndex(seq, R, k_star)
+            \* Hence
             <7>6. k_star + 1 > 2 => seq_star[k_star + 1].gamma \notin Con(alpha, seq_star[k_star - 1].r)
+                  BY DEF SmallestIndex
             <7>7. seq_star[k_star + 1].gamma \in seq_star[k_star + 1].m.lrns
                   OBVIOUS
             <7>8. seq_star[k_star + 1].r \in qd(seq_star[k_star + 1].gamma, seq_star[k_star + 1].m, 1)
