@@ -1982,6 +1982,25 @@ LEMMA QuorumProperty4 ==
 PROOF
 <1> QED
 
+LEMMA QuorumProperty5 ==
+    ASSUME NEW alpha \in Learner,
+           NEW y \in Message,
+           NEW d \in Nat, d >= 1,
+           NEW x \in qd(alpha, y, d + 1)
+    PROVE
+        [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, y, d)}] \in TrustLive
+\* follows somehow from the definition:
+\*                ELSE [y \in Tran(x) |->
+\*                    { m \in Tran(y) :
+\*                        /\ SameBallot(m, y)
+\*                        /\ [lr |-> alpha,
+\*                            q |-> { z.acc : z \in helper[i - 1][y] }] \in TrustLive }]
+
+LEMMA LearnersWellFormed ==
+    ASSUME NEW m \in Message,
+           WellFormed(m)
+    PROVE  m.lrns # {} <=> TwoA(m)
+
 \*LEMMA WTF0 == FALSE
 \*PROOF
 \*<1> DEFINE seq == [x \in 1..1 |-> 42]
