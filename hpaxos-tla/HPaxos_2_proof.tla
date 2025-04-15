@@ -2328,7 +2328,7 @@ PROOF
       <4> QED OBVIOUS
 
     \* We show that the set of 2a affecting the value of fresh r is non-empty, with s being its element
-    <3> DEFINE r_fresh_set == {mm \in Tran(seq[k].r) : D(seq[k].gamma, seq[k].r, mm)}
+    <3> DEFINE r_fresh_set == { mm \in Tran(seq[k].r) : D(seq[k].gamma, seq[k].r, mm) }
     <3>9. seq[k].s \in r_fresh_set
       <4> SUFFICES D(seq[k].gamma, seq[k].r, seq[k].s)
           BY DEF HeterogeneousSpecCond
@@ -2363,12 +2363,17 @@ PROOF
         BY LatestSubset, <3>12, <3>13
     <3> m0 \in Tran(seq[k].r)
         BY LatestSubset, <3>12
+    <3> m0.lrns \cap Con(seq[k].gamma, seq[k].r) # {}
+        BY LatestSubset DEF D, KnownMsgsSpec, TypeOK
+    <3> TwoA(m0)
+        BY LearnersWellFormed
+    <3> m0 # seq[k].r
+        BY MessageTypeSpec
+
     <3> ~Proposal(m0)
     \* TODO define lrns() function that returns {} for Proposal messages
     \* then use the defined lrns to conclude that m0 is non-proposal, since lrns(m0) # {}
 
-    <3> m0.lrns \cap Con(seq[k].gamma, seq[k].r) # {}
-        BY DEF D
     \* m0 has a ballot number:
     <3> PICK B_m0 \in Ballot : B(m0, B_m0)
         BY DEF WellFormed
@@ -2390,7 +2395,7 @@ PROOF
       <4> QED BY SameBallotValue, V_def, V_func DEF SameBallot, SameValue
 
     <3> B_m0 < seq[k].B_m
-        BY WellFormedCondition111
+        BY WellFormedCondition111 DEF OneA, Proposal
 
     \* Auxiliary clause that proves <4>4 below.
     <3>cond4. \A i \in 1..k : m0 \in Tran(seq[i].r)
@@ -2669,6 +2674,7 @@ PROOF
           \* and <3>cond4 \A i \in 1..k : m0 \in Tran(seq[i].r)
           <6> Q2 \in SUBSET Tran(seq[k_star].r)
               BY QuorumProperty1, <3>cond4, Tran_trans
+
           <6> PICK p_star \in Acceptor, s_star \in Q1_star, r_star \in Q2 :
                 /\ p_star \notin Caught(seq[k_star].r)
                 /\ s_star.acc = p_star
@@ -2677,6 +2683,13 @@ PROOF
             <7> QED BY EntLiveQuorumConIntersection
           <6> s_star \in Message
           <6> r_star \in Message
+          <6> B(r_star, B_m0)
+          <6> B(s_star, bal)
+          <6> ~Proposal(r_star)
+          <6> ~Proposal(s_star)
+
+          <6> seq[k_star].r \in known_msgs[L0]
+              BY DEF KnownMsgsSpec
           <6> DEFINE w_star == [m |-> m0, B_m |-> B_m0, r |-> r_star, s |-> s_star, gamma |-> gamma0]
           <6> w_star \in Whatever
               BY DEF Whatever
@@ -2735,12 +2748,35 @@ PROOF
             <7>8. seq_star[k_star + 1].r \in qd(seq_star[k_star + 1].gamma, seq_star[k_star + 1].m, 1)
                   OBVIOUS
             <7>9. seq_star[k_star + 1].s \in Tran(seq_star[k_star + 1].r)
+                  BY NotCaughtXXX, TranBallot DEF Ballot
             <7>10. seq_star[k_star + 1].s \in Tran(seq_star[k_star].s)
+                   OBVIOUS
             <7>11. seq_star[k_star + 1].r.acc = seq_star[k_star + 1].s.acc
+                   OBVIOUS
             <7>12. k_star + 1 =< maxDepth(alpha) =>
                     [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq_star[k_star + 1].s, maxDepth(alpha) - (k_star + 1) + 1) }] \in TrustLive
+              \* By definition of s_star, s_star \in Q1_star, with Q1_star == qd(alpha, seq[k_star].s, (maxDepth(alpha) - k_star + 1))
+
+\*LEMMA QuorumProperty5 ==
+\*    ASSUME NEW alpha \in Learner,
+\*           NEW y \in Message,
+\*           NEW d \in Nat, d >= 1,
+\*           NEW x \in qd(alpha, y, d + 1)
+\*    PROVE
+\*        [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, y, d)}] \in TrustLive
+
+
+              <8> QED BY QuorumProperty5
+            \* For depths >= 1, all the messages s_star \in Q1_star =>
+
+\*                   <6> DEFINE Q1_star == qd(alpha, seq[k_star].s, (maxDepth(alpha) - k_star + 1))
+
             <7>13. B(seq_star[k_star + 1].s, bal)
+                   OBVIOUS
             <7>14. V(seq_star[k_star + 1].m, V_M)
+                   OBVIOUS
+            <7>15. k_star + 1 = 1 => seq_star[k_star + 1].m \in Tran(M)
+                   OBVIOUS
             <7> HIDE DEF seq_star
             <7> QED BY  <7>0
                        , <7>2
@@ -2763,7 +2799,7 @@ PROOF
           \* However, we have proven that HeterogeneousSpecCond(seq_star, k_star + 1), and w_star.B, which equals B_m0, is smaller than the ballot of seq[k_star + 1].
 
           <6>3. seq_star[k_star + 1].B_m < seq[k_star + 1].B_m
-                OBVIOUS
+                BY <3>cond3
           <6>4. HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, k_star + 1)
                 OBVIOUS
           <6> HIDE DEF w_star
@@ -2834,12 +2870,16 @@ PROOF
       <4>9. seq0[k + 1].s \in Tran(seq0[k + 1].r)
             OBVIOUS
       <4>10. seq0[k + 1].s \in Tran(seq0[(k + 1) - 1].s)
+             OBVIOUS
       <4>11. seq0[k + 1].r.acc = seq0[k + 1].s.acc
              OBVIOUS
       <4>12. k + 1 =< maxDepth(alpha) =>
                 [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq0[k + 1].s, maxDepth(alpha) - (k + 1) + 1) }] \in TrustLive
+             OBVIOUS
       <4>13. B(seq0[k + 1].s, bal)
+             OBVIOUS
       <4>14. V(seq0[k + 1].m, V_M)
+             OBVIOUS
       <4> HIDE DEF seq0
       <4> QED BY <4>0, <4>1, <4>2, <4>3, <4>4, <4>5, <4>6, <4>7, <4>8, <4>9, <4>10, <4>11, <4>12, <4>13, <4>14 DEF HeterogeneousSpecCond
     <3> QED BY <3>100
