@@ -1360,7 +1360,7 @@ PROOF
 <1> PICK acc \in S : /\ acc \in { mm.acc : mm \in Qalpha }
                      /\ acc \in { mm.acc : mm \in Qbeta }
     BY TrustLiveAssumption, LearnerGraphAssumptionValidity
-<1> QED BY BQAssumption
+<1> QED BY ByzQuorumProperties
 
 \* TODO rename Ent -> ""
 LEMMA EntLiveQuorumConIntersection ==
@@ -1386,7 +1386,7 @@ PROOF
             /\ ma.acc = p
             /\ mb.acc = p
     BY LiveQuorumConIntersection
-<1> QED BY BQAssumption
+<1> QED BY ByzQuorumProperties
 
 LEMMA LiveQuorumConIntersectionBis ==
     ASSUME TypeOK,
@@ -1409,7 +1409,7 @@ PROOF
 <1> PICK acc \in S : /\ acc \in { mm.acc : mm \in Qalpha }
                      /\ acc \in { mm.acc : mm \in Qbeta }
     BY TrustLiveAssumption, LearnerGraphAssumptionValidity
-<1> QED BY BQAssumption
+<1> QED BY ByzQuorumProperties
 
 LEMMA EntConnectedByQuorum ==
     ASSUME CaughtSpec,
@@ -1418,7 +1418,7 @@ LEMMA EntConnectedByQuorum ==
            NEW AL \in SafeAcceptor \cup Learner,
            NEW m \in known_msgs[AL]
     PROVE  ConByQuorum(alpha, beta, m, SafeAcceptor)
-PROOF BY BQAssumption DEF ConByQuorum, Ent, CaughtSpec
+PROOF BY ByzQuorumProperties DEF ConByQuorum, Ent, CaughtSpec
 
 LEMMA EntConnected ==
     ASSUME CaughtSpec,
@@ -1427,7 +1427,7 @@ LEMMA EntConnected ==
            NEW AL \in SafeAcceptor \cup Learner,
            NEW m \in known_msgs[AL]
     PROVE  beta \in Con(alpha, m)
-PROOF BY EntConnectedByQuorum, BQAssumption DEF Con
+PROOF BY EntConnectedByQuorum, ByzQuorumProperties DEF Con
 
 \*LEMMA ConnectedTrans ==
 \*    ASSUME NEW alpha \in Learner,
@@ -2993,7 +2993,7 @@ PROOF
             /\ m1b.acc = p
             /\ m2a.acc = p
     <3> HIDE DEF Q2
-    <3> QED BY LiveQuorumConIntersection, BQAssumption
+    <3> QED BY LiveQuorumConIntersection, ByzQuorumProperties
   <2> TwoA(m2a)
       BY <2>8 DEF Known2a
   <2> L1 \in m2a.lrns
@@ -3033,7 +3033,7 @@ PROOF
             DEF MsgsSafeAcceptorPrevTranLinearSpec, MsgsSafeAcceptorPrevTranSpec, SentBy
   <2>15. CASE ~Buried(L1, m2a, m1b)
     <3> L1 \in Con(L2, m1b)
-        BY EntConnected, EntanglementSym, BQAssumption DEF Con
+        BY EntConnectedByQuorum, EntanglementSym, ByzQuorumProperties DEF Con
     <3> m2a \in Con2as(L2, m1b)
         BY <2>14, <2>15 DEF Con2as
     <3> \A v \in Value : V(m2a, v) <=> V(m1b, v)

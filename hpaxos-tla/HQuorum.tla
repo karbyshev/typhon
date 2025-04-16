@@ -3,15 +3,14 @@ CONSTANTS Proposer,
           SafeAcceptor,
           FakeAcceptor
 
-Acceptor == SafeAcceptor \cup FakeAcceptor
-
 ASSUME AcceptorAssumption ==
         SafeAcceptor \cap FakeAcceptor = {}
 
+Acceptor == SafeAcceptor \cup FakeAcceptor
+
 ByzQuorum == SUBSET Acceptor
 
-\* TODO rename
-LEMMA BQAssumption ==
+LEMMA ByzQuorumProperties ==
     /\ SafeAcceptor \in ByzQuorum
     /\ \A Q \in ByzQuorum : Q \subseteq Acceptor
 PROOF BY DEF Acceptor, ByzQuorum
