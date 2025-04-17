@@ -377,6 +377,7 @@ SafeAcceptorPrevSpec2 ==
             /\ prev_msg[A] \in SentBy(A)
             /\ \A m \in SentBy(A) : m \in PrevTran(prev_msg[A])
 
+\* TODO not used with the current definition of Caught
 MsgsSafeAcceptorSpec3 ==
     \A A \in SafeAcceptor :
         \A m1, m2 \in SentBy(A) :
@@ -569,6 +570,7 @@ PROOF
 <1>10. QED BY <1>1, <1>3, <1>7, <1>8, <1>9
            DEF NextTLA, SafeAcceptorAction, LearnerAction
 
+\* TODO remove if not used
 LEMMA Decision_monotone ==
     TypeOK /\ NextTLA =>
     \A LB \in Learner \X Ballot :
@@ -1837,14 +1839,14 @@ PROOF
 
 \*    depthIdx(alpha, x) ==
 \*        {d \in 1..N_L : [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, x, d)}] \in TrustLive }
-\*    
+\*
 \*    depth(alpha, x) ==
 \*        Max({0} \cup depthIdx(alpha, x))
 \*  <2> 
 \*    BY DEF Max, depth, KnownMsgsSpec, TypeOK
 <1> QED BY DEF TypeOK
 
-\* TODO depends on KnownDepthPlusOne
+\* TODO remove if not used; depends on KnownDepthPlusOne
 LEMMA KnownDepthGtOneAux ==
     ASSUME NEW LA \in Learner \cup SafeAcceptor,
            NEW alpha \in Learner,
