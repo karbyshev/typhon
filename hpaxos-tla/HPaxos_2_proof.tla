@@ -50,7 +50,7 @@ LEMMA BallotMaxUnique ==
            IsMax(x, A),
            IsMax(y, A)
     PROVE  x = y
-PROOF BY MaxUnique DEF Ballot 
+PROOF BY MaxUnique DEF Ballot
 
 -----------------------------------------------------------------------------
 LEMMA CaughtMsgSpec ==
@@ -862,7 +862,7 @@ PROOF
       <4> prev_msg[A]' \in recent_msgs[A]'
           BY DEF TypeOK
       <4> HIDE DEF new
-      <4> QED BY PrevTran_trans, PrevTran_refl DEF SafeAcceptorPrevSpec1      
+      <4> QED BY PrevTran_trans, PrevTran_refl DEF SafeAcceptorPrevSpec
     <3> CASE ~WellFormed(new)
         BY DEF SentBy, TypeOK
     <3> CASE TwoB(m)
@@ -1987,8 +1987,7 @@ LEMMA QuorumProperty5 ==
            NEW y \in Message,
            NEW d \in Nat, d >= 1,
            NEW x \in qd(alpha, y, d + 1)
-    PROVE
-        [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, y, d)}] \in TrustLive
+    PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, x, d)}] \in TrustLive
 \* follows somehow from the definition:
 \*                ELSE [y \in Tran(x) |->
 \*                    { m \in Tran(y) :
@@ -2289,8 +2288,6 @@ PROOF
       \* ..which by definition of WellFormed-ness for seq[k].s results in
       <4> QED BY DEF WellFormed
 
-\*        BY DEF HeterogeneousSpecCond
-\*    <3> val # V(r)
     <3> \A i \in 1..k : seq[i].r \in Tran(seq[i].m)
       <4> SUFFICES ASSUME NEW i \in 1..k PROVE seq[i].r \in Tran(seq[i].m)
           OBVIOUS
@@ -2737,7 +2734,7 @@ PROOF
             <7>5. seq_star[k_star + 1].gamma \in Con(alpha, seq_star[k_star].r)
                   OBVIOUS
 
-            \* BY definition:      
+            \* BY definition:
 \*            <5> DEFINE R(w) == gamma0 \in Con(alpha, w.r)
 \*            <5> PICK k_star \in 1..k : SmallestIndex(seq, R, k_star)
             \* Hence
