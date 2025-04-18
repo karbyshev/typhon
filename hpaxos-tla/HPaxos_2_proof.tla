@@ -864,7 +864,7 @@ PROOF
       <4> prev_msg[A]' \in recent_msgs[A]'
           BY DEF TypeOK
       <4> HIDE DEF new
-      <4> QED BY PrevTran_trans, PrevTran_refl DEF SafeAcceptorPrevSpec
+      <4> QED BY PrevTran_trans, PrevTran_refl DEF SafeAcceptorPrevSpec1
     <3> CASE ~WellFormed(new)
         BY DEF SentBy, TypeOK
     <3> CASE TwoB(m)
@@ -1919,7 +1919,7 @@ LEMMA QuorumZero ==
            NEW x \in Message,
            NEW d \in Nat
     PROVE  qd(alpha, x, 0) = {}
-PROOF BY \*NatInductiveDef
+PROOF\*NatInductiveDef
 <1> QED
 
 \* TODO useful lemma
