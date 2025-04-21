@@ -2368,10 +2368,8 @@ PROOF
         BY LearnersWellFormed
     <3> m0 # seq[k].r
         BY MessageTypeSpec
-
     <3> ~Proposal(m0)
-    \* TODO define lrns() function that returns {} for Proposal messages
-    \* then use the defined lrns to conclude that m0 is non-proposal, since lrns(m0) # {}
+        BY MessageTypeSpec DEF Proposal, OneA
 
     \* m0 has a ballot number:
     <3> PICK B_m0 \in Ballot : B(m0, B_m0)
@@ -2384,7 +2382,7 @@ PROOF
     <3> V(m0, V_M)
         BY DEF SameValue
 
-    <3> bal < B_m0
+    <3> bal < B_m0 \* Property (1)
       \* Since m0 is a latest message, we get non-strict inequality
       <4> bal =< B_m0
           BY <3>9 DEF Latest
@@ -2393,7 +2391,7 @@ PROOF
       \* now we use the facts that m0 is of value V_M and s has value val, which are not equal by the lemma assumption 
       <4> QED BY SameBallotValue, V_def, V_func DEF SameBallot, SameValue
 
-    <3> B_m0 < seq[k].B_m
+    <3> B_m0 < seq[k].B_m \* Property (2)
         BY WellFormedCondition111 DEF OneA, Proposal
 
     \* Auxiliary clause that proves <4>4 below.
@@ -2493,10 +2491,6 @@ PROOF
     <3> B(s0, bal)
         BY QuorumProperty2
 
-    \* we need to show that:
-\*    <3> /\ bal < B_m0 \* 1)
-\*        /\ B_m0 < seq[k].B_m \* 2)
-
 \*LEMMA TranBallot ==
 \*    ASSUME NEW m1 \in Message, NEW m2 \in Tran(m1),
 \*           NEW b1 \in Ballot, NEW b2 \in Ballot,
@@ -2519,7 +2513,7 @@ PROOF
 \*    PROVE  x \in Tran(y) \/ y \in Tran(x)
 
     <3> s0 \in Tran(r0)
-        \* From bal < B_m0, we conclude
+        \* From bal < B_m0 (Property 1), we conclude
         BY NotCaughtXXX, TranBallot DEF Ballot \* TODO avoid unfolding Ballot here and elsewhere by formulating that the order is total
     <3> DEFINE w0 == [m |-> m0, B_m |-> B_m0, r |-> r0, s |-> s0, gamma |-> gamma0]
     <3> w0 \in Whatever
@@ -2594,6 +2588,8 @@ PROOF
               OBVIOUS
           <6> HIDE DEF R
           <6> QED BY SmallestIndexExists, Isa
+        <5> k_star \in Nat
+            OBVIOUS
         <5>1. CASE k_star = k
               BY <5>1 DEF SmallestIndex
         <5>2. CASE k_star < k
@@ -2638,7 +2634,8 @@ PROOF
 \*        /\ V(m, V_M)
 \*        \* cond 15:
 \*        /\ x = 1 => m \in Tran(M)
-
+          <6> k_star + 1 \in Nat
+              OBVIOUS
           <6> k_star + 1 =< k
               BY <5>2
           <6> k_star + 1 > 1
@@ -2651,6 +2648,8 @@ PROOF
               OBVIOUS
           <6> seq[k_star].r \in Message
               BY DEF WhateverSpec
+          <6> B(seq[k_star].s, bal)
+              BY DEF HeterogeneousSpecCond
 \*          <6> HeterogeneousSpecCond(alpha, bal, M, V_M, seq, k_star + 1)
 \*              OBVIOUS
           <6> HeterogeneousSpecCond(alpha, bal, M, V_M, seq, k_star)
@@ -2681,11 +2680,17 @@ PROOF
             <7> HIDE DEF Q2, Q1_star
             <7> QED BY EntLiveQuorumConIntersection
           <6> s_star \in Message
+              BY Tran_Message
           <6> r_star \in Message
+              BY Tran_Message
           <6> B(r_star, B_m0)
+              BY QuorumProperty2
           <6> B(s_star, bal)
+              BY QuorumProperty2
           <6> ~Proposal(r_star)
+              BY QuorumProperty1
           <6> ~Proposal(s_star)
+              BY QuorumProperty1
 
           <6> seq[k_star].r \in known_msgs[L0]
               BY DEF KnownMsgsSpec
@@ -2706,29 +2711,18 @@ PROOF
           <6> \A i \in 1..k_star : seq[i] = seq_star[i]
               BY <5>2, AppendProperties
 
-\*LEMMA HeterogeneousSpecCondCongr ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW bal \in Ballot,
-\*           NEW val \in Value,
-\*           NEW k \in Nat,
-\*           NEW seq1 \in Seq(Whatever),
-\*           NEW seq2 \in Seq(Whatever),
-\*           \A i \in 1..k : seq1[i] = seq2[i]
-\*    PROVE  \A j \in 1..k :
-\*            HeterogeneousSpecCond(alpha, bal, val, seq1, j) =>
-\*            HeterogeneousSpecCond(alpha, bal, val, seq2, j)
-
+          <6>0. \A x \in 1..k_star + 1 : HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x)
+                OBVIOUS
           <6>1. \A x \in 1..k_star : HeterogeneousSpecCond(alpha, bal, M, V_M, seq_star, x)
-                BY HeterogeneousSpecCondCongr
+            <7> HIDE DEF seq_star
+            <7> QED BY <6>0, HeterogeneousSpecCondCongr
           <6>2. HeterogeneousSpecCond(alpha, bal, M, V_M, seq_star, k_star + 1)
-
-\*          <6> DEFINE w_star == [m |-> m0, B_m |-> B_m0, r |-> r_star, s |-> s_star, gamma |-> gamma0]
-
             <7>0. B(seq_star[k_star + 1].m, seq_star[k_star + 1].B_m)
                   OBVIOUS
-\*            <7>1.
             <7>2. bal < seq_star[k_star + 1].B_m
                   OBVIOUS
+                    \* cond 3:
+\*        /\ x > 1 => \A i \in 1..(x - 1) : B_m < seq[i].B_m
             <7>3. \A i \in 1..(k_star + 1) - 1 : seq_star[k_star + 1].B_m < seq_star[i].B_m
                   BY <3>cond3
             <7>4. \A i \in 1..(k_star + 1) - 1 : seq_star[k_star + 1].m \in Tran(seq_star[i].r)
@@ -2801,66 +2795,28 @@ PROOF
                 BY <3>cond3
           <6>4. HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, k_star + 1)
                 OBVIOUS
+          <6>5. \A x \in 1..k_star + 1 : HeterogeneousSpecCond(alpha, bal, M, V_M, seq_star, x)
+                BY <6>1, <6>2
           <6> HIDE DEF w_star
           <6> DEFINE seq1 == [seq EXCEPT ![k_star + 1] = w_star]
           <6> seq1 \in Seq(Whatever)
               OBVIOUS
           <6> \A i \in 1..k_star + 1 : seq1[i] = seq_star[i]
               OBVIOUS
-          <6>5. HeterogeneousSpecCond(alpha, bal, M, V_M, seq1, k_star + 1)
+          <6>6. HeterogeneousSpecCond(alpha, bal, M, V_M, seq1, k_star + 1)
             <7> HIDE DEF seq1
             <7> HIDE DEF seq_star
-            <7> QED BY <6>2, HeterogeneousSpecCondCongr
-          <6>6. seq[k_star + 1].B_m =< seq1[k_star + 1].B_m
-                BY <6>4, <6>5 DEF HeterogeneousSpecCondMin
-          <6>7. seq_star[k_star + 1] = seq1[k_star + 1]
+            <7> k_star + 1 \in 1..k_star + 1
+                OBVIOUS
+            <7> QED BY <6>5, HeterogeneousSpecCondCongr
+          <6>7. seq[k_star + 1].B_m =< seq1[k_star + 1].B_m
+                BY <6>4, <6>6 DEF HeterogeneousSpecCondMin
+          <6>8. seq_star[k_star + 1] = seq1[k_star + 1]
                 OBVIOUS
           <6> HIDE DEF seq1
           <6> HIDE DEF seq_star
-          <6> QED BY <6>7, <6>6, <6>3, WhateverSpec DEF Ballot
+          <6> QED BY <6>8, <6>7, <6>3, WhateverSpec DEF Ballot
         <5> QED BY <5>1, <5>2
-
-\*HeterogeneousSpecCond(alpha, bal, V_M, seq, x) ==
-\*    LET m == seq[x].m
-\*        B_m == seq[x].B_m
-\*        r == seq[x].r
-\*        s == seq[x].s
-\*        gamma == seq[x].gamma
-\*    IN
-\*        \* auxiliary:
-\*        /\ B(m, B_m)
-\*        \* cond 1:
-\*        /\ x = 1 => <<alpha, gamma>> \in Ent
-\*        \* cond 2:
-\*        /\ bal < B_m
-\*        \* cond 3:
-\*        /\ x > 1 => \A i \in 1..(x - 1) : B_m < seq[i].B_m
-\*        \* cond 4:
-\*        /\ x > 1 => m \in Tran(seq[x - 1].r)
-\*        \* cond 5:
-\*        /\ x > 1 => gamma \in Con(alpha, seq[x - 1].r)
-\*        \* cond 6:
-\*        /\ x > 2 => gamma \notin Con(alpha, seq[x - 2].r)
-\*        \* cond 7:
-\*        /\ gamma \in m.lrns
-\*        \* cond 8:
-\*        /\ r \in qd(gamma, m, 1)
-\*\*        /\ r \in q(gamma, m)
-\*        \* cond 9:
-\*        /\ s \in Tran(r)
-\*        \* cond 10:
-\*        /\ x > 1 => s \in Tran(seq[x - 1].s)
-\*        \* cond 11:
-\*        /\ r.acc = s.acc
-\*        \* cond 12:
-\*\*        /\ depth(alpha, s) = maxDepth(alpha) - x
-\*        /\ x =< maxDepth(alpha) =>
-\*            [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, s, maxDepth(alpha) - x + 1) }] \in TrustLive
-\*        \* cond 13:
-\*        /\ B(s, bal)
-\*        \* cond 14:
-\*        /\ V(m, V_M)
-
 
       <4>7. seq0[k + 1].gamma \in seq0[k + 1].m.lrns
             OBVIOUS
@@ -2874,7 +2830,7 @@ PROOF
              OBVIOUS
       <4>12. k + 1 =< maxDepth(alpha) =>
                 [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq0[k + 1].s, maxDepth(alpha) - (k + 1) + 1) }] \in TrustLive
-             OBVIOUS
+             BY QuorumProperty5
       <4>13. B(seq0[k + 1].s, bal)
              OBVIOUS
       <4>14. V(seq0[k + 1].m, V_M)
@@ -2901,12 +2857,18 @@ PROOF
       OBVIOUS
   <2> seq0 \in [1..k + 1 -> Whatever]
       BY AppendProperties 
+  <2> Len(seq0) = k + 1
+      BY AppendProperties
   <2> ASSUME NEW x \in 0..k PROVE seq0[k] = seq[k]
       BY AppendProperties
+  <2> \A z \in Whatever : [seq0 EXCEPT ![k + 1] = z] = Append(seq, z)
+      BY Isa, AppendProperties
+  <2> \A z \in Whatever : [seq0 EXCEPT ![k + 1] = z][k + 1] = z
+      OBVIOUS
   <2> HeterogeneousSpecCond(alpha, bal, M, V_M, seq0, k + 1)
       OBVIOUS
   <2> HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq0, k + 1)
-      BY WhateverSpec DEF HeterogeneousSpecCondMin, Ballot
+    BY DEF HeterogeneousSpecCondMin
   <2> \A i \in 1..k : HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq0, i)
       BY HeterogeneousSpecCondMinCongr
   <2> SUFFICES
