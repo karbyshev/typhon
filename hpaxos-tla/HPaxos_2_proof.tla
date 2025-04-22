@@ -420,7 +420,7 @@ PROOF
   <2> PICK p \in Proposer, bal \in Ballot : SendProposal(bal)
       BY <1>1 DEF ProposerAction
   <2> [type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {}] \in Message
-      BY Message_spec, MessageRec_eq0 DEF MessageRec0
+      BY MessageRec_spec, MessageRec_eq0 DEF MessageRec0
   <2> QED BY DEF SendProposal, Send, TypeOK
 <1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
   <2> PICK acc \in SafeAcceptor, m \in msgs : Process(acc, m)

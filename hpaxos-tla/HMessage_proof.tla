@@ -30,7 +30,7 @@ PROOF BY NatInductiveDef, Isa
           NatInductiveDefConclusion,
           MessageRec
 
-LEMMA Message_spec ==
+LEMMA MessageRec_spec ==
     /\ \A n \in Nat : MessageRec[n] \subseteq Message
     /\ \A m \in Message : \E n \in Nat : m \in MessageRec[n]
 PROOF BY DEF Message, MessageDepthRange
@@ -134,7 +134,7 @@ PROOF
 LEMMA Message_ref ==
     ASSUME NEW m \in Message
     PROVE  m.refs \subseteq Message
-PROOF BY MessageRec_ref0, MessageRec_ref1, Message_spec DEF MessageDepthRange
+PROOF BY MessageRec_ref0, MessageRec_ref1, MessageRec_spec DEF MessageDepthRange
 
 LEMMA Message_prev ==
     ASSUME NEW m \in Message
@@ -173,7 +173,7 @@ PROOF
                 /\ P(n)
                 /\ \A k \in 0 .. n - 1 : ~P(k)
       OBVIOUS
-<1>3. PICK n1 \in Nat : P(n1) BY Message_spec
+<1>3. PICK n1 \in Nat : P(n1) BY MessageRec_spec
 <1>4. HIDE DEF P
 <1>5. QED BY <1>3, SmallestNatural, Isa
 
@@ -236,7 +236,7 @@ PROOF
                /\ x.refs # {}
                /\ x.refs \in SUBSET Message
                /\ x.lrns \in SUBSET Learner
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) BY Message_spec
+<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) BY MessageRec_spec
 <1>0. P(0) BY MessageRec_eq0 DEF MessageRec0
 <1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
   <2> k + 1 \in Nat
@@ -264,7 +264,7 @@ PROOF
                    refs : FINSUBSET(MessageRec[k], RefCardinality),
                    lrns : SUBSET Learner ]
            BY <2>3, MessageRec_eq1 DEF MessageRec1
-    <3> QED BY <3>1, Message_spec, MessageRec_nontriv,
+    <3> QED BY <3>1, MessageRec_spec, MessageRec_nontriv,
        FinSubset_sub, FinSubset_sub_nontriv,
        RefCardinalitySpec
   <2> QED BY <2>1, <2>3
@@ -498,7 +498,7 @@ LEMMA MessageRec0_Tran ==
     ASSUME NEW m1 \in MessageRec[0], NEW m2 \in Tran(m1)
     PROVE  m1 = m2
 PROOF
-<1> m1 \in Message BY Message_spec DEF MessageDepthRange
+<1> m1 \in Message BY MessageRec_spec DEF MessageDepthRange
 <1> PICK k \in Nat : m2 \in TranBound[k][m1] BY Tran_spec
 <1> m2 \in Message BY Tran_Message
 <1>1. CASE k = 0 BY TranBound_eq0, <1>1
@@ -517,8 +517,8 @@ PROOF
                    \A y \in TranBound[l][x] :
                         y \in MessageRec[k]
 <1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
-    BY Tran_spec, Message_spec DEF MessageDepthRange
-<1>0. P(0) BY TranBound_eq0, Message_spec
+    BY Tran_spec, MessageRec_spec DEF MessageDepthRange
+<1>0. P(0) BY TranBound_eq0, MessageRec_spec
 <1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
   <2> m + 1 \in Nat
       OBVIOUS
@@ -535,7 +535,7 @@ PROOF
       OBVIOUS
   <2> k - 1 =< k
       OBVIOUS
-  <2> x \in Message BY Message_spec
+  <2> x \in Message BY MessageRec_spec
   <2>1. CASE y = x BY <2>1
   <2>2. CASE y \in UNION { TranBound[m][r] : r \in x.refs }
     <3>1. PICK r \in x.refs : y \in TranBound[m][r] BY <2>2
@@ -808,7 +808,7 @@ PROOF BY Message_prev_PrevTranBound1, Zenon
 \*    PROVE  m1 = m2
 \*PROOF
 \*<1> m1 \in Message
-\*    BY Message_spec DEF MessageDepthRange
+\*    BY MessageRec_spec DEF MessageDepthRange
 \*<1> PICK k \in Nat : m2 \in PrevTranBound[k][m1]
 \*    BY PrevTran_spec
 \*<1> m2 \in Message
