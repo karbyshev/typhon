@@ -112,6 +112,28 @@ PROOF
 LEMMA Message_nontriv == Message # {}
 PROOF BY MessageRec_nontriv DEF Message, MessageDepthRange
 
+LEMMA OneA_Message ==
+    ASSUME NEW bal \in Ballot
+    PROVE  LET msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {} ] IN
+           /\ msg \in Message
+           /\ OneA(msg)
+
+LEMMA OneB_Message ==
+    ASSUME NEW A \in Acceptor,
+           NEW P \in Message \cup {NoMessage},
+           NEW R \in SUBSET Message
+    PROVE  LET msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
+           /\ msg \in Message
+           /\ OneB(msg)
+
+LEMMA TwoA_Message ==
+    ASSUME NEW A \in Acceptor,
+           NEW P \in Message \cup {NoMessage},
+           NEW R \in SUBSET Message
+    PROVE  LET msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
+           /\ msg \in Message
+           /\ TwoA(msg)
+
 LEMMA Message_1a_ref ==
     \A m \in Message : OneA(m) <=> m.refs = {}
 PROOF
