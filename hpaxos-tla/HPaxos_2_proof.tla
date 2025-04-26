@@ -1511,6 +1511,16 @@ PROOF
     BY DEF KnownMsgsSpec
 <1> QED BY DEF KnownMsgsPrevTranSpec, Caught, CaughtMsg
 
+LEMMA ConAllCaught ==
+    ASSUME NEW alpha \in Learner,
+           NEW beta \in Learner,
+           NEW x \in Message,
+           beta \in Con(alpha, x),
+           FakeAcceptor \in SUBSET Caught(x)
+    PROVE  <<alpha, beta>> \in Ent
+PROOF BY LearnerGraphAssumptionClosure, EntanglementSym
+      DEF Con, ConByQuorum, Ent, Acceptor, ByzQuorum
+
 -----------------------------------------------------------------------------
 ConnectednessSpec(bal) ==
     TRUE
