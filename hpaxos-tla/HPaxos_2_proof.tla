@@ -2007,6 +2007,123 @@ LEMMA QuorumProperty5 ==
 \*                        /\ [lr |-> alpha,
 \*                            q |-> { z.acc : z \in helper[i - 1][y] }] \in TrustLive }]
 
+\*HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x) ==
+\*    LET m == seq[x].m
+\*        B_m == seq[x].B_m
+\*        r == seq[x].r
+\*        s == seq[x].s
+\*        gamma == seq[x].gamma
+\*    IN
+\*        \* auxiliary:
+\*        /\ B(m, B_m)
+\*        \* cond 1:
+\*        /\ x = 1 => <<alpha, gamma>> \in Ent
+\*        \* cond 2:
+\*        /\ bal < B_m
+\*        \* cond 3:
+\*        /\ x > 1 => \A i \in 1..(x - 1) : B_m < seq[i].B_m
+\*        \* cond 4:
+\*        /\ \A i \in 1..(x - 1) : m \in Tran(seq[i].r)
+\*\*        /\ x > 1 => m \in Tran(seq[x - 1].r)
+\*        \* cond 5:
+\*        /\ x > 1 => gamma \in Con(alpha, seq[x - 1].r)
+\*        \* cond 6:
+\*        /\ x > 2 => gamma \notin Con(alpha, seq[x - 2].r)
+\*        \* cond 7:
+\*        /\ gamma \in m.lrns
+\*        \* cond 8:
+\*        /\ r \in qd(gamma, m, 1)
+\*        \* cond 9:
+\*        /\ s \in Tran(r)
+\*        \* cond 10:
+\*        /\ x > 1 => s \in Tran(seq[x - 1].s)
+\*        \* cond 11:
+\*        /\ r.acc = s.acc
+\*        \* cond 12:
+\*        /\ x =< maxDepth(alpha) =>
+\*            [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, s, maxDepth(alpha) - x + 1) }] \in TrustLive
+\*        \* cond 13:
+\*        /\ B(s, bal)
+\*        \* cond 14:
+\*        /\ V(m, V_M)
+\*        \* cond 15:
+\*        /\ x = 1 => m \in Tran(M)
+
+\*        \* cond 5:
+\*        /\ x > 1 => gamma \in Con(alpha, seq[x - 1].r)
+\*        \* cond 6:
+\*        /\ x > 2 => gamma \notin Con(alpha, seq[x - 2].r)
+
+\* TODO move up
+LEMMA HeterogeneousSpecCondProperties ==
+    ASSUME NEW alpha \in Learner,
+           NEW bal \in Ballot,
+           NEW M \in Message,
+           NEW V_M \in Value,
+           NEW seq \in Seq(Whatever),
+           NEW K \in Nat,
+           K <= Len(seq),
+           \A i \in 1..K : HeterogeneousSpecCond(alpha, bal, M, V_M, seq, i)
+    PROVE  /\ \A i \in 1..K :
+            /\ seq[i].m \in Tran(M)
+            /\ seq[i].r \in Tran(M)
+            /\ seq[i].s \in Tran(M)
+           /\ \A i, j \in 1..K : i < j =>
+            /\ seq[j].r \in Tran(seq[i].r)
+            /\ j < K =>
+                /\ Con(alpha, seq[i].r) \in SUBSET Con(alpha, seq[j].r)
+                /\ Con(alpha, seq[i].r) # Con(alpha, seq[j].r)
+PROOF
+<1> CASE K # 0
+  <2> 1 \in 1..K
+      OBVIOUS
+  <2>1. seq[1].m \in Tran(M)
+        BY DEF HeterogeneousSpecCond
+  \* from cond 8
+  <2>2. \A i \in 1..K :
+            seq[i].r \in Tran(seq[i].m)
+        BY WhateverSpec, QuorumProperty1 DEF HeterogeneousSpecCond
+  \* from cond 4
+  <2>3. \A i \in 2..K :
+            seq[i].m \in Tran(seq[1].r)
+        BY DEF HeterogeneousSpecCond
+  \* from cond 9
+  <2>4. \A i \in 1..K :
+            seq[i].s \in Tran(seq[i].r)
+        BY DEF HeterogeneousSpecCond
+  <2>5. \A i, j \in 1..K : i < j => seq[j].r \in Tran(seq[i].r)
+    <3> SUFFICES ASSUME NEW i \in 1..K,
+                        NEW j \in 1..K,
+                        i < j
+                 PROVE seq[j].r \in Tran(seq[i].r)
+        OBVIOUS
+    <3> QED BY Tran_trans, WhateverSpec, QuorumProperty1 DEF HeterogeneousSpecCond
+  <2>6. \A i, j \in 1..K : i < j =>
+            Con(alpha, seq[i].r) \in SUBSET Con(alpha, seq[j].r)
+        BY <2>5, WhateverSpec, ConTran
+  <2>7. \A i, j \in 1..K : i < j /\ j < K =>
+            Con(alpha, seq[i].r) # Con(alpha, seq[j].r)
+    <3> SUFFICES ASSUME NEW i \in 1..K,
+                        NEW j \in 1..K,
+                        i < j /\ j < K
+                 PROVE  Con(alpha, seq[i].r) # Con(alpha, seq[j].r)
+        OBVIOUS
+    <3> j - 1 \in 1..K
+        OBVIOUS
+    <3> j + 1 \in 1..K
+        OBVIOUS
+    <3> i <= j - 1
+        OBVIOUS
+    <3> Con(alpha, seq[j - 1].r) # Con(alpha, seq[j].r)
+        BY DEF HeterogeneousSpecCond
+    <3> Con(alpha, seq[j - 1].r) \in SUBSET Con(alpha, seq[j].r)
+        BY <2>6
+    <3> Con(alpha, seq[i].r) \in SUBSET Con(alpha, seq[j - 1].r)
+        BY <2>6
+    <3> QED BY Zenon
+  <2> QED BY <2>1, <2>2, <2>3, <2>4, <2>5, <2>6, <2>7, Tran_trans
+<1> QED OBVIOUS
+
 LEMMA LearnersWellFormed ==
     ASSUME NEW m \in Message,
            WellFormed(m)
@@ -2239,21 +2356,22 @@ PROOF
             /\ seq[x].m \in Tran(M)
             /\ seq[x].r \in Tran(M)
             /\ seq[x].s \in Tran(M)
-      <4> seq[1].m \in Tran(M)
-          BY DEF HeterogeneousSpecCond
-      \* from cond 8
-      <4> \A i \in 1..k :
-            seq[i].r \in Tran(seq[i].m)
-          BY QuorumProperty1 DEF HeterogeneousSpecCond
-      \* from cond 4
-      <4> \A i \in 2..k :
-            seq[i].m \in Tran(seq[1].r)
-          BY DEF HeterogeneousSpecCond
-      \* from cond 9
-      <4> \A i \in 1..k :
-            seq[i].s \in Tran(seq[i].r)
-          BY DEF HeterogeneousSpecCond
-      <4> QED BY Tran_trans
+        BY HeterogeneousSpecCondProperties
+\*      <4> seq[1].m \in Tran(M)
+\*          BY DEF HeterogeneousSpecCond
+\*      \* from cond 8
+\*      <4> \A i \in 1..k :
+\*            seq[i].r \in Tran(seq[i].m)
+\*          BY QuorumProperty1 DEF HeterogeneousSpecCond
+\*      \* from cond 4
+\*      <4> \A i \in 2..k :
+\*            seq[i].m \in Tran(seq[1].r)
+\*          BY DEF HeterogeneousSpecCond
+\*      \* from cond 9
+\*      <4> \A i \in 1..k :
+\*            seq[i].s \in Tran(seq[i].r)
+\*          BY DEF HeterogeneousSpecCond
+\*      <4> QED BY Tran_trans
     \* From the previous, we conclude
     <3> \A x \in 1..k : WellFormed(seq[x].r)
         BY DEF KnownMsgsSpec
@@ -2359,7 +2477,7 @@ PROOF
            BY <3>10, <3>11, <3>12, LatestNonEmpty
 
     \* Below, we construct m0, B_m0, gamma0, r0, s0 which are fields of seq[k+1]
-    \* Define m0 as a latest fresh message of r    
+    \* Define m0 as a latest fresh message of r
     <3> PICK m0 \in Latest(r_fresh_set) : TRUE
         BY <3>14, LatestSubset
 
