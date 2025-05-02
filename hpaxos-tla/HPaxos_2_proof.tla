@@ -3009,8 +3009,440 @@ PROOF
 <1> HIDE DEF P
 <1>3. QED BY <1>0, <1>1, INDUCTION_SCHEME, IsaM("blast")
 
+\* TODO rename
+LEMMA maxDepth_XXX ==
+    ASSUME NEW alpha \in Learner,
+           NEW seq \in Seq(Message),
+           \A i, j \in 1..Len(seq) : i < j =>
+               /\ seq[i] \in Tran(seq[j])
+               /\ Con(alpha, seq[i]) # Con(alpha, seq[j])
+    PROVE  Len(seq) <= maxDepth(alpha)
+
+\*    maxDepth(alpha) ==
+\*        LET I == { n \in 1..N_L :
+\*                    \E f \in [1..n -> Message] :
+\*                        \A i, j \in 1..n : i < j =>
+\*                               /\ f[i] \in Tran(f[j])
+\*                               /\ Con(alpha, f[i]) # Con(alpha, f[j])}
+\*        IN Max(I)
 
 -----------------------------------------------------------------------------
+
+LEMMA ZZZ ==
+\*    ASSUME BVal \in [Ballot -> Value],
+\*           NEW alpha \in Learner, NEW beta \in Learner, 
+\*           NEW bal \in Ballot,
+\*           <<alpha, beta>> \in Ent,
+\*           NEW M \in known_msgs[L0],
+\*           NEW B_M \in Ballot,
+\*           NEW V_M \in Value,
+\*           bal < B_M,
+\*           val # V_M,
+\*           B(M, B_M),
+\*           V(M, V_M),
+\*           beta \in M.lrns,
+\*           \* TODO
+\*           MsgsSafeAcceptorPrevTranLinearSpec,
+\*           KnownMsgsPrevTranSpec,
+\*           KnownMsgsSpec,
+\*           CaughtSpec,
+
+    ASSUME BVal \in [Ballot -> Value],
+           NEW alpha \in Learner, NEW L0 \in Learner,
+           NEW bal \in Ballot,
+           NEW val \in Value,
+           ChosenIn(alpha, bal, val),
+           NEW M \in known_msgs[L0],
+           TwoA(M),
+           NEW V_M \in Value,
+           NEW seq \in [1 .. maxDepth(alpha) + 1 -> Whatever],
+           \A x \in 1 .. maxDepth(alpha) + 1 :
+            HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x),
+           KnownMsgsSpec,
+           MaxDepthSpec,
+           TypeOK
+    PROVE  FALSE
+PROOF
+<1> M \in Message
+<1> WellFormed(M)
+<1> maxDepth(alpha) \in Nat
+    BY DEF MaxDepthSpec
+<1> maxDepth(alpha) + 1 > maxDepth(alpha)
+    OBVIOUS
+<1> maxDepth(alpha) + 1 \in 1..maxDepth(alpha) + 1
+    OBVIOUS
+<1> seq \in Seq(Whatever)
+    BY SeqDef
+<1> Len(seq) >= 2
+    BY DEF MaxDepthSpec
+<1> Len(seq) = maxDepth(alpha) + 1
+    OBVIOUS
+<1> \A x \in 1..maxDepth(alpha) + 1 :
+            HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x)
+    BY DEF HeterogeneousSpecCondMin
+<1> HeterogeneousSpecCond(alpha, bal, M, V_M, seq, maxDepth(alpha) + 1)
+    OBVIOUS
+\*Whatever == [m : Message, B_m : Ballot, r : Message, s : Message, gamma : Learner]
+
+\*LEMMA WhateverSpec ==
+\*    ASSUME NEW w \in Whatever
+\*    PROVE  /\ w.m \in Message
+\*           /\ w.B_m \in Ballot
+\*           /\ w.r \in Message
+\*           /\ w.s \in Message
+\*           /\ w.gamma \in Learner
+
+\*    maxDepth(alpha) ==
+\*        LET I == { n \in 1..N_L :
+\*                    \E f \in [1..n -> Message] :
+\*                        \A i, j \in 1..n : i < j =>
+\*                               /\ f[i] \in Tran(f[j])
+\*                               /\ Con(alpha, f[i]) # Con(alpha, f[j])}
+\*        IN Max(I)
+\* mseq :
+\* mseq[1] = ...
+\* mseq[2] = seq[maxdep(alpha) + 1].m
+\* mseq[3] = seq[maxdep(alpha) + 0].m
+
+\*HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x) ==
+\*    /\ HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x)
+\*    /\ \A z \in Whatever:
+\*        LET seq1 == [seq EXCEPT ![x] = z] IN
+\*        HeterogeneousSpecCond(alpha, bal, M, V_M, seq1, x) =>
+\*        seq[x].B_m <= seq1[x].B_m
+
+
+
+\*************** PROOF SKETCH
+\*<1> DEFINE mseq == Reverse([x \in 1..maxDepth(alpha) + 1 |-> seq[x].m])
+\* Claim 1. seq[2].gamma is not entangled with alpha or beta
+\* Follows from minimality of seq[2]
+\* Claim 2. seq[2].gamma \in Con(alpha) in all the seq[x].m for x >= 2
+\*
+\* We need to create a message M0 such that:
+\* 1) M \in Tran(M0)
+\* 2) all the byzantine acceptors are caught as of M0
+
+\* Then we append M0 to the sequence: seq[2].gamma \notin Con(alpha, M0), from Claim 1.
+\* Using this fact and cond5 and cond6, we can prove that every message in mseq has a different set of learners connected to alpha,
+\* and every element in the list mseq is in the transitive history of the next element
+\* which contradicts the maximality of maxDepth.
+<1> PICK safe \in SafeAcceptor : TRUE
+    BY SafeAcceptorNonTrivial
+
+<1> PICK bal1 \in Ballot, bal2 \in Ballot : bal1 # bal2
+<1> DEFINE v1 == BVal[bal1]
+<1> v1 \in Value
+    OBVIOUS
+<1> DEFINE v2 == BVal[bal2]
+<1> v2 \in Value
+    OBVIOUS
+
+<1> DEFINE p1 == [ type |-> "1a", bal |-> bal1, prev |-> NoMessage, refs |-> {} ]
+<1> p1 \in Message /\ OneA(p1)
+    BY OneA_Message
+<1> B(p1, bal1)
+    BY B_1a
+<1> DEFINE p2 == [ type |-> "1a", bal |-> bal2, prev |-> NoMessage, refs |-> {} ]
+<1> p2 \in Message /\ OneA(p2)
+    BY OneA_Message
+<1> B(p2, bal2)
+    BY B_1a
+
+<1> p1 # p2
+    OBVIOUS
+<1> HIDE DEF p1
+<1> HIDE DEF p2
+
+<1> DEFINE oneb_1 == {[ type |-> "1b", acc |-> fake, prev |-> NoMessage, refs |-> {p1}, lrns |-> {} ] : fake \in FakeAcceptor }
+<1> oneb_1 \in SUBSET { mm \in Message : OneB(mm) }
+    BY Isa, OneB_Message DEF Acceptor
+<1> \A m1 \in oneb_1 : B(m1, bal1)
+
+<1> DEFINE oneb_2 == {[ type |-> "1b", acc |-> fake, prev |-> NoMessage, refs |-> {p2}, lrns |-> {} ] : fake \in FakeAcceptor }
+<1> oneb_2 \in SUBSET { mm \in Message : OneB(mm) }
+    BY Isa, OneB_Message DEF Acceptor
+<1> \A m2 \in oneb_2 : B(m2, bal2)
+
+
+<1> DEFINE M0 == [ type |-> "2a", acc |-> M.acc, prev |-> M, refs |-> {M} \cup oneb_1 \cup oneb_2, lrns |-> {} ]
+<1> M0 \in Message /\ TwoA(M0)
+  <2> M.acc \in Acceptor
+      BY MessageSpec DEF TwoA
+  <2> HIDE DEF oneb_1, oneb_2
+  <2> QED BY Zenon, TwoA_Message
+<1> M \in Tran(M0)
+    BY Message_ref_Tran
+
+<1>caught. FakeAcceptor \in SUBSET Caught(M0)
+
+<1> DEFINE mseq == [x \in 1..maxDepth(alpha) + 1 |-> IF x = maxDepth(alpha) + 1 THEN M0 ELSE seq[maxDepth(alpha) - x + 1].r]
+
+<1> Len(mseq) = maxDepth(alpha) + 1
+    OBVIOUS
+<1> Len(mseq) \in Nat
+    OBVIOUS
+<1> maxDepth(alpha) <= Len(mseq)
+    OBVIOUS
+<1> \A i \in 1..maxDepth(alpha) : mseq[i] = seq[maxDepth(alpha) - i + 1].r
+    OBVIOUS
+<1> mseq[maxDepth(alpha) + 1] = M0
+    OBVIOUS
+<1> mseq \in [1..maxDepth(alpha) + 1 -> Message]
+    BY WhateverSpec
+<1> mseq \in Seq(Message)
+    BY SeqDef
+<1>0. Len(mseq) = maxDepth(alpha) + 1
+    OBVIOUS
+
+
+
+\* We need to show that mseq \in I (see Def of maxDepth)
+\* Since Length(mseq) = maxDepth(alpha) + 1, we get a contradiction with the definition of maxDepth.
+
+<1>1. \A i, j \in 1..Len(mseq) : i < j => mseq[i] \in Tran(mseq[j])
+  <2> HIDE DEF mseq
+  <2>1. \A i, j \in 1..maxDepth(alpha) : i < j => mseq[i] \in Tran(mseq[j])
+    <3> SUFFICES ASSUME NEW k \in 1..maxDepth(alpha),
+                        NEW l \in 1..maxDepth(alpha),
+                        k < l
+                 PROVE  seq[maxDepth(alpha) - k + 1].r \in Tran(seq[maxDepth(alpha) - l + 1].r)
+        OBVIOUS
+    <3> maxDepth(alpha) - k + 1 > maxDepth(alpha) - l + 1
+        OBVIOUS
+    <3> maxDepth(alpha) - k + 1 <= Len(seq)
+        OBVIOUS
+    <3> maxDepth(alpha) - l + 1 <= Len(seq)
+        OBVIOUS
+    <3> QED BY HeterogeneousSpecCondProperties
+  <2>2. \A i \in 1..maxDepth(alpha) : mseq[i] \in Tran(mseq[maxDepth(alpha) + 1])
+    <3> SUFFICES ASSUME NEW j \in 1..maxDepth(alpha)
+                 PROVE  seq[j].r \in Tran(M0)
+        OBVIOUS
+    <3> HIDE DEF oneb_1, oneb_2
+    <3> SUFFICES seq[j].r \in Tran(M)
+        BY Tran_trans
+    <3> QED BY HeterogeneousSpecCondProperties
+  <2> QED BY <2>1, <2>2
+
+\*        \* cond 5:
+\*        /\ x > 1 => gamma \in Con(alpha, seq[x - 1].r)
+\*        \* cond 6:
+\*        /\ x > 2 => gamma \notin Con(alpha, seq[x - 2].r)
+<1>2. \A i, j \in 1..Len(mseq) : i < j => Con(alpha, mseq[i]) # Con(alpha, mseq[j])
+  <2> HIDE DEF mseq
+  <2>1. \A i, j \in 1..maxDepth(alpha) : i < j => Con(alpha, mseq[i]) # Con(alpha, mseq[j])
+    <3> SUFFICES ASSUME NEW k \in 1..maxDepth(alpha),
+                        NEW l \in 1..maxDepth(alpha),
+                        k < l
+                 PROVE  Con(alpha, seq[maxDepth(alpha) - k + 1].r) # Con(alpha, seq[maxDepth(alpha) - l + 1].r)
+        OBVIOUS
+    <3> maxDepth(alpha) - k + 1 > maxDepth(alpha) - l + 1
+        OBVIOUS
+    <3> maxDepth(alpha) - l + 1 \in 1..Len(seq)
+        OBVIOUS
+    <3> maxDepth(alpha) - k + 1 \in 1..Len(seq)
+        OBVIOUS
+    <3> maxDepth(alpha) - k + 1 < Len(seq)
+        OBVIOUS
+    <3> QED BY HeterogeneousSpecCondProperties
+  <2>2. \A i \in 1..maxDepth(alpha) : Con(alpha, mseq[i]) # Con(alpha, mseq[maxDepth(alpha) + 1])
+    <3> SUFFICES ASSUME NEW j \in 1..maxDepth(alpha)
+                 PROVE  Con(alpha, seq[j].r) # Con(alpha, M0)
+        OBVIOUS
+    <3> seq[2].gamma \in Con(alpha, seq[j].r)
+      <4> seq[2].gamma \in Con(alpha, seq[1].r)
+          BY DEF HeterogeneousSpecCond
+      <4> QED BY HeterogeneousSpecCondProperties
+    <3> seq[2].gamma \notin Con(alpha, M0)
+      <4> seq[2].gamma \in Learner
+          BY WhateverSpec
+
+\*Ent == { LL \in Learner \X Learner :
+\*         [from |-> LL[1], to |-> LL[2], q |-> SafeAcceptor] \in TrustSafe }
+      <4> <<alpha, seq[2].gamma>> \notin Ent
+        <5> SUFFICES ASSUME <<alpha, seq[2].gamma>> \in Ent PROVE FALSE
+            OBVIOUS
+        \* Sketch: 1) assuming that alpha and seq[2].gamma are entangled, we construct w0 \in Whatever as
+        \* w0 == [m |-> m0, B_m |-> B_m0, r |-> r0, s |-> s0, gamma |-> gamma0]
+        \* such that it satisfies HeterogeneousSpecCond(alpha, bal, M, V_M, [1 |-> w0], 1)
+        \* Then we compare the sequence with seq1 = [1 |-> seq[1]]
+        \* For S, we have HeterogeneousSpecCondMin(alpha, bal, M, V_M, S, 1)
+
+
+
+        \* We then show that B_m0 < seq1[1].B_m, which is a contradiction.
+
+\*    ChosenIn(alpha, b, v) ==
+\*        \E S \in SUBSET Known2a(alpha, b, v) :
+\*            /\ \A x \in S : [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+\*            /\ [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
+        <5>1. PICK Q1 \in SUBSET Known2a(alpha, bal, val) :
+                /\ \A x \in Q1 :
+                    [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+                /\ [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
+              BY DEF ChosenIn
+        <5> Q1 \in SUBSET msgs
+            BY DEF Known2a, KnownMsgsSpec
+        <5> Q1 \in SUBSET Message
+            BY DEF TypeOK
+        <5> [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
+            BY <5>1
+        <5> \A x \in Q1 :
+                [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+            BY <5>1
+        <5> \A x \in Q1 : B(x, bal)
+            BY DEF Known2a
+\*\*        From WellFormedness we have
+\*\*                /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
+        <5> seq[2].m \in Tran(M)
+            BY HeterogeneousSpecCondProperties
+        <5> WellFormed(seq[2].m)
+            BY DEF KnownMsgsSpec
+        <5> seq[2].m \in Message
+            BY DEF WellFormed
+        <5> seq[2].m \in known_msgs[L0]
+            BY DEF KnownMsgsSpec
+        <5>2. seq[2].m.lrns = { l \in Learner : [lr |-> l, q |-> { mm.acc : mm \in qd(l, seq[2].m, 1) }] \in TrustLive }
+              BY DEF WellFormed
+        <5> DEFINE Q2 == qd(seq[2].gamma, seq[2].m, 1)
+        <5> [lr |-> seq[2].gamma, q |-> { mm.acc : mm \in Q2 }] \in TrustLive
+            BY <5>2 DEF HeterogeneousSpecCond
+
+\*HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x) ==
+\*    LET m == seq[x].m
+\*        B_m == seq[x].B_m
+\*        r == seq[x].r
+\*        s == seq[x].s
+\*        gamma == seq[x].gamma
+\*    IN
+\*        \* auxiliary:
+\*        /\ B(m, B_m)
+\*        \* cond 1:
+\*        /\ x = 1 => <<alpha, gamma>> \in Ent
+\*        \* cond 2:
+\*        /\ bal < B_m
+\*        \* cond 3:
+\*        /\ x > 1 => \A i \in 1..(x - 1) : B_m < seq[i].B_m
+\*        \* cond 4:
+\*        /\ \A i \in 1..(x - 1) : m \in Tran(seq[i].r)
+\*        \* cond 5:
+\*        /\ x > 1 => gamma \in Con(alpha, seq[x - 1].r)
+\*        \* cond 6:
+\*        /\ x > 2 => gamma \notin Con(alpha, seq[x - 2].r)
+\*        \* cond 7:
+\*        /\ gamma \in m.lrns
+\*        \* cond 8:
+\*        /\ r \in qd(gamma, m, 1)
+\*        \* cond 9:
+\*        /\ s \in Tran(r)
+\*        \* cond 10:
+\*        /\ x > 1 => s \in Tran(seq[x - 1].s)
+\*        \* cond 11:
+\*        /\ r.acc = s.acc
+\*        \* cond 12:
+\*        /\ x =< maxDepth(alpha) =>
+\*            [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, s, maxDepth(alpha) - x + 1) }] \in TrustLive
+\*        \* cond 13:
+\*        /\ B(s, bal)
+\*        \* cond 14:
+\*        /\ V(m, V_M)
+\*        \* cond 15:
+\*        /\ x = 1 => m \in Tran(M)
+
+        <5> Q2 \in SUBSET Tran(seq[2].m)
+            BY QuorumProperty1
+        <5> Q2 \in SUBSET Message
+            BY Tran_Message
+        <5> Q2 \in SUBSET known_msgs[L0]
+            BY DEF KnownMsgsSpec
+        <5> PICK p \in SafeAcceptor, s0 \in Q1, r0 \in Q2 :
+                /\ s0.acc = p
+                /\ r0.acc = p
+          <6> HIDE DEF Q2
+          <6> QED BY EntQuorumIntersection
+        <5> DEFINE w0 == [m |-> seq[2].m, B_m |-> seq[2].B_m, r |-> r0, s |-> s0, gamma |-> seq[2].gamma]
+        <5> seq[2].B_m \in Ballot
+            BY WhateverSpec
+        <5> w0 \in Whatever
+            BY DEF Whatever
+        <5> DEFINE seq0 == [ seq EXCEPT ![1] = w0 ]
+        <5> seq0 \in Seq(Whatever)
+            BY SeqDef
+        <5>3. HeterogeneousSpecCond(alpha, bal, M, V_M, seq0, 1)
+          <6> seq0[1] = w0
+              OBVIOUS
+          <6> HIDE DEF seq0
+          <6>0. B(w0.m, w0.B_m)
+                BY DEF HeterogeneousSpecCond
+          <6>2. bal < w0.B_m
+                BY DEF HeterogeneousSpecCond
+          <6>7. w0.gamma \in w0.m.lrns
+                BY DEF HeterogeneousSpecCond
+          <6>8. w0.r \in qd(w0.gamma, w0.m, 1)
+                OBVIOUS
+          <6>9. w0.s \in Tran(w0.r)
+          <6>11. w0.r.acc = w0.s.acc
+                 OBVIOUS
+          <6> maxDepth(alpha) - 1 + 1 = maxDepth(alpha)
+              OBVIOUS
+          <6>12. [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, w0.s, maxDepth(alpha)) }] \in TrustLive
+          <6>13. B(w0.s, bal)
+                 OBVIOUS
+          <6>14. V(w0.m, V_M)
+                 BY DEF HeterogeneousSpecCond
+          <6>15. w0.m \in Tran(M)
+                 BY HeterogeneousSpecCondProperties
+          <6> QED BY <6>0, <6>2, <6>7, <6>8, <6>9, <6>11, <6>12, <6>13, <6>14, <6>15
+                  DEF HeterogeneousSpecCond, MaxDepthSpec
+        <5>4. seq0[1].B_m < seq[1].B_m
+            BY DEF HeterogeneousSpecCond
+        <5>5. HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, 1)
+              OBVIOUS
+        <5>6. seq[1].B_m =< seq0[1].B_m
+              BY <5>3, <5>5 DEF HeterogeneousSpecCondMin
+        \* contradiction with minimality of seq[1]
+        <5> QED BY <5>4, <5>6, WhateverSpec DEF Ballot
+
+      \* we prove that gamma in not entangled with alpha
+      \* everything else is caught
+      <4> FakeAcceptor \in SUBSET Caught(M0)
+        <5> SUFFICES ASSUME NEW fake \in FakeAcceptor
+                     PROVE  fake \in Caught(M0)
+            OBVIOUS
+        <5> DEFINE proof1 == [ type |-> "1b", acc |-> fake, prev |-> NoMessage, refs |-> {p1}, lrns |-> {} ]
+        <5> DEFINE proof2 == [ type |-> "1b", acc |-> fake, prev |-> NoMessage, refs |-> {p2}, lrns |-> {} ]
+        <5> proof1 # proof2
+            OBVIOUS
+        <5> ~Proposal(proof1)
+            BY DEF Proposal
+        <5> ~Proposal(proof2)
+            BY DEF Proposal
+        <5> PrevTran(proof1) = { proof1 }
+            BY PrevTran_eq
+        <5> PrevTran(proof2) = { proof2 }
+            BY PrevTran_eq
+        <5> proof1 \in Tran(M0)
+            BY Message_ref_Tran
+        <5> proof2 \in Tran(M0)
+            BY Message_ref_Tran
+        <5> QED BY DEF Caught, CaughtMsg
+      <4> QED BY WhateverSpec, ConAllCaught
+    <3> QED OBVIOUS
+  <2> QED BY <2>1, <2>2
+
+<1>3. Len(mseq) <= maxDepth(alpha)
+    BY Zenon, <1>1, <1>2, maxDepth_XXX
+<1> QED BY <1>0, <1>3
+
+
+
+-----------------------------------------------------------------------------
+
+
+
+
+
 
 THEOREM GeneralBallotInduction ==
     ASSUME NEW P(_),
