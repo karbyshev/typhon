@@ -3073,6 +3073,8 @@ LEMMA ZZZ ==
 PROOF
 <1> M \in Message
 <1> WellFormed(M)
+<1> ~OneA(M)
+    BY MessageTypeSpec
 <1> maxDepth(alpha) \in Nat
     BY DEF MaxDepthSpec
 <1> maxDepth(alpha) + 1 > maxDepth(alpha)
@@ -3210,7 +3212,11 @@ PROOF
 <1> M \in Tran(M0)
     BY Message_ref_Tran
 <1> DEFINE SingletonM == {M}
+<1> M0.acc = M.acc
+    OBVIOUS
 <1> M0.refs = SingletonM \cup oneb_1 \cup oneb_2
+    OBVIOUS
+<1> M0.prev = M
     OBVIOUS
 
 <1>M0_tran. Tran(M0) \subseteq { M0, p1, p2 } \cup Tran(M) \cup oneb_1 \cup oneb_2
@@ -3222,6 +3228,10 @@ PROOF
     <3> QED BY Tran_eq
   <2> HIDE DEF M0
   <2> QED OBVIOUS
+
+<1>M0_prevtran. PrevTran(M0) = {M0} \cup PrevTran(M)
+  <2> HIDE DEF M0
+  <2> QED BY PrevTran_eq, NoMessageIsNotAMessage
 
 <1>caught_fake. FakeAcceptor \in SUBSET Caught(M0)
   <2> SUFFICES ASSUME NEW fake \in FakeAcceptor
@@ -3245,21 +3255,8 @@ PROOF
       BY Message_ref_Tran
   <2> QED BY DEF Caught, CaughtMsg
 
-\*    CaughtMsg(x) ==
-\*        { m \in Tran(x) :
-\*            /\ ~Proposal(m)
-\*            /\ \E m1 \in Tran(x) :
-\*                /\ ~Proposal(m1)
-\*                /\ m.acc = m1.acc
-\*                /\ m # m1
-\*                /\ m \notin PrevTran(m1)
-\*                /\ m1 \notin PrevTran(m)
-\*         }
-\*
-\*    Caught(x) == { m.acc : m \in CaughtMsg(x) }
-
 <1>caught_safe. Caught(M0) \cap SafeAcceptor = {}
-  <2> SUFFICES ASSUME NEW s \in SafeAcceptor, s \in Caught(M0) 
+  <2> SUFFICES ASSUME NEW s \in SafeAcceptor, s \in Caught(M0)
                PROVE  s \in Caught(M)
       BY DEF CaughtSpec
   <2> PICK x1 \in Tran(M0), x2 \in Tran(M0) :
@@ -3276,9 +3273,57 @@ PROOF
   <2> SUFFICES x1 # M0 /\ x2 # M0
     <3> HIDE DEF oneb_1, oneb_2, M0
     <3> QED BY <1>M0_tran, AcceptorAssumption DEF Proposal, OneA
-  <2> CASE x1 = M0
-  <2> QED
-
+  <2> ASSUME x1 = M0 PROVE FALSE
+    <3> HIDE DEF oneb_1, oneb_2, M0
+    <3> M.acc = s
+        OBVIOUS
+    <3> M \in SentBy(s)
+        BY DEF KnownMsgsSpec, SentBy, Proposal, OneA
+    <3> x2 \in Tran(M)
+        BY <1>M0_tran, AcceptorAssumption DEF Proposal, OneA
+    <3> x2 \in SentBy(s)
+        BY DEF KnownMsgsSpec, SentBy, Proposal, OneA
+    <3> x2 \in known_msgs[L0]
+        BY DEF KnownMsgsSpec
+    <3> x2 \in PrevTran(M)
+      <4> x2 \in PrevTran(M) \/ M \in PrevTran(x2)
+          BY DEF MsgsSafeAcceptorPrevTranLinearSpec
+      <4> ASSUME M \in PrevTran(x2) PROVE FALSE
+        <5> M \in Tran(x2)
+            BY DEF KnownMsgsPrevTranSpec
+        <5> M = x2
+            BY Tran_acyclic
+        <5> x2 \in PrevTran(x1)
+            BY <1>M0_prevtran, PrevTran_refl
+        <5> QED OBVIOUS
+      <4> QED OBVIOUS
+    <3> QED BY <1>M0_prevtran
+  <2> ASSUME x2 = M0 PROVE FALSE
+    <3> HIDE DEF oneb_1, oneb_2, M0
+    <3> M.acc = s
+        OBVIOUS
+    <3> M \in SentBy(s)
+        BY DEF KnownMsgsSpec, SentBy, Proposal, OneA
+    <3> x1 \in Tran(M)
+        BY <1>M0_tran, AcceptorAssumption DEF Proposal, OneA
+    <3> x1 \in SentBy(s)
+        BY DEF KnownMsgsSpec, SentBy, Proposal, OneA
+    <3> x1 \in known_msgs[L0]
+        BY DEF KnownMsgsSpec
+    <3> x1 \in PrevTran(M)
+      <4> x1 \in PrevTran(M) \/ M \in PrevTran(x1)
+          BY DEF MsgsSafeAcceptorPrevTranLinearSpec
+      <4> ASSUME M \in PrevTran(x1) PROVE FALSE
+        <5> M \in Tran(x1)
+            BY DEF KnownMsgsPrevTranSpec
+        <5> M = x1
+            BY Tran_acyclic
+        <5> x1 \in PrevTran(x2)
+            BY <1>M0_prevtran, PrevTran_refl
+        <5> QED OBVIOUS
+      <4> QED OBVIOUS
+    <3> QED BY <1>M0_prevtran
+  <2> QED OBVIOUS
 
 <1> DEFINE mseq == [x \in 1..maxDepth(alpha) + 1 |-> IF x = maxDepth(alpha) + 1 THEN M0 ELSE seq[maxDepth(alpha) - x + 1].r]
 
@@ -3298,8 +3343,6 @@ PROOF
     BY SeqDef
 <1>0. Len(mseq) = maxDepth(alpha) + 1
     OBVIOUS
-
-
 
 \* We need to show that mseq \in I (see Def of maxDepth)
 \* Since Length(mseq) = maxDepth(alpha) + 1, we get a contradiction with the definition of maxDepth.
