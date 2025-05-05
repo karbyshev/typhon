@@ -3037,21 +3037,6 @@ LEMMA Union_cup ==
 PROOF BY Zenon
 
 LEMMA ZZZ ==
-\*    ASSUME BVal \in [Ballot -> Value],
-\*           NEW alpha \in Learner, NEW beta \in Learner, 
-\*           NEW bal \in Ballot,
-\*           <<alpha, beta>> \in Ent,
-\*           NEW M \in known_msgs[L0],
-\*           NEW B_M \in Ballot,
-\*           NEW V_M \in Value,
-\*           bal < B_M,
-\*           val # V_M,
-\*           B(M, B_M),
-\*           V(M, V_M),
-\*           beta \in M.lrns,
-\*           \* TODO
-\*           CaughtSpec,
-
     ASSUME BVal \in [Ballot -> Value],
            NEW alpha \in Learner, NEW L0 \in Learner,
            NEW bal \in Ballot,
@@ -3072,7 +3057,9 @@ LEMMA ZZZ ==
     PROVE  FALSE
 PROOF
 <1> M \in Message
+    BY DEF KnownMsgsSpec, TypeOK
 <1> WellFormed(M)
+    BY DEF KnownMsgsSpec
 <1> ~OneA(M)
     BY MessageTypeSpec
 <1> maxDepth(alpha) \in Nat
@@ -3088,19 +3075,10 @@ PROOF
 <1> Len(seq) = maxDepth(alpha) + 1
     OBVIOUS
 <1> \A x \in 1..maxDepth(alpha) + 1 :
-            HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x)
+        HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x)
     BY DEF HeterogeneousSpecCondMin
 <1> HeterogeneousSpecCond(alpha, bal, M, V_M, seq, maxDepth(alpha) + 1)
     OBVIOUS
-\*Whatever == [m : Message, B_m : Ballot, r : Message, s : Message, gamma : Learner]
-
-\*LEMMA WhateverSpec ==
-\*    ASSUME NEW w \in Whatever
-\*    PROVE  /\ w.m \in Message
-\*           /\ w.B_m \in Ballot
-\*           /\ w.r \in Message
-\*           /\ w.s \in Message
-\*           /\ w.gamma \in Learner
 
 \*    maxDepth(alpha) ==
 \*        LET I == { n \in 1..N_L :
@@ -3141,6 +3119,7 @@ PROOF
     BY SafeAcceptorNonTrivial
 
 <1> PICK bal1 \in Ballot, bal2 \in Ballot : bal1 # bal2
+    BY DEF Ballot
 <1> DEFINE v1 == BVal[bal1]
 <1> v1 \in Value
     OBVIOUS
@@ -3149,15 +3128,19 @@ PROOF
     OBVIOUS
 
 <1> DEFINE p1 == [ type |-> "1a", bal |-> bal1, prev |-> NoMessage, refs |-> {} ]
-<1> p1 \in Message /\ OneA(p1)
+<1> p1 \in Message /\ OneA(p1) /\ p1.bal = bal1
     BY OneA_Message
 <1> B(p1, bal1)
     BY B_1a
+<1> Tran(p1) = {p1}
+    BY Tran_1a
 <1> DEFINE p2 == [ type |-> "1a", bal |-> bal2, prev |-> NoMessage, refs |-> {} ]
-<1> p2 \in Message /\ OneA(p2)
+<1> p2 \in Message /\ OneA(p2) /\ p2.bal = bal2
     BY OneA_Message
 <1> B(p2, bal2)
     BY B_1a
+<1> Tran(p2) = {p2}
+    BY Tran_1a
 
 <1> p1 # p2
     OBVIOUS
@@ -3168,16 +3151,24 @@ PROOF
 <1> oneb_1 \in SUBSET { mm \in Message : OneB(mm) }
     BY Isa, OneB_Message DEF Acceptor
 <1> \A m1 \in oneb_1 : B(m1, bal1)
+  <2> SUFFICES ASSUME NEW f \in FakeAcceptor
+               PROVE  B([ type |-> "1b", acc |-> f, prev |-> NoMessage, refs |-> {p1}, lrns |-> {} ], bal1)
+      OBVIOUS
+  <2> DEFINE oneb_fake == [ type |-> "1b", acc |-> f, prev |-> NoMessage, refs |-> {p1}, lrns |-> {} ]
+  <2> oneb_fake \in oneb_1
+      OBVIOUS
+  <2> ~OneA(oneb_fake)
+      BY MessageTypeSpec
+  <2> Tran(oneb_fake) = {oneb_fake, p1}
+      BY Tran_eq
+  <2> Get1a(oneb_fake) = {p1}
+    <3> HIDE DEF oneb_fake
+    <3> QED BY DEF Get1a, Ballot
+  <2> QED BY DEF B
 <1> \A m1 \in oneb_1 : Tran(m1) = {m1, p1}
     BY Tran_eq, Tran_1a
 <1> \A m1 \in oneb_1 : m1.acc \in FakeAcceptor
     OBVIOUS
-\*LEMMA Tran_eq ==
-\*    ASSUME NEW m \in Message
-\*    PROVE  Tran(m) = {m} \cup UNION { Tran(r) : r \in m.refs }
-\*<1> \A m1 \in oneb_1 : Tran(m1) \cap { mm \in Message : ~OneA(mm) } = {m1}
-
-
 
 \*<1> ASSUME NEW F(_),
 \*           NEW X,
@@ -3197,6 +3188,20 @@ PROOF
 <1> oneb_2 \in SUBSET { mm \in Message : OneB(mm) }
     BY Isa, OneB_Message DEF Acceptor
 <1> \A m2 \in oneb_2 : B(m2, bal2)
+  <2> SUFFICES ASSUME NEW f \in FakeAcceptor
+               PROVE  B([ type |-> "1b", acc |-> f, prev |-> NoMessage, refs |-> {p2}, lrns |-> {} ], bal2)
+      OBVIOUS
+  <2> DEFINE oneb_fake == [ type |-> "1b", acc |-> f, prev |-> NoMessage, refs |-> {p2}, lrns |-> {} ]
+  <2> oneb_fake \in oneb_2
+      OBVIOUS
+  <2> ~OneA(oneb_fake)
+      BY MessageTypeSpec
+  <2> Tran(oneb_fake) = {oneb_fake, p2}
+      BY Tran_eq
+  <2> Get1a(oneb_fake) = {p2}
+    <3> HIDE DEF oneb_fake
+    <3> QED BY DEF Get1a, Ballot
+  <2> QED BY DEF B
 <1> \A m2 \in oneb_2 : Tran(m2) = {m2, p2}
     BY Tran_eq, Tran_1a
 <1> \A m2 \in oneb_2 : m2.acc \in FakeAcceptor
@@ -3245,14 +3250,20 @@ PROOF
       BY DEF Proposal
   <2> ~Proposal(proof2)
       BY DEF Proposal
+  <2> proof1 \in oneb_1
+      OBVIOUS
+  <2> proof2 \in oneb_2
+      OBVIOUS
   <2> PrevTran(proof1) = { proof1 }
       BY PrevTran_eq
   <2> PrevTran(proof2) = { proof2 }
       BY PrevTran_eq
   <2> proof1 \in Tran(M0)
-      BY Message_ref_Tran
+    <3> HIDE DEF oneb_1, oneb_2, proof2
+    <3> QED BY Message_ref_Tran
   <2> proof2 \in Tran(M0)
-      BY Message_ref_Tran
+    <3> HIDE DEF oneb_1, oneb_2, proof1
+    <3> QED BY Message_ref_Tran
   <2> QED BY DEF Caught, CaughtMsg
 
 <1>caught_safe. Caught(M0) \cap SafeAcceptor = {}
@@ -3355,11 +3366,23 @@ PROOF
                         k < l
                  PROVE  seq[maxDepth(alpha) - k + 1].r \in Tran(seq[maxDepth(alpha) - l + 1].r)
         OBVIOUS
-    <3> maxDepth(alpha) - k + 1 > maxDepth(alpha) - l + 1
+    <3> DEFINE l0 == maxDepth(alpha) - l + 1
+    <3> DEFINE k0 == maxDepth(alpha) - k + 1
+    <3> l0 < k0 
         OBVIOUS
-    <3> maxDepth(alpha) - k + 1 <= Len(seq)
+    <3> k0 <= Len(seq)
         OBVIOUS
-    <3> maxDepth(alpha) - l + 1 <= Len(seq)
+    <3> l0 <= Len(seq)
+        OBVIOUS
+    <3> k0 \in 1..Len(seq)
+        OBVIOUS
+    <3> l0 \in 1..Len(seq)
+        OBVIOUS
+    <3> SUFFICES seq[k0].r \in Tran(seq[l0].r)
+        OBVIOUS
+    <3> HIDE DEF k0, l0
+    <3> \A i \in 1..Len(seq) :
+            HeterogeneousSpecCond(alpha, bal, M, V_M, seq, i)
         OBVIOUS
     <3> QED BY HeterogeneousSpecCondProperties
   <2>2. \A i \in 1..maxDepth(alpha) : mseq[i] \in Tran(mseq[maxDepth(alpha) + 1])
@@ -3384,13 +3407,15 @@ PROOF
                         k < l
                  PROVE  Con(alpha, seq[maxDepth(alpha) - k + 1].r) # Con(alpha, seq[maxDepth(alpha) - l + 1].r)
         OBVIOUS
-    <3> maxDepth(alpha) - k + 1 > maxDepth(alpha) - l + 1
+    <3> DEFINE l0 == maxDepth(alpha) - l + 1
+    <3> DEFINE k0 == maxDepth(alpha) - k + 1
+    <3> l0 < k0
         OBVIOUS
-    <3> maxDepth(alpha) - l + 1 \in 1..Len(seq)
+    <3> l0 \in 1..Len(seq)
         OBVIOUS
-    <3> maxDepth(alpha) - k + 1 \in 1..Len(seq)
+    <3> k0 \in 1..Len(seq)
         OBVIOUS
-    <3> maxDepth(alpha) - k + 1 < Len(seq)
+    <3> k0 < Len(seq)
         OBVIOUS
     <3> QED BY HeterogeneousSpecCondProperties
 
@@ -3426,6 +3451,11 @@ PROOF
       <4> CASE 1 < j
         <5> j < maxDepth(alpha) + 1
             OBVIOUS
+        <5> 1 \in 1..Len(seq)
+            OBVIOUS
+        <5> j \in 1..Len(seq)
+            OBVIOUS
+        <5> HIDE DEF M0, oneb_1, oneb_2
         <5> Con(alpha, seq[1].r) \in SUBSET Con(alpha, seq[j].r)
             BY HeterogeneousSpecCondProperties
         <5> QED OBVIOUS
@@ -3613,7 +3643,6 @@ PROOF
 <1>3. Len(mseq) <= maxDepth(alpha)
     BY Zenon, <1>1, <1>2, maxDepth_XXX
 <1> QED BY <1>0, <1>3
-
 
 
 -----------------------------------------------------------------------------
