@@ -3808,7 +3808,7 @@ LEMMA ChosenSafeCaseEq ==
            TypeOK,
            <<L1, L2>> \in Ent,
            ChosenIn(L1, BB, V1), ChosenIn(L2, BB, V2)
-    PROVE V1 = V2
+    PROVE  V1 = V2
 PROOF
 <1> PICK S1 \in SUBSET Known2a(L1, BB, V1) :
         [lr |-> L1, q |-> { m.acc : m \in S1 }] \in TrustLive
@@ -3835,24 +3835,24 @@ PROOF
 <1>6. QED BY <1>4, <1>5, V_def, V_func DEF TypeOK
 
 LEMMA ChosenSafeCaseLt ==
-    ASSUME NEW L1 \in Learner, NEW L2 \in Learner,
+    ASSUME BVal \in [Ballot -> Value],
+           NEW L1 \in Learner, NEW L2 \in Learner,
            NEW B1 \in Ballot, NEW B2 \in Ballot,
            NEW V1 \in Value, NEW V2 \in Value,
-           TypeOK, KnownMsgsSpec, CaughtSpec,
+           MaxDepthSpec,
+           KnownMsgsSpec,
+           CaughtSpec,
            MsgsSafeAcceptorPrevTranLinearSpec,
-           MsgsSafeAcceptorPrevTranSpec,
+           KnownMsgsPrevTranSpec,
+           TypeOK,
            <<L1, L2>> \in Ent,
            B1 < B2,
            ChosenIn(L1, B1, V1),
            ChosenIn(L2, B2, V2)
-    PROVE V1 = V2
+    PROVE  V1 = V2
 PROOF
-<1> PICK S1 \in SUBSET Known2a(L1, B1, V1) :
-        [lr |-> L1, q |-> { m.acc : m \in S1 }] \in TrustLive
-    BY DEF ChosenIn
-<1> DEFINE Q1 == { m.acc : m \in S1 }
-<1> Q1 \in ByzQuorum
-    BY TrustLiveAssumption
+<1> SUFFICES ASSUME V1 # V2 PROVE FALSE
+    OBVIOUS
 <1> PICK S2 \in SUBSET Known2a(L2, B2, V2) :
         [lr |-> L2, q |-> { m.acc : m \in S2 }] \in TrustLive
     BY DEF ChosenIn
@@ -3861,26 +3861,36 @@ PROOF
     BY TrustLiveAssumption
 <1> <<L2, L2>> \in Ent
     BY EntanglementSelf, EntanglementSym
-<1> PICK A \in Q2 : TRUE
+<1>non_empty PICK A \in Q2 : TRUE
     BY EntaglementTrustLiveNonEmpty
 <1> PICK M \in known_msgs[L2] :
-        /\ TwoA(M)
         /\ L2 \in M.lrns
+        /\ TwoA(M)
         /\ B(M, B2)
         /\ V(M, V2)
-    BY DEF Known2a
-<1> QED BY HeterogeneousLemma DEF HeterogeneousSpec
+    BY <1>non_empty DEF Known2a
+<1> maxDepth(L1) \in 0 .. maxDepth(L1)
+    BY DEF MaxDepthSpec
+<1> PICK seq \in [1 .. maxDepth(L1) + 1 -> Whatever] :
+            \A x \in 1 .. maxDepth(L1) + 1 :
+                HeterogeneousSpecCondMin(L1, B1, M, V2, seq, x)
+    BY YYY
+<1> QED BY ZZZ
 
 LEMMA ChosenSafe ==
-    ASSUME NEW L1 \in Learner, NEW L2 \in Learner,
+    ASSUME BVal \in [Ballot -> Value],
+           NEW L1 \in Learner, NEW L2 \in Learner,
            NEW B1 \in Ballot, NEW B2 \in Ballot,
            NEW V1 \in Value, NEW V2 \in Value,
-           TypeOK, KnownMsgsSpec, CaughtSpec,
+           TypeOK,
+           MaxDepthSpec,
+           KnownMsgsSpec,
+           CaughtSpec,
            MsgsSafeAcceptorPrevTranLinearSpec,
-           MsgsSafeAcceptorPrevTranSpec,
+           KnownMsgsPrevTranSpec,
            <<L1, L2>> \in Ent,
            ChosenIn(L1, B1, V1), ChosenIn(L2, B2, V2)
-    PROVE V1 = V2
+    PROVE  V1 = V2
 PROOF
 <1>0. CASE B1 < B2 BY <1>0, ChosenSafeCaseLt
 <1>1. CASE B2 < B1 BY <1>1, ChosenSafeCaseLt, EntanglementSym
@@ -3888,17 +3898,20 @@ PROOF
 <1>3. QED BY <1>0, <1>1, <1>2 DEF Ballot
 
 LEMMA SafetyStep ==
+    BVal \in [Ballot -> Value] /\
     TypeOK /\ NextTLA /\
+    MaxDepthSpec /\
     KnownMsgsSpec /\ CaughtSpec /\
     MsgsSafeAcceptorPrevTranLinearSpec /\
-    MsgsSafeAcceptorPrevTranSpec /\
+    KnownMsgsPrevTranSpec /\
     DecisionSpec /\
     Safety => Safety'
 PROOF
 <1> SUFFICES
-        ASSUME TypeOK, NextTLA,
+        ASSUME BVal \in [Ballot -> Value],
+               TypeOK, NextTLA, MaxDepthSpec,
                KnownMsgsSpec, CaughtSpec,
-               MsgsSafeAcceptorPrevTranSpec,
+               KnownMsgsPrevTranSpec,
                MsgsSafeAcceptorPrevTranLinearSpec,
                DecisionSpec,
                Safety,
@@ -3923,23 +3936,34 @@ PROOF
         /\ UNCHANGED << msgs, known_msgs, recent_msgs, BVal >>
       BY <1>7 DEF LearnerDecide
   <2> CASE V1 # V2
-    <3>1. CASE val # V1 /\ val # V2 BY <3>1 DEF Safety, TypeOK
+    <3>1. CASE val # V1 /\ val # V2
+          BY <3>1 DEF Safety, TypeOK
     <3>2. CASE val = V1
-      <4> V2 \in decision[L2, B2] BY <3>2 DEF TypeOK
-      <4> ChosenIn(L2, B2, V2) BY DEF DecisionSpec
-      <4>2. CASE V1 \in decision[L1, B1] BY <4>2 DEF Safety
+      <4> V2 \in decision[L2, B2]
+          BY <3>2 DEF TypeOK
+      <4> ChosenIn(L2, B2, V2)
+          BY DEF DecisionSpec
+      <4>2. CASE V1 \in decision[L1, B1]
+            BY <4>2 DEF Safety
       <4>3. CASE V1 \notin decision[L1, B1]
-        <5> lrn = L1 /\ bal = B1 BY <4>3, <3>2 DEF TypeOK
-        <5> ChosenIn(L1, B1, V1) BY <3>2
-        <5> QED BY ChosenSafe, AllProvers
+        <5> lrn = L1 /\ bal = B1
+            BY <4>3, <3>2 DEF TypeOK
+        <5> ChosenIn(L1, B1, V1)
+            BY <3>2
+        <5> QED BY ChosenSafe
       <4> QED BY <4>2, <4>3
     <3>3. CASE val = V2
-      <4> V1 \in decision[L1, B1] BY <3>3 DEF TypeOK
-      <4> ChosenIn(L1, B1, V1) BY DEF DecisionSpec
-      <4>2. CASE V2 \in decision[L2, B2] BY <4>2 DEF Safety
+      <4> V1 \in decision[L1, B1]
+          BY <3>3 DEF TypeOK
+      <4> ChosenIn(L1, B1, V1)
+          BY DEF DecisionSpec
+      <4>2. CASE V2 \in decision[L2, B2]
+            BY <4>2 DEF Safety
       <4>3. CASE V2 \notin decision[L2, B2]
-        <5> lrn = L2 /\ bal = B2 BY <4>3, <3>2 DEF TypeOK
-        <5> ChosenIn(L2, B2, V2) BY <3>3
+        <5> lrn = L2 /\ bal = B2
+            BY <4>3, <3>2 DEF TypeOK
+        <5> ChosenIn(L2, B2, V2)
+            BY <3>3
         <5> QED BY ChosenSafe
       <4> QED BY <4>2, <4>3
     <3> QED BY <3>1, <3>2, <3>3
@@ -3949,6 +3973,7 @@ PROOF
 <1>9. QED BY <1>1, <1>3, <1>6, <1>7, <1>8
           DEF NextTLA, SafeAcceptorAction, LearnerAction
 
+\* TODO check if all used
 FullSafetyInvariant ==
     /\ TypeOK
     /\ KnownMsgsSpec
@@ -3957,7 +3982,7 @@ FullSafetyInvariant ==
     /\ MsgsSafeAcceptorPrevTranLinearSpec
     /\ MsgsSafeAcceptorSpec3
     /\ MsgsSafeAcceptorPrevRefSpec
-    /\ MsgsSafeAcceptorPrevTranSpec
+    /\ KnownMsgsPrevTranSpec
     /\ DecisionSpec
     /\ Safety
 
@@ -3973,7 +3998,7 @@ PROOF BY DEF Init, SafeAcceptorPrevSpec1, Acceptor, SentBy
 LEMMA SafeAcceptorPrevSpec2Init == Init => SafeAcceptorPrevSpec2
 PROOF BY DEF Init, SafeAcceptorPrevSpec2, Acceptor
 
-LEMMA MsgsSafeAcceptorSpec1Init == Init => MsgsSafeAcceptorPrevTranLinearSpec
+LEMMA MsgsSafeAcceptorPrevTranLinearSpecInit == Init => MsgsSafeAcceptorPrevTranLinearSpec
 PROOF BY DEF Init, MsgsSafeAcceptorPrevTranLinearSpec, SentBy
 
 LEMMA MsgsSafeAcceptorSpec3Init == Init => MsgsSafeAcceptorSpec3
@@ -3982,8 +4007,8 @@ PROOF BY DEF Init, MsgsSafeAcceptorSpec3, SentBy
 LEMMA MsgsSafeAcceptorPrevRefSpecInit == Init => MsgsSafeAcceptorPrevRefSpec
 PROOF BY DEF Init, MsgsSafeAcceptorPrevRefSpec, SentBy
 
-LEMMA MsgsSafeAcceptorPrevTranSpecInit == Init => MsgsSafeAcceptorPrevTranSpec
-PROOF BY DEF Init, MsgsSafeAcceptorPrevTranSpec, SentBy
+LEMMA KnownMsgsPrevTranSpecInit == Init => KnownMsgsPrevTranSpec
+PROOF BY DEF Init, KnownMsgsPrevTranSpec, SentBy, Acceptor
 
 LEMMA DecisionSpecInit == Init => DecisionSpec
 PROOF BY DEF Init, DecisionSpec
@@ -3996,10 +4021,10 @@ PROOF BY TypeOKInit,
          KnownMsgsSpecInit,
          SafeAcceptorPrevSpec1Init,
          SafeAcceptorPrevSpec2Init,
-         MsgsSafeAcceptorSpec1Init,
+         MsgsSafeAcceptorPrevTranLinearSpecInit,
          MsgsSafeAcceptorSpec3Init,
          MsgsSafeAcceptorPrevRefSpecInit,
-         MsgsSafeAcceptorPrevTranSpecInit,
+         KnownMsgsPrevTranSpecInit,
          DecisionSpecInit,
          SafetyInit
       DEF FullSafetyInvariant
@@ -4011,8 +4036,8 @@ PROOF BY DEF TypeOK, vars
 LEMMA KnownMsgsSpecStutter ==
     KnownMsgsSpec /\ vars = vars' => KnownMsgsSpec'
 PROOF BY Isa DEF KnownMsgsSpec, vars, WellFormed, WellFormed1b,
-                 SameBallot, q, Fresh, Con, ConByQuorum, Con2as, Buried,
-                 V, B, Get1a, SameBallot, ChainRef, KnownRefs,
+                 qd, Fresh000, D, Con, ConByQuorum, Con2as, Buried,
+                 V, B, Get1a, SameBallot, SameValue, ChainRef, KnownRefs,
                  Caught, CaughtMsg
 
 LEMMA SafeAcceptorPrevSpec1Stutter ==
@@ -4023,7 +4048,7 @@ LEMMA SafeAcceptorPrevSpec2Stutter ==
     SafeAcceptorPrevSpec2 /\ vars = vars' => SafeAcceptorPrevSpec2'
 PROOF BY DEF SafeAcceptorPrevSpec2, vars, SentBy
 
-LEMMA MsgsSafeAcceptorSpec1Stutter ==
+LEMMA MsgsSafeAcceptorPrevTranLinearSpecStutter ==
     MsgsSafeAcceptorPrevTranLinearSpec /\ vars = vars' => MsgsSafeAcceptorPrevTranLinearSpec'
 PROOF BY DEF MsgsSafeAcceptorPrevTranLinearSpec, vars, SentBy
 
@@ -4035,33 +4060,49 @@ LEMMA MsgsSafeAcceptorPrevRefSpecStutter ==
     MsgsSafeAcceptorPrevRefSpec /\ vars = vars' => MsgsSafeAcceptorPrevRefSpec'
 PROOF BY DEF MsgsSafeAcceptorPrevRefSpec, vars, SentBy
 
-LEMMA MsgsSafeAcceptorPrevTranSpecStutter ==
-    MsgsSafeAcceptorPrevTranSpec /\ vars = vars' => MsgsSafeAcceptorPrevTranSpec'
-PROOF BY DEF MsgsSafeAcceptorPrevTranSpec, vars, SentBy
+LEMMA KnownMsgsPrevTranSpecStutter ==
+    KnownMsgsPrevTranSpec /\ vars = vars' => KnownMsgsPrevTranSpec'
+PROOF BY DEF KnownMsgsPrevTranSpec, vars, SentBy
 
 LEMMA DecisionSpecStutter ==
     DecisionSpec /\ vars = vars' => DecisionSpec'
-PROOF BY Isa DEF DecisionSpec, vars, ChosenIn, Known2a, B, V, Get1a
+PROOF BY Isa DEF DecisionSpec, vars, ChosenIn, Known2a, B, V, Get1a, qd, Fresh000, D, SameBallot, SameValue
 
 LEMMA SafetyStutter ==
     Safety /\ vars = vars' => Safety'
 PROOF BY DEF Safety, vars
 
+\*FullSafetyInvariant ==
+\*    /\ TypeOK
+\*    /\ KnownMsgsSpec
+\*    /\ SafeAcceptorPrevSpec1
+\*    /\ SafeAcceptorPrevSpec2
+\*    /\ MsgsSafeAcceptorPrevTranLinearSpec
+\*    /\ MsgsSafeAcceptorSpec3
+\*    /\ MsgsSafeAcceptorPrevRefSpec
+\*    /\ KnownMsgsPrevTranSpec
+\*    /\ DecisionSpec
+\*    /\ Safety
+
 LEMMA FullSafetyInvariantNext ==
-    FullSafetyInvariant /\ [NextTLA]_vars => FullSafetyInvariant'
+    BVal \in [Ballot -> Value] /\ FullSafetyInvariant /\ [NextTLA]_vars => FullSafetyInvariant'
 PROOF
-<1> SUFFICES ASSUME FullSafetyInvariant, [NextTLA]_vars PROVE FullSafetyInvariant' OBVIOUS
+<1> SUFFICES ASSUME BVal \in [Ballot -> Value],
+                    FullSafetyInvariant,
+                    [NextTLA]_vars
+             PROVE  FullSafetyInvariant'
+    OBVIOUS
 <1>1. CASE NextTLA
       BY <1>1,
          TypeOKInvariant,
          KnownMsgsSpecInvariant,
-         MsgsSafeAcceptorSpecImpliesCaughtSpec,
          SafeAcceptorPrevSpec1Invariant,
          SafeAcceptorPrevSpec2Invariant,
+         MsgsSafeAcceptorSpecImpliesCaughtSpec,
          MsgsSafeAcceptorPrevTranLinearSpecInvariant,
          MsgsSafeAcceptorSpec3Invariant,
          MsgsSafeAcceptorPrevRefSpecInvariant,
-         MsgsSafeAcceptorPrevTranSpecInvariant,
+         KnownMsgsPrevTranSpecInvariant,
          DecisionSpecInvariant,
          SafetyStep
       DEF FullSafetyInvariant
@@ -4071,10 +4112,10 @@ PROOF
          KnownMsgsSpecStutter,
          SafeAcceptorPrevSpec1Stutter,
          SafeAcceptorPrevSpec2Stutter,
-         MsgsSafeAcceptorSpec1Stutter,
+         MsgsSafeAcceptorPrevTranLinearSpecStutter,
          MsgsSafeAcceptorSpec3Stutter,
          MsgsSafeAcceptorPrevRefSpecStutter,
-         MsgsSafeAcceptorPrevTranSpecStutter,
+         KnownMsgsPrevTranSpecStutter,
          DecisionSpecStutter,
          SafetyStutter
       DEF FullSafetyInvariant
