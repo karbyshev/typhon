@@ -320,6 +320,7 @@ PROOF BY WellFormedCondition2, WellFormedCondition3
       DEF WellFormed, WellFormed1b, Proposal, OneA
 
 -----------------------------------------------------------------------------
+\* TODO convert to a lemma
 MaxDepthSpec ==
     \A alpha \in Learner: maxDepth(alpha) \in Nat /\ maxDepth(alpha) >= 1
 
@@ -666,7 +667,7 @@ PROOF
            DEF NextTLA, SafeAcceptorAction, LearnerAction
 
 LEMMA DecisionSpecInvariant ==
-    BVal' = BVal /\ TypeOK /\ NextTLA /\
+    UNCHANGED BVal /\ TypeOK /\ NextTLA /\
     KnownMsgsSpec /\
     MaxDepthSpec /\ DecisionSpec => DecisionSpec'
 PROOF
