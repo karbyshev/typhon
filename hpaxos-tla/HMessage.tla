@@ -1,5 +1,5 @@
 ------------------------------ MODULE HMessage ------------------------------
-EXTENDS Naturals, FiniteSets, Functions, HQuorum, HLearner
+EXTENDS Naturals, FiniteSets, Sequences, Functions, HQuorum, HLearner
 
 CONSTANT LastBallot
 ASSUME LastBallot \in Nat
@@ -20,7 +20,8 @@ ASSUME MaxRefCardinalityAssumption ==
 \*RefCardinality == Nat
 RefCardinality == 1..MaxRefCardinality
 
-FINSUBSET(S, R) == { Range(seq) : seq \in [R -> S] }
+FINSUBSET(R) == { Range(seq) : seq \in Seq(R) }
+\*FINSUBSET(S, R) == { Range(seq) : seq \in [R -> S] }
 \*FINSUBSET(S, K) == { Range(seq) : seq \in [1..K -> S] }
 \*FINSUBSET(S, R) == UNION { {Range(seq) : seq \in [1..K -> S]} : K \in R }
 
@@ -34,9 +35,9 @@ MessageRec0 ==
 MessageRec1(M, n) ==
     M \cup
     [ type : {"1b", "2a", "2b"},
-      acc : Acceptor,
+      acc  : Acceptor,
       prev : M \cup {NoMessage},
-      refs : FINSUBSET(M, RefCardinality),
+      refs : FINSUBSET(M),
       lrns : SUBSET Learner
     ]
 
@@ -48,6 +49,7 @@ MessageRec[n \in Nat] ==
 CONSTANT MaxMessageDepth
 ASSUME MaxMessageDepth \in Nat
 
+\* TODO clean
 MessageDepthRange == Nat
 
 Message == UNION { MessageRec[n] : n \in MessageDepthRange }
@@ -69,7 +71,7 @@ TwoB(m) == m.type = "2b"
 (* Transitive references *)
 
 \* Bounded transitive references
-TranBound0 == [m \in Message |-> {m}]
+TranBound0 == [ m \in Message |-> {m} ]
 TranBound1(tr, n) ==
     [m \in Message |-> {m} \cup UNION {tr[r] : r \in m.refs}]
 

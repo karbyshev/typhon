@@ -1,21 +1,32 @@
 --------------------------- MODULE HMessage_proof ---------------------------
-EXTENDS HMessage, HLearnerGraph, NaturalsInduction, WellFoundedInduction, TLAPS
+EXTENDS Lib,
+        HMessage, HLearnerGraph,
+        NaturalsInduction, WellFoundedInduction,
+        FiniteSets, FiniteSetTheorems,
+        FunctionTheorems,
+        TLAPS
 
+-----------------------------------------------------------------------------
+
+\* TODO clean, not used
 LEMMA RefCardinalitySpec ==
     /\ RefCardinality \in SUBSET Nat
     /\ RefCardinality # {}
 PROOF BY MaxRefCardinalityAssumption DEF RefCardinality
 
 LEMMA FinSubset_sub ==
-    ASSUME NEW S, NEW R \in SUBSET Nat, NEW F \in FINSUBSET(S, R)
+    ASSUME NEW S,
+           NEW F \in FINSUBSET(S)
     PROVE  F \subseteq S
 PROOF BY DEF Range, FINSUBSET
 
-LEMMA FinSubset_sub_nontriv ==
-    ASSUME NEW S, S # {},
-           NEW R \in SUBSET Nat, R # {}, NEW F \in FINSUBSET(S, R)
-    PROVE  F # {}
-PROOF BY DEF Range, FINSUBSET
+\* TODO remove, not valid
+\*LEMMA FinSubset_sub_nontriv ==
+\*    ASSUME NEW S,
+\*           S # {},
+\*           NEW F \in FINSUBSET(S)
+\*    PROVE  F # {}
+\*PROOF BY SeqDef DEF Range, FINSUBSET
 
 -----------------------------------------------------------------------------
 (* Messages *)
@@ -117,41 +128,157 @@ LEMMA OneA_Message ==
     PROVE  LET msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {} ] IN
            /\ msg \in Message
            /\ OneA(msg)
+PROOF
+<1> DEFINE msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {} ]
+<1> OneA(msg)
+    BY DEF OneA
+<1> msg \in MessageRec[0]
+    BY MessageRec_def DEF MessageRec0
+<1> QED BY DEF Message, MessageDepthRange
 
+\* TODO needs IsFinite(P)
 LEMMA OneB_Message ==
     ASSUME NEW A \in Acceptor,
            NEW P \in Message \cup {NoMessage},
-           NEW R \in SUBSET Message
+           NEW R \in SUBSET Message,
+           R # {}
     PROVE  LET msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
            /\ msg \in Message
            /\ OneB(msg)
+PROOF
+<1> DEFINE msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ]
+<1> OneB(msg)
+    BY DEF OneB
+<1> QED
 
+\* TODO needs IsFinite(P)
 LEMMA TwoA_Message ==
     ASSUME NEW A \in Acceptor,
            NEW P \in Message \cup {NoMessage},
-           NEW R \in SUBSET Message
+           NEW R \in SUBSET Message,
+           R # {}
     PROVE  LET msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
            /\ msg \in Message
            /\ TwoA(msg)
-
-LEMMA Message_1a_ref ==
-    \A m \in Message : OneA(m) <=> m.refs = {}
 PROOF
-<1> DEFINE P(j) == \A mm \in MessageRec[j] : mm.type = "1a" <=> mm.refs = {}
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
-    BY DEF Message, MessageDepthRange, OneA
-<1>0. P(0)
-      BY MessageRec_eq0 DEF MessageRec0
-<1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
-  <2> m + 1 \in Nat
+<1> DEFINE msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ]
+<1> TwoA(msg)
+    BY DEF TwoA
+<1> QED
+
+LEMMA OneB_Message_bis ==
+    ASSUME NEW A \in Acceptor,
+           NEW P \in Message \cup {NoMessage},
+           NEW R \in SUBSET Message,
+           IsFiniteSet(R),
+           P \in R
+    PROVE  LET msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
+           /\ msg \in Message
+           /\ OneB(msg)
+PROOF
+<1> DEFINE msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ]
+<1> R # {}
+    OBVIOUS
+<1> OneB(msg)
+    BY DEF OneB
+<1>0. \A m \in R : \E n \in Nat : m \in MessageRec[n]
+    BY DEF Message, MessageDepthRange
+<1> DEFINE f == [ m \in R |-> CHOOSE n \in Nat : m \in MessageRec[n] ]
+<1> f \in [ R -> Nat ]
+    BY DEF Message, MessageDepthRange
+<1> DEFINE I == Range(f)
+<1> I \in SUBSET Nat
+    BY DEF Range
+<1> I # {}
+    BY DEF Range
+<1>1. IsFiniteSet(I)
+  <2> f \in Surjection(R, I)
+      BY Fun_RangeProperties
+  <2> QED BY Zenon, FS_Surjection
+<1> PICK n0 \in I : IsMax(n0, I)
+    BY <1>1, NatFiniteSetMaxExists
+<1> n0 \in Nat
+    OBVIOUS
+<1> \A m \in R : m \in MessageRec[n0]
+    BY <1>0, MessageRec_monotone DEF IsMax, Range
+<1> msg \in MessageRec[n0 + 1]
+  <2>0. n0 = (n0 + 1) - 1
       OBVIOUS
-  <2> SUFFICES ASSUME NEW mm \in MessageRec[m + 1]
-               PROVE  mm.type = "1a" <=> mm.refs = {}
-      BY DEF Message
-  <2>3. QED BY <1>1, MessageRec_eq1, MessageRec_nontriv, FinSubset_sub_nontriv,
-               RefCardinalitySpec DEF MessageRec1
-<1>2. HIDE DEF P
-<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+  <2> SUFFICES R \in FINSUBSET(MessageRec[n0])
+      BY <2>0, MessageRec_eq1 DEF MessageRec1
+  <2> PICK seq \in Seq(R) : \A s \in R : \E n \in 1..Len(seq) : seq[n] = s
+      BY DEF IsFiniteSet
+  <2> R = Range(seq)
+      BY DEF Range
+  <2> QED BY DEF FINSUBSET
+<1> QED BY DEF Message, MessageDepthRange
+
+LEMMA TwoA_Message_bis ==
+    ASSUME NEW A \in Acceptor,
+           NEW P \in Message \cup {NoMessage},
+           NEW R \in SUBSET Message,
+           IsFiniteSet(R),
+           P \in R,
+           NEW L \in SUBSET Learner
+    PROVE  LET msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> L ] IN
+           /\ msg \in Message
+           /\ TwoA(msg)
+PROOF
+<1> DEFINE msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> L ]
+<1> R # {}
+    OBVIOUS
+<1> TwoA(msg)
+    BY DEF TwoA
+<1>0. \A m \in R : \E n \in Nat : m \in MessageRec[n]
+    BY DEF Message, MessageDepthRange
+<1> DEFINE f == [ m \in R |-> CHOOSE n \in Nat : m \in MessageRec[n] ]
+<1> f \in [ R -> Nat ]
+    BY DEF Message, MessageDepthRange
+<1> DEFINE I == Range(f)
+<1> I \in SUBSET Nat
+    BY DEF Range
+<1> I # {}
+    BY DEF Range
+<1>1. IsFiniteSet(I)
+  <2> f \in Surjection(R, I)
+      BY Fun_RangeProperties
+  <2> QED BY Zenon, FS_Surjection
+<1> PICK n0 \in I : IsMax(n0, I)
+    BY <1>1, NatFiniteSetMaxExists
+<1> n0 \in Nat
+    OBVIOUS
+<1> \A m \in R : m \in MessageRec[n0]
+    BY <1>0, MessageRec_monotone DEF IsMax, Range
+<1> msg \in MessageRec[n0 + 1]
+  <2>0. n0 = (n0 + 1) - 1
+      OBVIOUS
+  <2> SUFFICES R \in FINSUBSET(MessageRec[n0])
+      BY <2>0, MessageRec_eq1 DEF MessageRec1
+  <2> PICK seq \in Seq(R) : \A s \in R : \E n \in 1..Len(seq) : seq[n] = s
+      BY DEF IsFiniteSet
+  <2> R = Range(seq)
+      BY DEF Range
+  <2> QED BY DEF FINSUBSET
+<1> QED BY DEF Message, MessageDepthRange
+
+\*LEMMA Message_1a_ref ==
+\*    \A m \in Message : OneA(m) <=> m.refs = {}
+\*PROOF
+\*<1> DEFINE P(j) == \A mm \in MessageRec[j] : mm.type = "1a" <=> mm.refs = {}
+\*<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+\*    BY DEF Message, MessageDepthRange, OneA
+\*<1>0. P(0)
+\*      BY MessageRec_eq0 DEF MessageRec0
+\*<1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
+\*  <2> m + 1 \in Nat
+\*      OBVIOUS
+\*  <2> SUFFICES ASSUME NEW mm \in MessageRec[m + 1]
+\*               PROVE  mm.type = "1a" <=> mm.refs = {}
+\*      BY DEF Message
+\*  <2>3. QED BY <1>1, MessageRec_eq1, MessageRec_nontriv, FinSubset_sub_nontriv,
+\*               RefCardinalitySpec DEF MessageRec1
+\*<1>2. HIDE DEF P
+\*<1>3. QED BY <1>0, <1>1, NatInduction, Isa
 
 LEMMA Message_ref ==
     ASSUME NEW m \in Message
@@ -225,7 +352,9 @@ PROOF
 <1>0. P(0)
       BY MessageRec_eq0 DEF MessageRec0, NoMessage
 <1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
-      BY <1>1, MessageRec_eq1 DEF MessageRec1, NoMessage
+  <2> k + 1 - 1 = k
+      OBVIOUS
+  <2> QED BY <1>1, MessageRec_eq1 DEF MessageRec1, NoMessage
 <1>2. HIDE DEF P
 <1>3. QED BY <1>0, <1>1, NatInduction, Isa
 
@@ -240,7 +369,7 @@ LEMMA MessageSpec ==
                 \/ m.type = "2b"
              /\ m.acc \in Acceptor
              /\ m.prev \in Message \cup {NoMessage}
-             /\ m.refs # {}
+\*             /\ m.refs # {}
              /\ m.refs \in SUBSET Message
              /\ m.lrns \in SUBSET Learner
 PROOF
@@ -255,7 +384,7 @@ PROOF
                   \/ x.type = "2b"
                /\ x.acc \in Acceptor
                /\ x.prev \in Message \cup {NoMessage}
-               /\ x.refs # {}
+\*               /\ x.refs # {}
                /\ x.refs \in SUBSET Message
                /\ x.lrns \in SUBSET Learner
 <1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) BY MessageRec_spec
@@ -273,7 +402,7 @@ PROOF
                             \/ x.type = "2b"
                          /\ x.acc \in Acceptor
                          /\ x.prev \in Message \cup {NoMessage}
-                         /\ x.refs # {}
+\*                         /\ x.refs # {}
                          /\ x.refs \in SUBSET Message
                          /\ x.lrns \in SUBSET Learner
       OBVIOUS
@@ -283,12 +412,10 @@ PROOF
      <3>1. x \in [ type : {"1b", "2a", "2b"},
                    acc : Acceptor,
                    prev : MessageRec[k] \cup {NoMessage},
-                   refs : FINSUBSET(MessageRec[k], RefCardinality),
+                   refs : FINSUBSET(MessageRec[k]),
                    lrns : SUBSET Learner ]
            BY <2>3, MessageRec_eq1 DEF MessageRec1
-    <3> QED BY <3>1, MessageRec_spec, MessageRec_nontriv,
-       FinSubset_sub, FinSubset_sub_nontriv,
-       RefCardinalitySpec
+    <3> QED BY <3>1, MessageRec_spec, MessageRec_nontriv, FinSubset_sub
   <2> QED BY <2>1, <2>3
 <1>2. HIDE DEF P
 <1>3. QED BY <1>0, <1>1, NatInduction, Isa
@@ -613,7 +740,7 @@ LEMMA PrevTranBound_def ==
                     THEN PrevTranBound0
                     ELSE PrevTranBound1(PrevTranBound[n - 1], n)]
 PROOF BY NatInductiveDef
-DEF NatInductiveDefHypothesis, NatInductiveDefConclusion, PrevTranBound
+      DEF NatInductiveDefHypothesis, NatInductiveDefConclusion, PrevTranBound
 
 LEMMA PrevTran_spec ==
     ASSUME NEW m \in Message
@@ -822,7 +949,7 @@ PROOF
 LEMMA Message_prev_PrevTran ==
     ASSUME NEW m \in Message, m.prev # NoMessage
     PROVE  m.prev \in PrevTran(m)
-PROOF BY Message_prev_PrevTranBound1, Zenon
+PROOF BY Zenon, Message_prev_PrevTranBound1
       DEF PrevTran, PrevTranDepthRange, MessageDepthRange
 
 \*LEMMA MessageRec0_PrevTran ==
