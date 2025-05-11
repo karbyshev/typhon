@@ -1,10 +1,6 @@
 -------------------------- MODULE HPaxos_2_proof ----------------------------
-EXTENDS HPaxos_2, HMessage_proof, HLearnerGraph_proof,
-        Sequences, SequenceTheorems,
-        FunctionTheorems,
-        FiniteSets, FiniteSetTheorems,
-        WellFoundedInduction, 
-        TLAPS
+EXTENDS HPaxos_2, HMessage_proof, HLearnerGraph_proof, Lib,
+        SequenceTheorems, TLAPS
 
 -----------------------------------------------------------------------------
 \* TODO this can be further generalized to arbitrary linear orders,

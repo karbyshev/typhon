@@ -1,5 +1,5 @@
 ----------------------------- MODULE HPaxos_2 -------------------------------
-EXTENDS HQuorum, HLearnerGraph, HMessage, TLAPS
+EXTENDS Lib, HQuorum, HLearnerGraph, HMessage, TLAPS
 
 Assert(P, str) == P
 
