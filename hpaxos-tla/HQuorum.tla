@@ -1,10 +1,15 @@
 ------------------------------ MODULE HQuorum -------------------------------
+EXTENDS FiniteSets
+
 CONSTANTS Proposer,
           SafeAcceptor,
           FakeAcceptor
 
-ASSUME AcceptorAssumption ==
-        SafeAcceptor \cap FakeAcceptor = {}
+ASSUME AcceptorAssumption == SafeAcceptor \cap FakeAcceptor = {}
+
+ASSUME SafeAcceptorNonTrivial == SafeAcceptor # {}
+
+ASSUME FakeAcceptorFinite == IsFiniteSet(FakeAcceptor)
 
 Acceptor == SafeAcceptor \cup FakeAcceptor
 
@@ -17,5 +22,5 @@ PROOF BY DEF Acceptor, ByzQuorum
 
 =============================================================================
 \* Modification History
-\* Last modified Thu Apr 10 21:32:50 CEST 2025 by karbyshev
+\* Last modified Sun May 11 15:05:47 CEST 2025 by karbyshev
 \* Created Tue May 14 16:29:16 CEST 2024 by karbyshev

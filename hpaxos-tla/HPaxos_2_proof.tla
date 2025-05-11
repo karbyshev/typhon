@@ -2973,13 +2973,13 @@ LEMMA maxDepth_XXX ==
 
 -----------------------------------------------------------------------------
 
-LEMMA Union_cup ==
-    ASSUME NEW F(_),
-           NEW X,
-           NEW Y,
-           NEW Z
-    PROVE  UNION {F(x) : x \in X \cup Y \cup Z} = (UNION {F(x) : x \in X}) \cup (UNION {F(y) : y \in Y}) \cup (UNION {F(z) : z \in Z})
-PROOF BY Zenon
+\*LEMMA Union_cup ==
+\*    ASSUME NEW F(_),
+\*           NEW X,
+\*           NEW Y,
+\*           NEW Z
+\*    PROVE  UNION {F(x) : x \in X \cup Y \cup Z} = (UNION {F(x) : x \in X}) \cup (UNION {F(y) : y \in Y}) \cup (UNION {F(z) : z \in Z})
+\*PROOF BY Zenon
 
 LEMMA ZZZ ==
     ASSUME BVal \in [Ballot -> Value],
@@ -3081,6 +3081,8 @@ PROOF
     BY B_1a
 <1> Tran(p1) = {p1}
     BY Tran_1a
+<1> PrevTran(p1) = {p1}
+    BY PrevTran_eq
 <1> DEFINE p2 == [ type |-> "1a", bal |-> bal2, prev |-> NoMessage, refs |-> {} ]
 <1> p2 \in Message /\ OneA(p2) /\ p2.bal = bal2
     BY OneA_Message
@@ -3088,20 +3090,27 @@ PROOF
     BY B_1a
 <1> Tran(p2) = {p2}
     BY Tran_1a
+<1> PrevTran(p2) = {p2}
+    BY PrevTran_eq
 
 <1> p1 # p2
     OBVIOUS
 <1> HIDE DEF p1
 <1> HIDE DEF p2
 
-<1> DEFINE oneb_1 == {[ type |-> "1b", acc |-> fake, prev |-> NoMessage, refs |-> {p1}, lrns |-> {} ] : fake \in FakeAcceptor }
+<1> DEFINE oneb_1 == {[ type |-> "1b", acc |-> fake, prev |-> p1, refs |-> {p1}, lrns |-> {} ] : fake \in FakeAcceptor }
 <1> oneb_1 \in SUBSET { mm \in Message : OneB(mm) }
-    BY Isa, OneB_Message DEF Acceptor
+  <2> IsFiniteSet({p1})
+      BY FS_Singleton
+  <2> QED BY Isa, OneB_Message_bis DEF Acceptor
+\* HERE
+<1> IsFiniteSet(oneb_1)
+    BY FakeAcceptorFinite
 <1> \A m1 \in oneb_1 : B(m1, bal1)
   <2> SUFFICES ASSUME NEW f \in FakeAcceptor
-               PROVE  B([ type |-> "1b", acc |-> f, prev |-> NoMessage, refs |-> {p1}, lrns |-> {} ], bal1)
+               PROVE  B([ type |-> "1b", acc |-> f, prev |-> p1, refs |-> {p1}, lrns |-> {} ], bal1)
       OBVIOUS
-  <2> DEFINE oneb_fake == [ type |-> "1b", acc |-> f, prev |-> NoMessage, refs |-> {p1}, lrns |-> {} ]
+  <2> DEFINE oneb_fake == [ type |-> "1b", acc |-> f, prev |-> p1, refs |-> {p1}, lrns |-> {} ]
   <2> oneb_fake \in oneb_1
       OBVIOUS
   <2> ~OneA(oneb_fake)
@@ -3131,14 +3140,19 @@ PROOF
 \*    PROVE  UNION {F(x) : x \in {e} \cup Y \cup Z} = F(e) \cup (UNION {F(y) : y \in Y}) \cup (UNION {F(z) : z \in Z})
 \*    BY SlowZenon
 
-<1> DEFINE oneb_2 == {[ type |-> "1b", acc |-> fake, prev |-> NoMessage, refs |-> {p2}, lrns |-> {} ] : fake \in FakeAcceptor }
+<1> DEFINE oneb_2 == {[ type |-> "1b", acc |-> fake, prev |-> p2, refs |-> {p2}, lrns |-> {} ] : fake \in FakeAcceptor }
 <1> oneb_2 \in SUBSET { mm \in Message : OneB(mm) }
-    BY Isa, OneB_Message DEF Acceptor
+  <2> IsFiniteSet({p2})
+      BY FS_Singleton
+  <2> QED BY Isa, OneB_Message_bis DEF Acceptor
+\* HERE
+<1> IsFiniteSet(oneb_2)
+    BY FakeAcceptorFinite
 <1> \A m2 \in oneb_2 : B(m2, bal2)
   <2> SUFFICES ASSUME NEW f \in FakeAcceptor
-               PROVE  B([ type |-> "1b", acc |-> f, prev |-> NoMessage, refs |-> {p2}, lrns |-> {} ], bal2)
+               PROVE  B([ type |-> "1b", acc |-> f, prev |-> p2, refs |-> {p2}, lrns |-> {} ], bal2)
       OBVIOUS
-  <2> DEFINE oneb_fake == [ type |-> "1b", acc |-> f, prev |-> NoMessage, refs |-> {p2}, lrns |-> {} ]
+  <2> DEFINE oneb_fake == [ type |-> "1b", acc |-> f, prev |-> p2, refs |-> {p2}, lrns |-> {} ]
   <2> oneb_fake \in oneb_2
       OBVIOUS
   <2> ~OneA(oneb_fake)
@@ -3159,8 +3173,10 @@ PROOF
 <1> M0 \in Message /\ TwoA(M0)
   <2> M.acc \in Acceptor
       BY MessageSpec DEF TwoA
+  <2> IsFiniteSet({M} \cup oneb_1 \cup oneb_2)
+      BY FS_Union, FS_Singleton
   <2> HIDE DEF oneb_1, oneb_2
-  <2> QED BY Zenon, TwoA_Message
+  <2> QED BY Zenon, TwoA_Message_bis
 <1> M \in Tran(M0)
     BY Message_ref_Tran
 <1> DEFINE SingletonM == {M}
@@ -3172,13 +3188,14 @@ PROOF
     OBVIOUS
 
 <1>M0_tran. Tran(M0) \subseteq { M0, p1, p2 } \cup Tran(M) \cup oneb_1 \cup oneb_2
-  <2> (UNION { Tran(r) : r \in M0.refs }) = (UNION { Tran(r) : r \in SingletonM }) \cup (UNION { Tran(x) : x \in oneb_1 }) \cup (UNION { Tran(y) : y \in oneb_2 })
-    <3> HIDE DEF M0, oneb_1, oneb_2, SingletonM
-    <3> QED BY Union_cup
-  <2> Tran(M0) = {M0} \cup Tran(M) \cup (UNION { Tran(x) : x \in oneb_1 }) \cup (UNION { Tran(y) : y \in oneb_2 })
-    <3> HIDE DEF M0, oneb_1, oneb_2
-    <3> QED BY Tran_eq
+\*  <2> (UNION { Tran(r) : r \in M0.refs }) =
+\*        (UNION { Tran(r) : r \in SingletonM }) \cup (UNION { Tran(x) : x \in oneb_1 }) \cup (UNION { Tran(y) : y \in oneb_2 })
+\*    <3> HIDE DEF M0, oneb_1, oneb_2, SingletonM
+\*    <3> QED OBVIOUS \*BY Union_cup \* TODO clean
   <2> HIDE DEF M0
+  <2> Tran(M0) = {M0} \cup Tran(M) \cup (UNION { Tran(x) : x \in oneb_1 }) \cup (UNION { Tran(y) : y \in oneb_2 })
+    <3> HIDE DEF oneb_1, oneb_2
+    <3> QED BY Tran_eq
   <2> QED OBVIOUS
 
 <1>M0_prevtran. PrevTran(M0) = {M0} \cup PrevTran(M)
@@ -3189,8 +3206,8 @@ PROOF
   <2> SUFFICES ASSUME NEW fake \in FakeAcceptor
                PROVE  fake \in Caught(M0)
       OBVIOUS
-  <2> DEFINE proof1 == [ type |-> "1b", acc |-> fake, prev |-> NoMessage, refs |-> {p1}, lrns |-> {} ]
-  <2> DEFINE proof2 == [ type |-> "1b", acc |-> fake, prev |-> NoMessage, refs |-> {p2}, lrns |-> {} ]
+  <2> DEFINE proof1 == [ type |-> "1b", acc |-> fake, prev |-> p1, refs |-> {p1}, lrns |-> {} ]
+  <2> DEFINE proof2 == [ type |-> "1b", acc |-> fake, prev |-> p2, refs |-> {p2}, lrns |-> {} ]
   <2> proof1 # proof2
       OBVIOUS
   <2> ~Proposal(proof1)
@@ -3201,10 +3218,10 @@ PROOF
       OBVIOUS
   <2> proof2 \in oneb_2
       OBVIOUS
-  <2> PrevTran(proof1) = { proof1 }
-      BY PrevTran_eq
-  <2> PrevTran(proof2) = { proof2 }
-      BY PrevTran_eq
+  <2> PrevTran(proof1) = { proof1, p1 }
+      BY PrevTran_eq, NoMessageIsNotAMessage
+  <2> PrevTran(proof2) = { proof2, p2 }
+      BY PrevTran_eq, NoMessageIsNotAMessage
   <2> proof1 \in Tran(M0)
     <3> HIDE DEF oneb_1, oneb_2, proof2
     <3> QED BY Message_ref_Tran
@@ -3904,5 +3921,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Dec 09 16:10:41 CET 2024 by karbyshev
+\* Last modified Mon May 12 01:21:50 CEST 2025 by karbyshev
 \* Created Tue Jun 20 00:28:26 CEST 2023 by karbyshev
