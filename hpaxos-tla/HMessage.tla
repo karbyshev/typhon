@@ -1,5 +1,5 @@
 ------------------------------ MODULE HMessage ------------------------------
-EXTENDS Naturals, FiniteSets, Sequences, Functions, HQuorum, HLearner
+EXTENDS Naturals, Sequences, Functions, HQuorum, HLearner
 
 CONSTANT LastBallot
 ASSUME LastBallot \in Nat
@@ -46,6 +46,7 @@ MessageRec[n \in Nat] ==
     THEN MessageRec0
     ELSE MessageRec1(MessageRec[n-1], n)
 
+\* TODO clean
 CONSTANT MaxMessageDepth
 ASSUME MaxMessageDepth \in Nat
 
@@ -105,5 +106,5 @@ PrevTran(m) == UNION {PrevTranBound[n][m] : n \in PrevTranDepthRange}
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Dec 17 17:59:35 CET 2024 by karbyshev
+\* Last modified Sun May 11 13:23:06 CEST 2025 by karbyshev
 \* Created Tue May 14 16:39:44 CEST 2024 by karbyshev

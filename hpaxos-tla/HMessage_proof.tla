@@ -1,9 +1,10 @@
 --------------------------- MODULE HMessage_proof ---------------------------
-EXTENDS Lib,
-        HMessage, HLearnerGraph,
-        NaturalsInduction, WellFoundedInduction,
-        FiniteSets, FiniteSetTheorems,
+EXTENDS HMessage,
+        HLearnerGraph,
+        Lib,
         FunctionTheorems,
+        NaturalsInduction,
+        WellFoundedInduction,
         TLAPS
 
 -----------------------------------------------------------------------------
@@ -973,5 +974,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Dec 17 19:23:14 CET 2024 by karbyshev
+\* Last modified Sun May 11 13:26:36 CEST 2025 by karbyshev
 \* Created Tue May 14 16:44:53 CEST 2024 by karbyshev
