@@ -2313,7 +2313,7 @@ LEMMA HeterogeneousSpecCondProperties ==
             /\ seq[i].s \in Tran(M)
            /\ \A i, j \in 1..K : i < j =>
             /\ seq[j].r \in Tran(seq[i].r)
-            /\ j < K =>
+           /\ \A i, j \in 1..K : i < j /\ j < K =>
                 /\ Con(alpha, seq[i].r) \in SUBSET Con(alpha, seq[j].r)
                 /\ Con(alpha, seq[i].r) # Con(alpha, seq[j].r)
 PROOF
@@ -3211,6 +3211,8 @@ PROOF
     BY DEF MaxDepthSpec
 <1> Len(seq) = maxDepth(alpha) + 1
     OBVIOUS
+<1> Len(seq) \in Nat
+    OBVIOUS
 <1> \A x \in 1..maxDepth(alpha) + 1 :
         HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x)
     BY DEF HeterogeneousSpecCondMin
@@ -3539,7 +3541,7 @@ PROOF
         OBVIOUS
     <3> SUFFICES seq[k0].r \in Tran(seq[l0].r)
         OBVIOUS
-    <3> HIDE DEF k0, l0
+    <3> HIDE DEF k0, l0, oneb_1, oneb_2, M0
     <3> \A i \in 1..Len(seq) :
             HeterogeneousSpecCond(alpha, bal, M, V_M, seq, i)
         OBVIOUS
@@ -4128,5 +4130,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Mon May 12 01:21:50 CEST 2025 by karbyshev
+\* Last modified Mon May 12 20:01:49 CEST 2025 by karbyshev
 \* Created Tue Jun 20 00:28:26 CEST 2023 by karbyshev
