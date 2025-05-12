@@ -3,25 +3,6 @@ EXTENDS HPaxos_2, HMessage_proof, HLearnerGraph_proof, Lib,
         SequenceTheorems, TLAPS
 
 -----------------------------------------------------------------------------
-\* TODO this can be further generalized to arbitrary linear orders,
-\* and partial orders with IsMax defined by
-\* IsMax(x, S) == \A y \in S : x =< y => x = y
-LEMMA NatFiniteSetMaxExists ==
-    ASSUME NEW A \in SUBSET Nat,
-           A # {},
-           IsFiniteSet(A)
-    PROVE  \E max \in A : IsMax(max, A)
-PROOF
-<1> DEFINE P(X) ==
-            X \in SUBSET Nat /\ X # {} => \E max \in X : IsMax(max, X)
-<1> SUFFICES ASSUME NEW S, IsFiniteSet(S) PROVE P(S)
-    OBVIOUS
-<1>0. P({}) OBVIOUS
-<1>1. ASSUME NEW T, NEW x, IsFiniteSet(T), P(T), x \notin T PROVE P(T \cup {x})
-      BY <1>1 DEF IsMax
-<1> HIDE DEF P
-<1>3. QED BY <1>0, <1>1, FS_Induction, IsaM("blast")
-
 \* TODO move to separate file
 LEMMA MaxUnique ==
     ASSUME NEW S,
@@ -515,8 +496,7 @@ PROOF
 
 LEMMA UniqueMessageSent ==
     TypeOK /\ NextTLA =>
-    \A m1, m2 \in msgs' \ msgs :
-        m1 = m2
+    \A m1, m2 \in msgs' \ msgs : m1 = m2
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA,
                     NEW M1 \in msgs' \ msgs,
@@ -551,14 +531,14 @@ LEMMA Qd_monotone ==
 PROOF BY Isa DEF V, qd, Fresh000, SameValue, V
 
 LEMMA WellFormed_monotone ==
-    ASSUME BVal' = BVal
+    ASSUME UNCHANGED BVal
     PROVE  \A m \in Message : WellFormed(m) <=> WellFormed(m)'
 PROOF BY Qd_monotone DEF WellFormed
 
 LEMMA KnownMsgMonotone ==
     TypeOK /\ NextTLA =>
     \A AL \in SafeAcceptor \cup Learner :
-        known_msgs[AL] \subseteq known_msgs[AL]'
+        known_msgs[AL] \in SUBSET known_msgs[AL]'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA,
                     NEW AL \in SafeAcceptor \cup Learner,
@@ -582,18 +562,10 @@ PROOF
 <1>10. QED BY <1>1, <1>3, <1>7, <1>8, <1>9
            DEF NextTLA, SafeAcceptorAction, LearnerAction
 
-\* TODO remove if not used
-LEMMA Decision_monotone ==
-    TypeOK /\ NextTLA =>
-    \A LB \in Learner \X Ballot :
-        decision[LB] \subseteq decision[LB]'
-PROOF
-<1> QED
-
 LEMMA Known2aMonotone ==
     TypeOK /\ NextTLA =>
     \A L \in Learner, bal \in Ballot, val \in Value :
-        Known2a(L, bal, val) \subseteq Known2a(L, bal, val)'
+        Known2a(L, bal, val) \in SUBSET Known2a(L, bal, val)'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA,
                     NEW L \in Learner, NEW BB \in Ballot, NEW VV \in Value,
@@ -3153,7 +3125,7 @@ PROOF
   <2> HeterogeneousSpecCond(alpha, bal, M, V_M, seq0, k + 1)
       OBVIOUS
   <2> HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq0, k + 1)
-    BY DEF HeterogeneousSpecCondMin
+      BY DEF HeterogeneousSpecCondMin
   <2> \A i \in 1..k : HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq0, i)
       BY HeterogeneousSpecCondMinCongr
   <2> SUFFICES
