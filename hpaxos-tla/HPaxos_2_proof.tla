@@ -345,9 +345,24 @@ RecentMsgsSpec2 ==
         \A x \in SentBy(A) :
             x \notin known_msgs[A] => x \in recent_msgs[A]
 
+KnownMsgsSpec1 ==
+    \A AL \in SafeAcceptor \cup Learner :
+        /\ known_msgs[AL] \in SUBSET msgs
+        /\ IsFiniteSet(known_msgs[AL])
+
+KnownMsgsSpec2 ==
+    \A AL \in SafeAcceptor \cup Learner :
+        /\ \A M \in known_msgs[AL] :
+            /\ KnownRefs(AL, M)
+            /\ WellFormed(M)
+            /\ Tran(M) \in SUBSET known_msgs[AL]
+            /\ \E b \in Ballot : B(M, b)
+
+\* TODO rename
 KnownMsgsSpec ==
     \A AL \in SafeAcceptor \cup Learner :
         /\ known_msgs[AL] \in SUBSET msgs
+        /\ IsFiniteSet(known_msgs[AL])
         /\ \A M \in known_msgs[AL] :
             /\ KnownRefs(AL, M)
             /\ WellFormed(M)
@@ -663,9 +678,10 @@ PROOF
            DEF NextTLA, SafeAcceptorAction, LearnerAction
 
 LEMMA DecisionSpecInvariant ==
-    UNCHANGED BVal /\ TypeOK /\ NextTLA /\
-    KnownMsgsSpec /\
-    MaxDepthSpec /\ DecisionSpec => DecisionSpec'
+    UNCHANGED BVal /\ MaxDepthSpec /\
+    TypeOK /\ NextTLA /\
+    KnownMsgsSpec2 /\
+    DecisionSpec => DecisionSpec'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA, DecisionSpec,
                     MaxDepthSpec,
@@ -676,7 +692,7 @@ PROOF
     BY DEF DecisionSpec
 <1> TypeOK' BY TypeOKInvariant
 <1> Known2a(L, BB, VV) \subseteq Message
-    BY DEF Known2a, KnownMsgsSpec, TypeOK
+    BY DEF Known2a, KnownMsgsSpec2, TypeOK
 <1> USE DEF DecisionSpec
 <1> USE DEF ChosenIn
 <1> USE DEF MaxDepthSpec
@@ -879,6 +895,192 @@ PROOF
 <1> QED BY <1>1, <1>3, <1>6, <1>7
         DEF NextTLA, SafeAcceptorAction, FakeAcceptorAction
 
+LEMMA KnownMsgsSpec1Invariant ==
+    TypeOK /\ NextTLA /\
+    KnownMsgsSpec1 =>
+    KnownMsgsSpec1'
+PROOF
+<1> SUFFICES ASSUME TypeOK, NextTLA,
+                    KnownMsgsSpec1
+             PROVE  KnownMsgsSpec1'
+    OBVIOUS
+<1> TypeOK'
+    BY TypeOKInvariant
+<1> SUFFICES ASSUME NEW AL \in SafeAcceptor \cup Learner
+             PROVE  /\ known_msgs[AL]' \in SUBSET msgs'
+                    /\ IsFiniteSet(known_msgs[AL]')
+    BY DEF KnownMsgsSpec1
+<1> USE DEF KnownMsgsSpec1
+<1>1. CASE \E p \in Proposer : ProposerAction(p)
+  <2> PICK bal \in Ballot : SendProposal(bal)
+      BY <1>1 DEF ProposerAction
+  <2> QED BY DEF SendProposal, Send
+<1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
+  <2> PICK acc \in SafeAcceptor, m \in msgs : Process(acc, m)
+      BY <1>3
+  <2> Recv(acc, m)
+      BY DEF Process
+  <2> known_msgs[AL]' \in SUBSET msgs'
+      BY Sent_monotone DEF Recv, TypeOK, Acceptor
+  <2> IsFiniteSet(known_msgs[AL]')
+    <3> IsFiniteSet(known_msgs[acc] \cup {m})
+        BY FS_Singleton, FS_Union
+    <3> QED BY DEF Recv, TypeOK, Acceptor
+  <2> QED OBVIOUS
+<1>6. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
+  <2> PICK lrn \in Learner, m \in msgs : LearnerRecv(lrn, m)
+      BY <1>6
+  <2> Recv(lrn, m)
+      BY DEF LearnerRecv
+  <2> known_msgs[AL]' \in SUBSET msgs'
+      BY Sent_monotone DEF Recv, TypeOK, Acceptor
+  <2> IsFiniteSet(known_msgs[AL]')
+    <3> IsFiniteSet(known_msgs[lrn] \cup {m})
+        BY FS_Singleton, FS_Union
+    <3> QED BY DEF Recv, TypeOK, Acceptor
+  <2> QED OBVIOUS
+<1>7. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
+            LearnerDecide(lrn, bal, val)
+  <2> PICK lrn \in Learner, bal \in Ballot, val \in Value :
+            LearnerDecide(lrn, bal, val)
+      BY <1>7
+  <2> USE DEF LearnerDecide
+  <2> QED OBVIOUS
+<1>8. CASE \E a \in FakeAcceptor : FakeSendControlMessage(a)
+  <2> PICK acc \in FakeAcceptor : FakeSendControlMessage(acc)
+      BY <1>8
+  <2> USE DEF FakeSendControlMessage
+  <2> QED BY DEF Send
+<1> QED BY <1>1, <1>3, <1>6, <1>7, <1>8
+        DEF NextTLA, SafeAcceptorAction, LearnerRecv,
+            LearnerAction, FakeAcceptorAction
+
+LEMMA KnownMsgsSpec2Invariant ==
+    TypeOK /\ NextTLA /\
+    SafeAcceptorPrevSpec2 /\
+    KnownMsgsSpec1 /\
+    KnownMsgsSpec2 =>
+    KnownMsgsSpec2'
+PROOF
+<1> SUFFICES ASSUME TypeOK, NextTLA,
+                    SafeAcceptorPrevSpec2,
+                    KnownMsgsSpec1,
+                    KnownMsgsSpec2
+             PROVE  KnownMsgsSpec2'
+    OBVIOUS
+<1> TypeOK'
+    BY TypeOKInvariant
+<1> KnownMsgsSpec1'
+    BY KnownMsgsSpec1Invariant
+<1> SUFFICES ASSUME NEW AL \in SafeAcceptor \cup Learner,
+                    NEW M \in known_msgs[AL]'
+             PROVE  /\ KnownRefs(AL, M)'
+                    /\ WellFormed(M)'
+                    /\ Tran(M) \in SUBSET known_msgs[AL]'
+                    /\ \E b \in Ballot : B(M, b)
+    BY DEF KnownMsgsSpec2
+<1> USE DEF KnownMsgsSpec1, KnownMsgsSpec2
+<1>1. CASE \E p \in Proposer : ProposerAction(p)
+  <2> PICK bal \in Ballot : SendProposal(bal)
+      BY <1>1 DEF ProposerAction
+  <2> USE DEF SendProposal
+  <2> KnownRefs(AL, M)'
+      BY DEF KnownRefs
+  <2> WellFormed(M)'
+      BY WellFormed_monotone DEF TypeOK
+  <2> Tran(M) \in SUBSET known_msgs[AL]'
+      OBVIOUS
+  <2> \E b \in Ballot : B(M, b)
+      OBVIOUS
+  <2> QED OBVIOUS
+<1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
+  <2> PICK acc \in SafeAcceptor, m \in msgs : Process(acc, m)
+      BY <1>3
+  <2> Recv(acc, m)
+      BY DEF Process
+  <2> UNCHANGED BVal
+      BY DEF Process
+  <2> WellFormed(m)
+      BY DEF Process
+  <2> m \in Message
+      BY DEF WellFormed
+  <2> KnownRefs(AL, M)'
+      BY DEF KnownRefs, Recv, TypeOK, Acceptor
+  <2> WellFormed(M)'
+    <3> CASE M \in known_msgs[AL]
+        BY WellFormed_monotone DEF TypeOK
+    <3> CASE M \notin known_msgs[AL]
+      <4> M = m
+          BY DEF Recv, TypeOK, Acceptor
+      <4> QED BY WellFormed_monotone DEF TypeOK
+    <3> QED OBVIOUS
+  <2> Tran(M) \in SUBSET known_msgs[AL]'
+    <3> CASE M \in known_msgs[AL]
+        BY DEF Recv, TypeOK, Acceptor
+    <3> CASE M \notin known_msgs[AL]
+      <4> M = m
+          BY DEF Recv, TypeOK, Acceptor
+      <4> QED BY Tran_eq, KnownMsgMonotone DEF Recv, KnownRefs, TypeOK, Acceptor
+    <3> QED OBVIOUS
+  <2> \E b \in Ballot : B(M, b)
+      BY DEF WellFormed
+  <2> QED OBVIOUS
+<1>6. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
+  <2> PICK lrn \in Learner, m \in msgs : LearnerRecv(lrn, m)
+      BY <1>6
+  <2> Recv(lrn, m)
+      BY DEF LearnerRecv
+  <2> UNCHANGED BVal
+      BY DEF LearnerRecv
+  <2> WellFormed(m)
+      BY DEF LearnerRecv
+  <2> m \in Message
+      BY DEF WellFormed
+  <2> KnownRefs(AL, M)'
+      BY DEF KnownRefs, Recv, TypeOK, Acceptor
+  <2> WellFormed(M)'
+      BY WellFormed_monotone DEF TypeOK, Recv, Acceptor
+  <2> Tran(M) \in SUBSET known_msgs[AL]'
+    <3> CASE M \in known_msgs[AL]
+        BY DEF Recv, TypeOK, Acceptor
+    <3> CASE M \notin known_msgs[AL]
+        BY Tran_eq DEF Recv, KnownRefs, TypeOK, Acceptor
+    <3> QED OBVIOUS
+  <2> \E b \in Ballot : B(M, b)
+      BY DEF WellFormed
+  <2> QED OBVIOUS
+<1>7. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
+            LearnerDecide(lrn, bal, val)
+  <2> PICK lrn \in Learner, bal \in Ballot, val \in Value :
+            LearnerDecide(lrn, bal, val)
+      BY <1>7
+  <2> USE DEF LearnerDecide
+  <2> KnownRefs(AL, M)'
+      BY DEF KnownRefs
+  <2> WellFormed(M)'
+      BY WellFormed_monotone DEF TypeOK
+  <2> Tran(M) \in SUBSET known_msgs[AL]'
+      OBVIOUS
+  <2> \E b \in Ballot : B(M, b)
+      BY DEF WellFormed
+  <2> QED OBVIOUS
+<1>8. CASE \E a \in FakeAcceptor : FakeSendControlMessage(a)
+  <2> PICK acc \in FakeAcceptor : FakeSendControlMessage(acc)
+      BY <1>8
+  <2> USE DEF FakeSendControlMessage
+  <2> KnownRefs(AL, M)'
+      BY DEF KnownRefs
+  <2> WellFormed(M)'
+      BY WellFormed_monotone DEF TypeOK
+  <2> Tran(M) \in SUBSET known_msgs[AL]'
+      OBVIOUS
+  <2> \E b \in Ballot : B(M, b)
+      OBVIOUS
+  <2> QED OBVIOUS
+<1> QED BY <1>1, <1>3, <1>6, <1>7, <1>8
+        DEF NextTLA, SafeAcceptorAction, LearnerRecv,
+            LearnerAction, FakeAcceptorAction
+
 LEMMA KnownMsgsSpecInvariant ==
     TypeOK /\ NextTLA /\
     SafeAcceptorPrevSpec2 /\
@@ -891,14 +1093,42 @@ PROOF
              PROVE  KnownMsgsSpec'
     OBVIOUS
 <1> TypeOK' BY TypeOKInvariant
-<1> SUFFICES ASSUME NEW AL \in SafeAcceptor \cup Learner,
-                    NEW M \in known_msgs[AL]'
+<1> SUFFICES ASSUME NEW AL \in SafeAcceptor \cup Learner
              PROVE  /\ known_msgs[AL]' \in SUBSET msgs'
+                    /\ IsFiniteSet(known_msgs[AL]')
+                    /\ \A M \in known_msgs[AL]' :
+                        /\ KnownRefs(AL, M)'
+                        /\ WellFormed(M)'
+                        /\ Tran(M) \in SUBSET known_msgs[AL]'
+                        /\ \E b \in Ballot : B(M, b)
+    BY DEF KnownMsgsSpec
+<1> DEFINE K == known_msgs[AL]'
+<1> SUFFICES /\ K \in SUBSET msgs'
+             /\ IsFiniteSet(K)
+             /\ \A M \in K :
+                /\ KnownRefs(AL, M)'
+                /\ WellFormed(M)'
+                /\ Tran(M) \in SUBSET K
+                /\ \E b \in Ballot : B(M, b)
+    OBVIOUS
+<1> SUFFICES /\ K \in SUBSET msgs'
+             /\ \A M \in K :
+                /\ IsFiniteSet(K)
+                /\ /\ KnownRefs(AL, M)'
+                   /\ WellFormed(M)'
+                   /\ Tran(M) \in SUBSET K
+                   /\ \E b \in Ballot : B(M, b)
+  \*<2> HIDE DEF K
+  <2> QED BY DEF TypeOK, Acceptor
+<1> SUFFICES ASSUME NEW M \in K
+             PROVE  /\ K \in SUBSET msgs'
+                    /\ IsFiniteSet(K)
                     /\ KnownRefs(AL, M)'
                     /\ WellFormed(M)'
-                    /\ Tran(M) \in SUBSET known_msgs[AL]'
+                    /\ Tran(M) \in SUBSET K
                     /\ \E b \in Ballot : B(M, b)
-    BY DEF KnownMsgsSpec
+  <2> HIDE DEF K
+  <2> QED OBVIOUS
 <1> USE DEF KnownMsgsSpec
 <1>1. CASE \E p \in Proposer : ProposerAction(p)
   <2> PICK bal \in Ballot : SendProposal(bal)
@@ -1088,7 +1318,6 @@ PROOF
 
 LEMMA MsgsSafeAcceptorSpec3Invariant ==
     TypeOK /\ NextTLA /\
-    KnownMsgsSpec /\
     MsgsSafeAcceptorPrevRefSpec /\
     MsgsSafeAcceptorPrevTranSpec /\
     SafeAcceptorPrevSpec1 /\
@@ -1096,7 +1325,6 @@ LEMMA MsgsSafeAcceptorSpec3Invariant ==
     MsgsSafeAcceptorSpec3 => MsgsSafeAcceptorSpec3'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA,
-                    KnownMsgsSpec,
                     MsgsSafeAcceptorPrevRefSpec,
                     MsgsSafeAcceptorPrevTranSpec,
                     SafeAcceptorPrevSpec1,
@@ -1313,7 +1541,7 @@ LEMMA EntQuorumIntersection ==
 BY TrustLiveAssumption, LearnerGraphAssumptionValidity DEF Ent
 
 LEMMA MsgsSafeAcceptorSpecImpliesCaughtSpec ==
-    ASSUME TypeOK, KnownMsgsSpec, MsgsSafeAcceptorPrevTranLinearSpec
+    ASSUME TypeOK, KnownMsgsSpec2, MsgsSafeAcceptorPrevTranLinearSpec
     PROVE  CaughtSpec
 PROOF
 <1> SUFFICES ASSUME NEW AL \in SafeAcceptor \cup Learner,
@@ -1337,7 +1565,7 @@ PROOF
             /\ msg1 \notin PrevTran(msg)
     BY DEF CaughtMsg
 <1> QED BY MessageSpec
-        DEF MsgsSafeAcceptorPrevTranLinearSpec, KnownMsgsSpec, SentBy, Proposal, OneA
+        DEF MsgsSafeAcceptorPrevTranLinearSpec, KnownMsgsSpec2, SentBy, Proposal, OneA
 
 \* TODO check and clean
 LEMMA LiveQuorumConIntersection ==
@@ -1490,7 +1718,8 @@ PROOF
 
 LEMMA NotCaughtXXX ==
     ASSUME KnownMsgsPrevTranSpec,
-           KnownMsgsSpec,
+           KnownMsgsSpec1,
+           KnownMsgsSpec2,
            TypeOK,
            NEW AL \in SafeAcceptor \cup Learner,
            NEW a \in Acceptor,
@@ -1504,9 +1733,9 @@ LEMMA NotCaughtXXX ==
     PROVE  x \in Tran(y) \/ y \in Tran(x)
 PROOF
 <1> SUFFICES ASSUME x # y PROVE x \in Tran(y) \/ y \in Tran(x)
-    BY Tran_refl DEF KnownMsgsSpec, TypeOK
+    BY Tran_refl DEF KnownMsgsSpec1, KnownMsgsSpec2, TypeOK
 <1> x \in known_msgs[AL] /\ y \in known_msgs[AL]
-    BY DEF KnownMsgsSpec
+    BY DEF KnownMsgsSpec2
 <1> QED BY DEF KnownMsgsPrevTranSpec, Caught, CaughtMsg
 
 LEMMA ConAllCaught ==
@@ -2250,7 +2479,8 @@ LEMMA YYY ==
            MaxDepthSpec,
            MsgsSafeAcceptorPrevTranLinearSpec,
            KnownMsgsPrevTranSpec,
-           KnownMsgsSpec,
+           KnownMsgsSpec1,
+           KnownMsgsSpec2,
            CaughtSpec,
            TypeOK
     PROVE  \A i \in 0..maxDepth(alpha) :
@@ -2266,9 +2496,9 @@ PROOF
 <1> SUFFICES ASSUME NEW n \in Nat PROVE P(n)
     OBVIOUS
 <1> M \in Message
-    BY DEF KnownMsgsSpec, TypeOK
+    BY DEF KnownMsgsSpec2, TypeOK
 <1> WellFormed(M)
-    BY DEF KnownMsgsSpec
+    BY DEF KnownMsgsSpec2
 <1> maxDepth(alpha) \in Nat
     BY DEF MaxDepthSpec
 
@@ -2288,7 +2518,7 @@ PROOF
             /\ [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
         BY DEF ChosenIn
     <3> Q1 \in SUBSET msgs
-        BY DEF Known2a, KnownMsgsSpec
+        BY DEF Known2a, KnownMsgsSpec1
     <3> Q1 \in SUBSET Message
         BY DEF TypeOK
     <3> [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
@@ -2308,7 +2538,7 @@ PROOF
     <3> Q2 \in SUBSET Message
         BY Tran_Message
     <3> Q2 \in SUBSET known_msgs[L0]
-        BY DEF KnownMsgsSpec
+        BY DEF KnownMsgsSpec2
     <3> PICK p \in SafeAcceptor, ma \in Q1, mb \in Q2 :
             /\ ma.acc = p
             /\ mb.acc = p
@@ -2323,9 +2553,9 @@ PROOF
     <3> mb \in known_msgs[L0]
         OBVIOUS
     <3> ma \in msgs
-        BY DEF KnownMsgsSpec
+        BY DEF KnownMsgsSpec1
     <3> mb \in msgs
-        BY DEF KnownMsgsSpec
+        BY DEF KnownMsgsSpec1
     <3> ~OneA(ma)
          BY MessageTypeSpec DEF Known2a
     <3> ~OneA(mb)
@@ -2402,37 +2632,22 @@ PROOF
             /\ seq[x].r \in Tran(M)
             /\ seq[x].s \in Tran(M)
         BY HeterogeneousSpecCondProperties
-\*      <4> seq[1].m \in Tran(M)
-\*          BY DEF HeterogeneousSpecCond
-\*      \* from cond 8
-\*      <4> \A i \in 1..k :
-\*            seq[i].r \in Tran(seq[i].m)
-\*          BY QuorumProperty1 DEF HeterogeneousSpecCond
-\*      \* from cond 4
-\*      <4> \A i \in 2..k :
-\*            seq[i].m \in Tran(seq[1].r)
-\*          BY DEF HeterogeneousSpecCond
-\*      \* from cond 9
-\*      <4> \A i \in 1..k :
-\*            seq[i].s \in Tran(seq[i].r)
-\*          BY DEF HeterogeneousSpecCond
-\*      <4> QED BY Tran_trans
     \* From the previous, we conclude
     <3> \A x \in 1..k : WellFormed(seq[x].r)
-        BY DEF KnownMsgsSpec
+        BY DEF KnownMsgsSpec2
     <3> \A x \in 1..k : V(seq[x].m, V_M)
         BY DEF HeterogeneousSpecCond
     <3> V(seq[k].m, V_M)
         OBVIOUS
     <3> WellFormed(seq[k].s)
-        BY DEF KnownMsgsSpec
+        BY DEF KnownMsgsSpec2
     <3> B(seq[k].s, bal)
         BY DEF HeterogeneousSpecCond
     \* ..therefore
     <3> V(seq[k].s, val)
         BY ChosenBalVal
     <3> seq[k].r \in known_msgs[L0]
-        BY DEF KnownMsgsSpec
+        BY DEF KnownMsgsSpec2
     <3> V(seq[k].r, V_M)
     \* Follows from
 \*        \* cond 8:
@@ -2513,11 +2728,11 @@ PROOF
 
     \* Since r is known, all the elements of the fresh set are known messages
     <3>11. \A x \in r_fresh_set : WellFormed(x)
-           BY DEF KnownMsgsSpec
+           BY DEF KnownMsgsSpec2
     <3>12. r_fresh_set \in SUBSET Message
-           BY DEF KnownMsgsSpec, TypeOK
+           BY DEF KnownMsgsSpec2, TypeOK
     <3>13. r_fresh_set \in SUBSET known_msgs[L0]
-           BY DEF KnownMsgsSpec
+           BY DEF KnownMsgsSpec2
     <3>14. Latest(r_fresh_set) # {}
            BY <3>10, <3>11, <3>12, LatestNonEmpty
 
@@ -2536,7 +2751,7 @@ PROOF
     <3> m0 \in Tran(seq[k].r)
         BY LatestSubset, <3>12
     <3> m0.lrns \cap Con(seq[k].gamma, seq[k].r) # {}
-        BY LatestSubset DEF D, KnownMsgsSpec, TypeOK
+        BY LatestSubset DEF D, KnownMsgsSpec2, TypeOK
     <3> TwoA(m0)
         BY LearnersWellFormed
     <3> m0 # seq[k].r
@@ -2611,7 +2826,7 @@ PROOF
     <3> Q2 \in SUBSET Message
         BY Tran_Message
     <3> Q2 \in SUBSET known_msgs[L0]
-        BY DEF KnownMsgsSpec
+        BY DEF KnownMsgsSpec2
     <3> Q2 \in SUBSET Tran(seq[k].r)
         BY Tran_trans
     <3> Q2 # {}
@@ -2654,7 +2869,7 @@ PROOF
       <4> HIDE DEF Q2, Q1
       <4> QED BY EntLiveQuorumConIntersection
     <3> r0 \in Message /\ s0 \in Message
-        BY DEF KnownMsgsSpec, TypeOK
+        BY DEF KnownMsgsSpec2, TypeOK
     <3> ~Proposal(s0)
         BY QuorumProperty1
     <3> ~Proposal(r0)
@@ -2674,7 +2889,6 @@ PROOF
         OBVIOUS
     <3> DEFINE seq0 == Append(seq, w0)
     <3>100. HeterogeneousSpecCond(alpha, bal, M, V_M, seq0, k + 1)
-
       <4> (k + 1) - 1 = k
           OBVIOUS
       <4>0. B(seq0[k + 1].m, seq0[k + 1].B_m)
@@ -2789,7 +3003,7 @@ PROOF
               BY QuorumProperty1
 
           <6> seq[k_star].r \in known_msgs[L0]
-              BY DEF KnownMsgsSpec
+              BY DEF KnownMsgsSpec2
           <6> DEFINE w_star == [m |-> m0, B_m |-> B_m0, r |-> r_star, s |-> s_star, gamma |-> gamma0]
           <6> w_star \in Whatever
               BY DEF Whatever
@@ -2995,7 +3209,8 @@ LEMMA ZZZ ==
            NEW seq \in [1 .. maxDepth(alpha) + 1 -> Whatever],
            \A x \in 1 .. maxDepth(alpha) + 1 :
             HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x),
-           KnownMsgsSpec,
+           KnownMsgsSpec1,
+           KnownMsgsSpec2,
            MaxDepthSpec,
            MsgsSafeAcceptorPrevTranLinearSpec,
            KnownMsgsPrevTranSpec,
@@ -3004,9 +3219,9 @@ LEMMA ZZZ ==
     PROVE  FALSE
 PROOF
 <1> M \in Message
-    BY DEF KnownMsgsSpec, TypeOK
+    BY DEF KnownMsgsSpec2, TypeOK
 <1> WellFormed(M)
-    BY DEF KnownMsgsSpec
+    BY DEF KnownMsgsSpec2
 <1> ~OneA(M)
     BY MessageTypeSpec
 <1> maxDepth(alpha) \in Nat
@@ -3253,13 +3468,13 @@ PROOF
     <3> M.acc = s
         OBVIOUS
     <3> M \in SentBy(s)
-        BY DEF KnownMsgsSpec, SentBy, Proposal, OneA
+        BY DEF KnownMsgsSpec1, SentBy, Proposal, OneA
     <3> x2 \in Tran(M)
         BY <1>M0_tran, AcceptorAssumption DEF Proposal, OneA
     <3> x2 \in SentBy(s)
-        BY DEF KnownMsgsSpec, SentBy, Proposal, OneA
+        BY DEF KnownMsgsSpec1, KnownMsgsSpec2, SentBy, Proposal, OneA
     <3> x2 \in known_msgs[L0]
-        BY DEF KnownMsgsSpec
+        BY DEF KnownMsgsSpec2
     <3> x2 \in PrevTran(M)
       <4> x2 \in PrevTran(M) \/ M \in PrevTran(x2)
           BY DEF MsgsSafeAcceptorPrevTranLinearSpec
@@ -3278,13 +3493,13 @@ PROOF
     <3> M.acc = s
         OBVIOUS
     <3> M \in SentBy(s)
-        BY DEF KnownMsgsSpec, SentBy, Proposal, OneA
+        BY DEF KnownMsgsSpec1, SentBy, Proposal, OneA
     <3> x1 \in Tran(M)
         BY <1>M0_tran, AcceptorAssumption DEF Proposal, OneA
     <3> x1 \in SentBy(s)
-        BY DEF KnownMsgsSpec, SentBy, Proposal, OneA
+        BY DEF KnownMsgsSpec1, KnownMsgsSpec2, SentBy, Proposal, OneA
     <3> x1 \in known_msgs[L0]
-        BY DEF KnownMsgsSpec
+        BY DEF KnownMsgsSpec2
     <3> x1 \in PrevTran(M)
       <4> x1 \in PrevTran(M) \/ M \in PrevTran(x1)
           BY DEF MsgsSafeAcceptorPrevTranLinearSpec
@@ -3439,11 +3654,11 @@ PROOF
                 /\ [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
               BY DEF ChosenIn
         <5> Q1 \in SUBSET msgs
-            BY DEF Known2a, KnownMsgsSpec
+            BY DEF Known2a, KnownMsgsSpec1
         <5> Q1 \in SUBSET Message
             BY DEF TypeOK
         <5> Q1 \in SUBSET known_msgs[alpha]
-            BY DEF Zenon, Known2a, KnownMsgsSpec
+            BY DEF Zenon, Known2a, KnownMsgsSpec2
         <5> [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
             BY <5>1
         <5> \A x \in Q1 :
@@ -3458,11 +3673,11 @@ PROOF
         <5> seq[2].m \in Tran(M)
             BY HeterogeneousSpecCondProperties
         <5> WellFormed(seq[2].m)
-            BY DEF KnownMsgsSpec
+            BY DEF KnownMsgsSpec2
         <5> seq[2].m \in Message
             BY DEF WellFormed
         <5> seq[2].m \in known_msgs[L0]
-            BY DEF KnownMsgsSpec
+            BY DEF KnownMsgsSpec2
         <5>2. seq[2].m.lrns = { l \in Learner : [lr |-> l, q |-> { mm.acc : mm \in qd(l, seq[2].m, 1) }] \in TrustLive }
               BY DEF WellFormed
         <5> seq[2].B_m \in Ballot
@@ -3478,9 +3693,9 @@ PROOF
         <5> Q2 \in SUBSET Message
             BY Tran_Message
         <5> Q2 \in SUBSET known_msgs[L0]
-            BY DEF KnownMsgsSpec
+            BY DEF KnownMsgsSpec2
         <5> Q2 \in SUBSET msgs
-            BY DEF KnownMsgsSpec
+            BY DEF KnownMsgsSpec1
         <5> \A x \in Q2 : ~OneA(x)
             BY QuorumProperty1 DEF Proposal, OneA
         <5> \A x \in Q2 : B(x, seq[2].B_m)
@@ -3552,7 +3767,6 @@ PROOF
     BY Zenon, <1>seq0, <1>seq1, <1>seq2, maxDepth_XXX
 <1> QED BY <1>0, <1>seq3
 
-
 -----------------------------------------------------------------------------
 
 THEOREM GeneralBallotInduction ==
@@ -3622,7 +3836,8 @@ LEMMA ChosenSafeCaseLt ==
            NEW B1 \in Ballot, NEW B2 \in Ballot,
            NEW V1 \in Value, NEW V2 \in Value,
            MaxDepthSpec,
-           KnownMsgsSpec,
+           KnownMsgsSpec1,
+           KnownMsgsSpec2,
            CaughtSpec,
            MsgsSafeAcceptorPrevTranLinearSpec,
            KnownMsgsPrevTranSpec,
@@ -3666,7 +3881,8 @@ LEMMA ChosenSafe ==
            NEW V1 \in Value, NEW V2 \in Value,
            TypeOK,
            MaxDepthSpec,
-           KnownMsgsSpec,
+           KnownMsgsSpec1,
+           KnownMsgsSpec2,
            CaughtSpec,
            MsgsSafeAcceptorPrevTranLinearSpec,
            KnownMsgsPrevTranSpec,
@@ -3683,7 +3899,8 @@ LEMMA SafetyStep ==
     BVal \in [Ballot -> Value] /\
     TypeOK /\ NextTLA /\
     MaxDepthSpec /\
-    KnownMsgsSpec /\ CaughtSpec /\
+    KnownMsgsSpec1 /\ KnownMsgsSpec2 /\
+    CaughtSpec /\
     MsgsSafeAcceptorPrevTranLinearSpec /\
     KnownMsgsPrevTranSpec /\
     DecisionSpec /\
@@ -3692,7 +3909,8 @@ PROOF
 <1> SUFFICES
         ASSUME BVal \in [Ballot -> Value],
                TypeOK, NextTLA, MaxDepthSpec,
-               KnownMsgsSpec, CaughtSpec,
+               KnownMsgsSpec1, KnownMsgsSpec2,
+               CaughtSpec,
                KnownMsgsPrevTranSpec,
                MsgsSafeAcceptorPrevTranLinearSpec,
                DecisionSpec,
@@ -3759,7 +3977,8 @@ PROOF
 FullSafetyInvariant ==
     /\ BVal \in [Ballot -> Value]
     /\ TypeOK
-    /\ KnownMsgsSpec
+    /\ KnownMsgsSpec1
+    /\ KnownMsgsSpec2
     /\ SafeAcceptorPrevSpec1
     /\ SafeAcceptorPrevSpec2
     /\ MsgsSafeAcceptorPrevTranLinearSpec
@@ -3775,8 +3994,11 @@ PROOF BY DEF Init
 LEMMA TypeOKInit == Init => TypeOK
 PROOF BY DEF Init, TypeOK
 
-LEMMA KnownMsgsSpecInit == Init => KnownMsgsSpec
-PROOF BY DEF Init, KnownMsgsSpec, Acceptor
+LEMMA KnownMsgsSpec1Init == Init => KnownMsgsSpec1
+PROOF BY FS_EmptySet DEF Init, KnownMsgsSpec1, Acceptor
+
+LEMMA KnownMsgsSpec2Init == Init => KnownMsgsSpec2
+PROOF BY DEF Init, KnownMsgsSpec2, Acceptor
 
 LEMMA SafeAcceptorPrevSpec1Init == Init => SafeAcceptorPrevSpec1
 PROOF BY DEF Init, SafeAcceptorPrevSpec1, Acceptor, SentBy
@@ -3805,7 +4027,8 @@ PROOF BY DEF Init, Safety
 LEMMA FullSafetyInvariantInit == Init => FullSafetyInvariant
 PROOF BY BValInit,
          TypeOKInit,
-         KnownMsgsSpecInit,
+         KnownMsgsSpec1Init,
+         KnownMsgsSpec2Init,
          SafeAcceptorPrevSpec1Init,
          SafeAcceptorPrevSpec2Init,
          MsgsSafeAcceptorPrevTranLinearSpecInit,
@@ -3824,9 +4047,16 @@ LEMMA TypeOKStutter ==
     TypeOK /\ vars = vars' => TypeOK'
 PROOF BY DEF TypeOK, vars
 
-LEMMA KnownMsgsSpecStutter ==
-    KnownMsgsSpec /\ vars = vars' => KnownMsgsSpec'
-PROOF BY Isa DEF KnownMsgsSpec, vars, WellFormed, WellFormed1b,
+LEMMA KnownMsgsSpec1Stutter ==
+    KnownMsgsSpec1 /\ vars = vars' => KnownMsgsSpec1'
+PROOF BY Isa DEF KnownMsgsSpec1, vars, WellFormed, WellFormed1b,
+                 qd, Fresh000, D, Con, ConByQuorum, Con2as, Buried,
+                 V, B, Get1a, SameBallot, SameValue, ChainRef, KnownRefs,
+                 Caught, CaughtMsg
+
+LEMMA KnownMsgsSpec2Stutter ==
+    KnownMsgsSpec2 /\ vars = vars' => KnownMsgsSpec2'
+PROOF BY Isa DEF KnownMsgsSpec2, vars, WellFormed, WellFormed1b,
                  qd, Fresh000, D, Con, ConByQuorum, Con2as, Buried,
                  V, B, Get1a, SameBallot, SameValue, ChainRef, KnownRefs,
                  Caught, CaughtMsg
@@ -3888,7 +4118,8 @@ PROOF
          BValNext,
          BValInvariant,
          TypeOKInvariant,
-         KnownMsgsSpecInvariant,
+         KnownMsgsSpec1Invariant,
+         KnownMsgsSpec2Invariant,
          SafeAcceptorPrevSpec1Invariant,
          SafeAcceptorPrevSpec2Invariant,
          MsgsSafeAcceptorSpecImpliesCaughtSpec,
@@ -3902,7 +4133,8 @@ PROOF
       BY <1>2,
          BValStutter,
          TypeOKStutter,
-         KnownMsgsSpecStutter,
+         KnownMsgsSpec1Stutter,
+         KnownMsgsSpec2Stutter,
          SafeAcceptorPrevSpec1Stutter,
          SafeAcceptorPrevSpec2Stutter,
          MsgsSafeAcceptorPrevTranLinearSpecStutter,
