@@ -3295,9 +3295,20 @@ PROOF
   <2> IsFiniteSet({p1})
       BY FS_Singleton
   <2> QED BY Isa, OneB_Message_bis DEF Acceptor
-\* HERE
 <1> IsFiniteSet(oneb_1)
-    BY FakeAcceptorFinite
+  <2> PICK fseq \in Seq(FakeAcceptor) :
+        \A f \in FakeAcceptor : \E n \in 1..Len(fseq) : fseq[n] = f
+      BY FakeAcceptorFinite DEF IsFiniteSet
+  <2> DEFINE mseq == [ x \in 1..Len(fseq) |->
+                        [ type |-> "1b", acc |-> fseq[x], prev |-> p1, refs |-> {p1}, lrns |-> {} ]
+                     ]
+  <2> mseq \in Seq(oneb_1)
+      OBVIOUS
+  <2> Len(mseq) = Len(fseq)
+      OBVIOUS
+  <2> \A m \in oneb_1 : \E n \in 1..Len(mseq) : mseq[n] = m
+      OBVIOUS
+  <2> QED BY DEF IsFiniteSet
 <1> \A m1 \in oneb_1 : B(m1, bal1)
   <2> SUFFICES ASSUME NEW f \in FakeAcceptor
                PROVE  B([ type |-> "1b", acc |-> f, prev |-> p1, refs |-> {p1}, lrns |-> {} ], bal1)
@@ -3337,9 +3348,20 @@ PROOF
   <2> IsFiniteSet({p2})
       BY FS_Singleton
   <2> QED BY Isa, OneB_Message_bis DEF Acceptor
-\* HERE
 <1> IsFiniteSet(oneb_2)
-    BY FakeAcceptorFinite
+  <2> PICK fseq \in Seq(FakeAcceptor) :
+        \A f \in FakeAcceptor : \E n \in 1..Len(fseq) : fseq[n] = f
+      BY FakeAcceptorFinite DEF IsFiniteSet
+  <2> DEFINE mseq == [ x \in 1..Len(fseq) |->
+                        [ type |-> "1b", acc |-> fseq[x], prev |-> p2, refs |-> {p2}, lrns |-> {} ]
+                     ]
+  <2> mseq \in Seq(oneb_2)
+      OBVIOUS
+  <2> Len(mseq) = Len(fseq)
+      OBVIOUS
+  <2> \A m \in oneb_2 : \E n \in 1..Len(mseq) : mseq[n] = m
+      OBVIOUS
+  <2> QED BY DEF IsFiniteSet
 <1> \A m2 \in oneb_2 : B(m2, bal2)
   <2> SUFFICES ASSUME NEW f \in FakeAcceptor
                PROVE  B([ type |-> "1b", acc |-> f, prev |-> p2, refs |-> {p2}, lrns |-> {} ], bal2)
