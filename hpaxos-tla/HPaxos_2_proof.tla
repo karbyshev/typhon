@@ -1847,6 +1847,7 @@ PROOF
     BY DEF WhateverOrder
 <1> PICK w0 \in T : \A z \in T : ~(z.B_m < w0.B_m)
     BY WFMin, WhateverOrderWellFounded
+<1> WITNESS w0 \in T
 <1> QED BY WhateverSpec DEF Ballot
 
 \* seq \in Seq(Whatever)
@@ -2574,6 +2575,8 @@ PROOF
       OBVIOUS
   <2> seq \in Seq(Whatever)
       BY SeqDef
+  <2> k =< Len(seq)
+      OBVIOUS
   <2> DEFINE S ==
         { w \in Whatever : HeterogeneousSpecCond(alpha, bal, M, V_M, Append(seq, w), k + 1) }
   <2> S # {}
