@@ -121,7 +121,7 @@ LEMMA TranBallot ==
     ASSUME NEW m1 \in Message, NEW m2 \in Tran(m1),
            NEW b1 \in Ballot, NEW b2 \in Ballot,
            B(m1, b1), B(m2, b2)
-    PROVE  b2 <= b1
+    PROVE  b2 =< b1
 PROOF BY Tran_trans DEF B, Get1a
 
 LEMMA LatestSubset ==
@@ -1807,7 +1807,7 @@ HeterogeneousSpecTry1(bal) ==
 \*                /\ HeterogeneousSpecCond(0, alpha, gamma_0, {}, bal, V_M, m_0, B_m_0, r_0, s_0, {}, {}, {})
 \*                /\ \A m1 \in Tran(M), B_m1 \in Ballot, r1 \in Tran(M), s1 \in Tran(M), gamma1 \in Learner:
 \*                    B(m1, B_m1) /\ HeterogeneousSpecCond(0, alpha, gamma1, {}, bal, V_M, m1, B_m1, r1, s1, {}, {}, {}) =>
-\*                    B_m_0 <= B_m1
+\*                    B_m_0 =< B_m1
 
 \* TODO RENAME
 Whatever == [m : Message, B_m : Ballot, r : Message, s : Message, gamma : Learner]
@@ -1900,7 +1900,7 @@ HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x) ==
     /\ \A z \in Whatever:
         LET seq1 == [seq EXCEPT ![x] = z] IN
         HeterogeneousSpecCond(alpha, bal, M, V_M, seq1, x) =>
-        seq[x].B_m <= seq1[x].B_m
+        seq[x].B_m =< seq1[x].B_m
 
 LEMMA HeterogeneousSpecCondCongr ==
     ASSUME NEW alpha \in Learner,
@@ -2007,7 +2007,7 @@ PROOF
 \*           NEW alpha \in Learner,
 \*           NEW M \in known_msgs[LA],
 \*           NEW k \in Nat,
-\*           k + 1 <= N_L,
+\*           k + 1 =< N_L,
 \*           depth(alpha, M) = k + 1,
 \*           \* TODO
 \*\*           \A l \in Learner, x \in Message : depthIdx(l, x) \in SUBSET 1..N_L,
@@ -2305,7 +2305,7 @@ LEMMA HeterogeneousSpecCondProperties ==
            NEW V_M \in Value,
            NEW seq \in Seq(Whatever),
            NEW K \in Nat,
-           K <= Len(seq),
+           K =< Len(seq),
            \A i \in 1..K : HeterogeneousSpecCond(alpha, bal, M, V_M, seq, i)
     PROVE  /\ \A i \in 1..K :
             /\ seq[i].m \in Tran(M)
@@ -2355,7 +2355,7 @@ PROOF
         OBVIOUS
     <3> j + 1 \in 1..K
         OBVIOUS
-    <3> i <= j - 1
+    <3> i =< j - 1
         OBVIOUS
     <3> Con(alpha, seq[j - 1].r) # Con(alpha, seq[j].r)
         BY DEF HeterogeneousSpecCond
@@ -2887,7 +2887,7 @@ PROOF
         \* seq_bad defined as seq[k* |-> w_bad], for some k*, still satisfies HeterogeneousSpecCond(..., seq_bad)
         \* with
         \* w_bad == [m |-> m0, B_m |-> B_m0, r |-> r_bad, s |-> s_bad, gamma |-> gamma0]
-        \* Then we conclude that, by construction, seq[k].B_m <= B_m0 which contradicts <4>3
+        \* Then we conclude that, by construction, seq[k].B_m =< B_m0 which contradicts <4>3
         \* Isaac: we need to find the earliest k such that
         \* gamma0 \in Con(alpha, seq[k].r)
         \* Denote it k*.
@@ -2895,7 +2895,7 @@ PROOF
         \* CASE k* < k: we prove FALSE.
         \* We construct seq_bad as seq[k* + 1 |-> w_bad], with w_bad defined as above.
         \* We prove then that HeterogeneousSpecCond(..., seq_bad), which implies that
-        \* seq[k* + 1].B_m <= B_m0
+        \* seq[k* + 1].B_m =< B_m0
         \* The latter contradicts with B_m0 < seq[i].B_m, forall i, by cond 3
 
 
@@ -3149,7 +3149,7 @@ LEMMA maxDepth_XXX ==
            \A i, j \in 1..Len(seq) : i < j =>
                /\ seq[i] \in Tran(seq[j])
                /\ Con(alpha, seq[i]) # Con(alpha, seq[j])
-    PROVE  Len(seq) <= maxDepth(alpha)
+    PROVE  Len(seq) =< maxDepth(alpha)
 
 \*    maxDepth(alpha) ==
 \*        LET I == { n \in 1..N_L :
@@ -3234,7 +3234,7 @@ PROOF
 \*    /\ \A z \in Whatever:
 \*        LET seq1 == [seq EXCEPT ![x] = z] IN
 \*        HeterogeneousSpecCond(alpha, bal, M, V_M, seq1, x) =>
-\*        seq[x].B_m <= seq1[x].B_m
+\*        seq[x].B_m =< seq1[x].B_m
 
 
 
@@ -3496,7 +3496,7 @@ PROOF
     OBVIOUS
 <1> Len(mseq) \in Nat
     OBVIOUS
-<1> maxDepth(alpha) <= Len(mseq)
+<1> maxDepth(alpha) =< Len(mseq)
     OBVIOUS
 <1> \A i \in 1..maxDepth(alpha) : mseq[i] = seq[maxDepth(alpha) - i + 1].r
     OBVIOUS
@@ -3527,11 +3527,11 @@ PROOF
         OBVIOUS
     <3> DEFINE l0 == maxDepth(alpha) - l + 1
     <3> DEFINE k0 == maxDepth(alpha) - k + 1
-    <3> l0 < k0 
+    <3> l0 < k0
         OBVIOUS
-    <3> k0 <= Len(seq)
+    <3> k0 =< Len(seq)
         OBVIOUS
-    <3> l0 <= Len(seq)
+    <3> l0 =< Len(seq)
         OBVIOUS
     <3> k0 \in 1..Len(seq)
         OBVIOUS
@@ -3738,7 +3738,7 @@ PROOF
     <3> QED OBVIOUS
   <2> QED BY <2>1, <2>2
 
-<1>seq3. Len(mseq) <= maxDepth(alpha)
+<1>seq3. Len(mseq) =< maxDepth(alpha)
     BY Zenon, <1>seq0, <1>seq1, <1>seq2, maxDepth_XXX
 <1> QED BY <1>0, <1>seq3
 
