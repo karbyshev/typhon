@@ -2312,7 +2312,7 @@ LEMMA HeterogeneousSpecCondProperties ==
             /\ seq[i].r \in Tran(M)
             /\ seq[i].s \in Tran(M)
            /\ \A i, j \in 1..K : i < j =>
-            /\ seq[j].r \in Tran(seq[i].r)
+                seq[j].r \in Tran(seq[i].r)
            /\ \A i, j \in 1..K : i < j /\ j < K =>
                 /\ Con(alpha, seq[i].r) \in SUBSET Con(alpha, seq[j].r)
                 /\ Con(alpha, seq[i].r) # Con(alpha, seq[j].r)
@@ -3581,25 +3581,37 @@ PROOF
     <3> QED BY HeterogeneousSpecCondProperties
 
   <2>2. \A i \in 1..maxDepth(alpha) : Con(alpha, mseq[i]) # Con(alpha, mseq[maxDepth(alpha) + 1])
-    <3> SUFFICES ASSUME NEW j \in 1..maxDepth(alpha)
-                 PROVE  Con(alpha, seq[j].r) # Con(alpha, M0)
+    <3> SUFFICES ASSUME NEW j0 \in 1..maxDepth(alpha)
+                 PROVE  Con(alpha, seq[j0].r) # Con(alpha, M0)
         OBVIOUS
     <3> maxDepth(alpha) + 1 =< Len(seq)
         OBVIOUS
-    <3> seq[2].gamma \in Con(alpha, seq[j].r)
+    <3> seq[2].gamma \in Con(alpha, seq[j0].r)
       <4> seq[2].gamma \in Con(alpha, seq[1].r)
           BY DEF HeterogeneousSpecCond
-      <4> CASE j = 1 OBVIOUS
-      <4> CASE 1 < j
-        <5> j < maxDepth(alpha) + 1
+      <4> CASE j0 = 1
+          OBVIOUS
+      <4> CASE 1 < j0
+        <5> j0 < maxDepth(alpha) + 1
+            OBVIOUS
+        <5> j0 < Len(seq)
             OBVIOUS
         <5> 1 \in 1..Len(seq)
             OBVIOUS
-        <5> j \in 1..Len(seq)
+        <5> j0 \in 1..Len(seq)
+            OBVIOUS
+        <5> Len(seq) =< Len(seq)
+            OBVIOUS
+        <5> \A i \in 1..Len(seq) :
+                HeterogeneousSpecCond(alpha, bal, M, V_M, seq, i)
             OBVIOUS
         <5> HIDE DEF M0, oneb_1, oneb_2
-        <5> Con(alpha, seq[1].r) \in SUBSET Con(alpha, seq[j].r)
+        <5>1. \A i, j \in 1..Len(seq) : i < j /\ j < Len(seq) =>
+                /\ Con(alpha, seq[i].r) \in SUBSET Con(alpha, seq[j].r)
+                /\ Con(alpha, seq[i].r) # Con(alpha , seq[j].r)
             BY HeterogeneousSpecCondProperties
+        <5> Con(alpha, seq[1].r) \in SUBSET Con(alpha, seq[j0].r)
+            BY <5>1
         <5> QED OBVIOUS
       <4> QED OBVIOUS
     <3> seq[2].gamma \notin Con(alpha, M0)
@@ -4130,5 +4142,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Mon May 12 20:01:49 CEST 2025 by karbyshev
+\* Last modified Tue May 13 00:15:50 CEST 2025 by karbyshev
 \* Created Tue Jun 20 00:28:26 CEST 2023 by karbyshev
