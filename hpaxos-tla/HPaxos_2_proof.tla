@@ -91,6 +91,15 @@ LEMMA V_def ==
     PROVE V(m, BVal[b])
 PROOF BY Get1a_TypeOK DEF V, B
 
+LEMMA SameBallot_B ==
+    ASSUME NEW x \in Message,
+           NEW y \in Message,
+           NEW bal \in Ballot,
+           B(x, bal),
+           B(y, bal)
+    PROVE  SameBallot(x, y)
+PROOF BY B_func DEF SameBallot
+
 \* TODO remove if not used
 LEMMA SameBallot_sym ==
     ASSUME NEW x \in Message,
@@ -129,15 +138,7 @@ LEMMA LatestSubset ==
     PROVE  Latest(P) \in SUBSET P
 PROOF BY DEF Latest
 
-\* TODO fix: requires IsFinite(P)
 LEMMA LatestNonEmpty ==
-    ASSUME NEW P \in SUBSET { m \in Message : WellFormed(m) },
-           P # {}
-    PROVE  Latest(P) # {}
-PROOF
-<1> QED
-
-LEMMA LatestNonEmpty_bis ==
     ASSUME NEW P \in SUBSET { m \in Message : WellFormed(m) },
            P # {},
            IsFiniteSet(P)
@@ -2424,14 +2425,30 @@ PROOF
 \*PROOF
 \*<1> QED
 
-\* TODO
 LEMMA ChosenBalVal ==
-    ASSUME NEW alpha \in Learner,
+    ASSUME BVal \in [Ballot -> Value],
+           KnownMsgsSpec1,
+           TypeOK,
+           NEW alpha \in Learner,
            NEW bal \in Ballot,
            NEW val \in Value,
            ChosenIn(alpha, bal, val)
     PROVE  \A x \in Message : B(x, bal) => V(x, val)
-<1> QED
+PROOF
+<1>1. PICK Q \in SUBSET Known2a(alpha, bal, val) :
+        [lr |-> alpha, q |-> { mm.acc : mm \in Q }] \in TrustLive
+    BY DEF ChosenIn
+<1> PICK m \in Known2a(alpha, bal, val) : TRUE
+    BY <1>1, TrustLiveNonEmpty
+<1> m \in Message
+    BY DEF KnownMsgsSpec1, TypeOK, Known2a
+<1> B(m, bal) /\ V(m, val)
+    BY DEF Known2a
+<1> SUFFICES ASSUME NEW x \in Message, B(x, bal) PROVE V(x, val)
+    OBVIOUS
+<1> SameBallot(m, x)
+    BY SameBallot_B
+<1> QED BY SameBallotValue DEF SameValue
 
 LEMMA YYY ==
     ASSUME BVal \in [Ballot -> Value],
@@ -2708,13 +2725,17 @@ PROOF
            BY DEF KnownMsgsSpec2, TypeOK
     <3>13. r_fresh_set \in SUBSET known_msgs[L0]
            BY DEF KnownMsgsSpec2
-    <3>14. Latest(r_fresh_set) # {}
-           BY <3>10, <3>11, <3>12, LatestNonEmpty
+    <3>14. IsFiniteSet(r_fresh_set)
+      <4> IsFiniteSet(known_msgs[L0])
+          BY DEF KnownMsgsSpec1
+      <4> QED BY <3>13, FS_Subset
+    <3>15. Latest(r_fresh_set) # {}
+           BY <3>10, <3>11, <3>12, <3>14, LatestNonEmpty
 
     \* Below, we construct m0, B_m0, gamma0, r0, s0 which are fields of seq[k+1]
     \* Define m0 as a latest fresh message of r
     <3> PICK m0 \in Latest(r_fresh_set) : TRUE
-        BY <3>14, LatestSubset
+        BY <3>15, LatestSubset
 
     \* m0 has the following properties
     <3> WellFormed(m0)
@@ -4164,5 +4185,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 13 00:15:50 CEST 2025 by karbyshev
+\* Last modified Tue May 13 01:35:25 CEST 2025 by karbyshev
 \* Created Tue Jun 20 00:28:26 CEST 2023 by karbyshev
