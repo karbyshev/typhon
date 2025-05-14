@@ -200,7 +200,7 @@ PROOF
 <1> A(n0 - 1)
     OBVIOUS
 <1> HIDE DEF A
-<1> QED BY <1>1, SmallestNatural, IsaM("blast")
+<1> QED BY <1>1, SmallestNatural, Blast
 
 -----------------------------------------------------------------------------
 \* Check equivalence of two well-formedness conditions
@@ -3160,7 +3160,7 @@ PROOF
   <2> WITNESS seq0 \in [1..k + 1 -> Whatever]
   <2> QED OBVIOUS
 <1> HIDE DEF P
-<1>3. QED BY <1>0, <1>1, INDUCTION_SCHEME, IsaM("blast")
+<1>3. QED BY <1>0, <1>1, INDUCTION_SCHEME, Blast
 
 \* TODO rename and prove
 LEMMA maxDepth_XXX ==
@@ -3808,7 +3808,7 @@ THEOREM GeneralBallotInduction ==
 PROOF
 <1> USE DEF Ballot
 <1> SUFFICES \A n \in Nat : (\A m \in 0..n - 1 : P(m)) => P(n)
-    BY GeneralNatInduction, IsaM("blast")
+    BY GeneralNatInduction, Blast
 <1> QED OBVIOUS
 
 \* TODO check if can be reused, in particular ZZZ, <1>caught_safe
