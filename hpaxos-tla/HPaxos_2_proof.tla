@@ -1722,35 +1722,146 @@ PROOF BY LearnerGraphAssumptionClosure, EntanglementSym
       DEF Con, ConByQuorum, Ent, Acceptor, ByzQuorum
 
 -----------------------------------------------------------------------------
-ConnectednessSpec(bal) ==
-    TRUE
 
+\*ConSeq(alpha) ==
+\*        { seq \in Seq(Message) :
+\*            /\ Len(seq) > 0
+\*            /\ \A i, j \in 1..Len(seq) : i < j =>
+\*                /\ seq[i] \in Tran(seq[j])
+\*                /\ Con(alpha, seq[i]) # Con(alpha, seq[j])
+\*        }
+\*
+\*
+\*maxDepth(alpha) ==
+\*        LET I == { n \in Nat :
+\*                    \E seq \in ConSeq(alpha) :
+\*                        /\ n = Len(seq)
+\*                        /\ alpha \in Con(alpha, seq[n]) }
+\*        IN Max(I)
 
------------------------------------------------------------------------------
-HeterogeneousSpecTry1(bal) ==
-    \A L0, L1, L2, L3 \in Learner :
-        <<L1, L3>> \in Ent =>
-        \A V1, V2 \in Value :
-        \A B1 \in Ballot :
-            ChosenIn(L1, B1, V1) =>
-            \A M \in known_msgs[L0] :
-                TwoA(M) /\
-                L3 \in M.lrns /\
-                B(M, bal) /\
-                B1 < bal /\
-                \* "least" condition?
-                V1 # V2 /\
-                V(M, V2) => TRUE
-\*                \E X \in known_msgs[L0] :
-\*                    TwoA(X) /\
-\*                    B(X) >= bal - Z /\
-\*                    B(X) >= B1 /\
-\*                    size(Con(L1, X)) >= Z /\
-\*                    L2 \in X.lrns /\
-\*                    Y \in Tran(X) /\
-\*                    B(Y) = B1 /\
-\*                    depth(L1, Y) = maxDepth(L1) - Z /\
-\*                    L1 \notin Con(L3, X)
+LEMMA ConSeqContainsEmpty ==
+    ASSUME NEW alpha \in Learner
+    PROVE  << >> \in ConSeq(alpha)
+PROOF BY DEF ConSeq
+
+LEMMA ConSeqNonTrivial ==
+    ASSUME NEW alpha \in Learner,
+           <<alpha, alpha>> \in Ent
+    PROVE  \E seq \in ConSeq(alpha) :
+            /\ Len(seq) > 0
+            /\ alpha \in Con(alpha, seq[Len(seq)])
+PROOF
+<1> PICK bal \in Ballot : TRUE
+    BY DEF Ballot
+<1> DEFINE val == BVal[bal]
+
+<1> DEFINE p == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {} ]
+<1> p \in Message /\ OneA(p) /\ p.bal = bal
+    BY OneA_Message
+<1> Proposal(p)
+    BY DEF OneA, Proposal
+<1> B(p, bal)
+    BY B_1a
+<1> Tran(p) = {p}
+    BY Tran_1a
+<1> PrevTran(p) = {p}
+    BY PrevTran_eq
+
+<1> PICK safe \in SafeAcceptor : TRUE
+    BY SafeAcceptorNonTrivial
+<1> safe \in Acceptor
+    BY DEF Acceptor
+
+<1> oneb == [ type |-> "1b", acc |-> safe, prev |-> p, refs |-> {p}, lrns |-> {} ]
+<1> oneb \in Message /\ OneB(oneb)
+    BY OneB_Message
+<1> ~Proposal(oneb)
+    BY DEF OneB, Proposal
+<1> Tran(oneb) = {oneb, p}
+    BY Isa, Tran_eq
+
+<1> alpha \in Con(alpha, oneb)
+  <2> Caught(oneb) = {}
+      BY DEF Caught, CaughtMsg
+  <2> QED BY SafeAcceptorIsByzQuorum DEF Con, ConByQuorum, Ent
+
+<1> [x \in 1..1 |-> oneb] \in ConSeq(alpha)
+    BY SeqDef DEF ConSeq
+<1> QED OBVIOUS
+
+\*THEOREM SequencesInductionAppend ==
+\*  ASSUME NEW P(_), NEW S,
+\*         P(<< >>),
+\*         \A s \in Seq(S), e \in S : P(s) => P(Append(s,e))
+\*  PROVE  \A seq \in Seq(S) : P(seq)
+
+\*THEOREM SequencesInductionTail ==
+\*  ASSUME NEW S,  NEW P(_),
+\*         P(<< >>),
+\*         \A s \in Seq(S) : (s # << >>) /\ P(Tail(s)) => P(s)
+\*  PROVE  \A s \in Seq(S) : P(s)
+
+\*LEMMA ConnectedLearner ==
+\*    ASSUME NEW alpha \in Learner,
+\*           NEW x \in Message
+\*    PROVE  Con(alpha, x) \in SUBSET Learner
+
+\*ASSUME LearnerGraphCard ==
+\*    Cardinality(Learner) = N_L
+
+LEMMA ConSeqBound ==
+    ASSUME NEW alpha \in Learner,
+           NEW seq \in ConSeq(alpha)
+    PROVE  Len(seq) =< N_L
+PROOF
+<1> DEFINE P(s) ==
+        s # << >> /\
+        (\A i, j \in 1..Len(s) : i < j =>
+            /\ s[i] \in Tran(s[j])
+            /\ Con(alpha, s[i]) # Con(alpha, s[j])) =>
+        Len(s) =< Cardinality(Con(alpha, Head(s)))
+<1> SUFFICES ASSUME NEW s1 \in Seq(Message) PROVE P(s1)
+  <2> seq \in Seq(Message)
+      BY DEF ConSeq
+  <2> CASE seq # << >>
+    <3> Len(seq) \in Nat
+        OBVIOUS
+    <3> Len(seq) =< Cardinality(Con(alpha, Head(seq)))
+        BY DEF ConSeq
+    <3> Head(seq) \in Message
+        BY HeadTailProperties
+    <3> Con(alpha, Head(seq)) \in SUBSET Learner
+        BY ConnectedLearner
+    <3> /\ IsFiniteSet(Con(alpha, Head(seq)))
+        /\ Cardinality(Con(alpha, Head(seq))) =< Cardinality(Learner)
+        BY FS_Subset, LearnerGraphCard
+    <3> Cardinality(Con(alpha, Head(seq))) =< N_L
+        BY LearnerGraphCard
+    <3> QED BY LearnerGraphSize, FS_CardinalityType
+  <2> QED BY LearnerGraphSize
+<1>0. P(<< >>)
+      OBVIOUS
+<1>1. \A s \in Seq(Message) : (s # << >>) /\ P(Tail(s)) => P(s)
+  <2> SUFFICES ASSUME NEW s \in Seq(Message),
+                      s # << >>,
+                      P(Tail(s)),
+                      (\A i, j \in 1..Len(s) : i < j =>
+                        /\ s[i] \in Tran(s[j])
+                        /\ Con(alpha, s[i]) # Con(alpha, s[j]))
+               PROVE  Len(s) =< Cardinality(Con(alpha, Head(s)))
+      OBVIOUS
+  <2> s = Cons(Head(s), Tail(s))
+      BY ConsHeadTail
+  <2> CASE Tail(s) = << >>
+    <3> s = << Head(s) >>
+        BY ConsEmpty
+    <3> Len(s) = 1
+        OBVIOUS
+    <3> 
+    <3> QED
+  <2> QED
+<1> HIDE DEF P
+<1> QED BY <1>0, <1>1, SequencesInductionTail, Blast
 
 -----------------------------------------------------------------------------
 
