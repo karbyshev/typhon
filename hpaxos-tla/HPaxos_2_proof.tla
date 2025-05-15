@@ -930,13 +930,11 @@ PROOF
 
 LEMMA KnownMsgsSpec2Invariant ==
     TypeOK /\ NextTLA /\
-    SafeAcceptorPrevSpec2 /\
     KnownMsgsSpec1 /\
     KnownMsgsSpec2 =>
     KnownMsgsSpec2'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA,
-                    SafeAcceptorPrevSpec2,
                     KnownMsgsSpec1,
                     KnownMsgsSpec2
              PROVE  KnownMsgsSpec2'
