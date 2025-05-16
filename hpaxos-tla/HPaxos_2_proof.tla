@@ -1491,13 +1491,120 @@ PROOF
 <1> QED BY <1>1, <1>3, <1>6, <1>7
         DEF NextTLA, SafeAcceptorAction, FakeAcceptorAction
 
+\*KnownMsgsPrevTranSpec ==
+\*    \A AL \in SafeAcceptor \cup Learner :
+\*        \A m1 \in known_msgs[AL] :
+\*            \A m2 \in PrevTran(m1) :
+\*                m2 \in Tran(m1)
+
+\*LEMMA KnownMsgsSpec1Invariant ==
+\*    TypeOK /\ NextTLA /\
+\*    KnownMsgsSpec1 =>
+\*    KnownMsgsSpec1'
+
 \* TODO
 LEMMA KnownMsgsPrevTranSpecInvariant ==
     TypeOK /\ NextTLA /\
+    KnownMsgsSpec1 /\
+    KnownMsgsSpec2 /\
     KnownMsgsPrevTranSpec =>
     KnownMsgsPrevTranSpec'
 PROOF
-<1> QED
+<1> SUFFICES ASSUME TypeOK, NextTLA,
+                    KnownMsgsSpec1,
+                    KnownMsgsSpec2,
+                    KnownMsgsPrevTranSpec
+             PROVE  KnownMsgsPrevTranSpec'
+    OBVIOUS
+<1> TypeOK'
+    BY TypeOKInvariant
+<1> KnownMsgsSpec1'
+    BY KnownMsgsSpec1Invariant
+<1> KnownMsgsSpec2'
+    BY KnownMsgsSpec2Invariant
+<1> SUFFICES ASSUME NEW AL \in SafeAcceptor \cup Learner,
+                    NEW m1 \in known_msgs[AL]',
+                    m1 \notin known_msgs[AL],
+                    NEW m2 \in PrevTran(m1),
+                    m2 # m1
+             PROVE  m2 \in Tran(m1)
+    BY Tran_refl DEF KnownMsgsPrevTranSpec, KnownMsgsSpec1, TypeOK
+<1> m1 \in Message
+    BY DEF KnownMsgsSpec1, TypeOK
+<1> m1.prev # NoMessage
+    BY PrevTran_eq
+\*<1> AL \in SafeAcceptor BY DEF Acceptor
+<1> USE DEF KnownMsgsPrevTranSpec
+<1>1. CASE \E p \in Proposer : ProposerAction(p)
+  <2> PICK p \in Proposer, bal \in Ballot : SendProposal(bal)
+      BY <1>1 DEF ProposerAction
+  <2> QED BY DEF SendProposal
+<1>3. CASE \E a \in SafeAcceptor :
+            \E m \in msgs : Process(a, m)
+  <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
+      BY <1>3
+  <2> Recv(acc, msg)
+      BY DEF Process
+  <2> QED
+\*  <2> PICK ll \in SUBSET Learner,
+\*           t \in {"1b", "2a", "2b"} :
+\*      LET new == [type |-> t,
+\*                  acc  |-> acc,
+\*                  prev |-> prev_msg[acc],
+\*                  refs |-> recent_msgs[acc] \cup {msg},
+\*                  lrns |-> ll] IN
+\*      /\ Send(new)
+\*      /\ prev_msg' = [prev_msg EXCEPT ![acc] = new]
+\*      BY DEF Process, TypeOK
+\*  <2> DEFINE new == [type |-> t,
+\*                     acc  |-> acc,
+\*                     prev |-> prev_msg[acc],
+\*                     refs |-> recent_msgs[acc] \cup {msg},
+\*                     lrns |-> ll]
+\*  <2> m1 = new
+\*      BY DEF Send, TypeOK
+\*  <2> new.prev = prev_msg[acc]
+\*      OBVIOUS
+\*  <2> m1.prev # NoMessage /\ m2 \in PrevTran(m1.prev)
+\*      BY PrevTran_eq
+\*  <2> prev_msg[acc] \in SentBy(acc)
+\*      BY DEF SafeAcceptorPrevSpec2
+\*  <2> prev_msg[acc] \in recent_msgs[acc]
+\*      BY DEF SafeAcceptorPrevSpec2
+\*  <2> m1.prev \in Message
+\*      BY DEF SentBy, TypeOK
+\*  <2> QED BY Tran_refl, Tran_trans, Tran_eq
+<1>6. CASE \E lrn \in Learner : \E msg \in msgs : LearnerRecv(lrn, msg)
+  <2> PICK lrn \in Learner, msg \in msgs : LearnerRecv(lrn, msg)
+      BY <1>6
+  <2> Recv(lrn, msg)
+      BY DEF LearnerRecv
+  <2> WellFormed(msg)
+      BY DEF LearnerRecv
+  <2> AL = lrn
+      BY DEF Recv, TypeOK, Acceptor
+  <2> m1 = msg
+      BY DEF Recv, TypeOK, Acceptor
+  <2> m1.prev \in m1.refs
+      BY DEF WellFormed, ChainRef
+  <2> m1.prev \in Tran(m1)
+      BY Message_ref_Tran
+  <2> m1.prev # m1
+      BY Tran_ref_acyclic
+  <2> m1.prev \in known_msgs[AL]
+      BY DEF KnownMsgsSpec2, Recv, TypeOK
+  <2> m2 \in PrevTran(m1.prev)
+      BY PrevTran_eq
+  <2> m2 \in Tran(m1.prev)
+      OBVIOUS
+  <2> QED BY Tran_trans
+<1>7. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
+            LearnerDecide(lrn, bal, val)
+      BY <1>7 DEF LearnerDecide
+<1>8. CASE \E a \in FakeAcceptor : FakeSendControlMessage(a)
+      BY <1>8, AcceptorAssumption DEF FakeSendControlMessage
+<1> QED BY <1>1, <1>3, <1>6, <1>7, <1>8
+        DEF NextTLA, SafeAcceptorAction, FakeAcceptorAction
 
 \* TODO rename Quorum -> LiveQuorum
 LEMMA EntQuorumIntersection ==
