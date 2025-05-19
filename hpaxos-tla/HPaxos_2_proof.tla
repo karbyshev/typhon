@@ -1,6 +1,6 @@
 -------------------------- MODULE HPaxos_2_proof ----------------------------
-EXTENDS HPaxos_2, HMessage_proof, HLearnerGraph_proof, Lib,
-        SequenceTheorems, TLAPS
+EXTENDS HPaxos_2, HMessageTheorems, HLearnerGraphTheorems, LibTheorems,
+        FunctionTheorems, FiniteSetTheorems, SequenceTheorems, SequencesExtTheorems
 
 -----------------------------------------------------------------------------
 \* TODO move to separate file
@@ -4430,5 +4430,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 13 01:35:25 CEST 2025 by karbyshev
+\* Last modified Mon May 19 23:10:45 CEST 2025 by karbyshev
 \* Created Tue Jun 20 00:28:26 CEST 2023 by karbyshev

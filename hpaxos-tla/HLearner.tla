@@ -1,5 +1,7 @@
 ------------------------------ MODULE HLearner ------------------------------
-EXTENDS Naturals, FiniteSets
+EXTENDS Naturals
+
+LOCAL INSTANCE FiniteSets
 
 CONSTANT Learner
 
@@ -8,11 +10,10 @@ ASSUME LearnerGraphSize ==
     N_L \in Nat /\ N_L >= 1
 
 ASSUME LearnerGraphCard ==
-    Cardinality(Learner) = N_L
-
-
+    /\ IsFiniteSet(Learner)
+    /\ Cardinality(Learner) = N_L
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 14 16:43:55 CEST 2024 by karbyshev
+\* Last modified Mon May 19 21:22:49 CEST 2025 by karbyshev
 \* Created Tue May 14 16:43:44 CEST 2024 by karbyshev

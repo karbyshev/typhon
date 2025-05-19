@@ -106,5 +106,5 @@ PrevTran(m) == UNION {PrevTranBound[n][m] : n \in PrevTranDepthRange}
 
 =============================================================================
 \* Modification History
-\* Last modified Sun May 11 13:23:06 CEST 2025 by karbyshev
+\* Last modified Mon May 19 20:58:51 CEST 2025 by karbyshev
 \* Created Tue May 14 16:39:44 CEST 2024 by karbyshev

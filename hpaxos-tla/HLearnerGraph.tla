@@ -38,5 +38,5 @@ Ent == { LL \in Learner \X Learner :
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 14 17:03:58 CEST 2024 by karbyshev
+\* Last modified Fri Apr 04 00:10:42 CEST 2025 by karbyshev
 \* Created Tue May 14 17:03:34 CEST 2024 by karbyshev

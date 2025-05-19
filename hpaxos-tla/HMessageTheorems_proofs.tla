@@ -1,7 +1,8 @@
---------------------------- MODULE HMessage_proof ---------------------------
+---------------------- MODULE HMessageTheorems_proofs ----------------------
 EXTENDS HMessage,
         HLearnerGraph,
-        Lib,
+        LibTheorems,
+        FiniteSetTheorems,
         FunctionTheorems,
         NaturalsInduction,
         WellFoundedInduction,
@@ -119,7 +120,7 @@ PROOF
            DEF MessageRec1, RefCardinality
   <2>3. QED BY <2>1, <2>2
 <1>2. HIDE DEF P
-<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+<1>3. QED BY <1>0, <1>1, NatInduction, Blast
 
 LEMMA Message_nontriv == Message # {}
 PROOF BY MessageRec_nontriv DEF Message, MessageDepthRange
@@ -457,8 +458,11 @@ LEMMA TranBound_def ==
                     IF n = 0
                     THEN TranBound0
                     ELSE TranBound1(TranBound[n - 1], n)]
-PROOF BY NatInductiveDef
-DEF NatInductiveDefHypothesis, NatInductiveDefConclusion, TranBound
+PROOF BY Isa, NatInductiveDef
+DEF
+NatInductiveDefHypothesis,
+NatInductiveDefConclusion,
+TranBound
 
 LEMMA Tran_spec ==
     ASSUME NEW m \in Message
@@ -974,5 +978,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1
 
 =============================================================================
 \* Modification History
-\* Last modified Sun May 11 13:26:36 CEST 2025 by karbyshev
-\* Created Tue May 14 16:44:53 CEST 2024 by karbyshev
+\* Last modified Mon May 19 21:18:46 CEST 2025 by karbyshev
+\* Created Mon May 19 21:06:36 CEST 2025 by karbyshev
