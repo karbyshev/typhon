@@ -377,6 +377,8 @@ MsgsSafeAcceptorSpec3 ==
         \A m1, m2 \in SentBy(A) :
             m1.prev = m2.prev => m1 = m2
 
+\* TODO used only to prove MsgSafeAcceptorSpec3
+\* TODO remove from the FullSafetyInvariant
 MsgsSafeAcceptorPrevRefSpec ==
     \A A \in SafeAcceptor :
         \A m \in SentBy(A) :
@@ -1052,166 +1054,6 @@ PROOF
         DEF NextTLA, SafeAcceptorAction, LearnerRecv,
             LearnerAction, FakeAcceptorAction
 
-LEMMA KnownMsgsSpecInvariant ==
-    TypeOK /\ NextTLA /\
-    SafeAcceptorPrevSpec2 /\
-    KnownMsgsSpec =>
-    KnownMsgsSpec'
-PROOF
-<1> SUFFICES ASSUME TypeOK, NextTLA,
-                    SafeAcceptorPrevSpec2,
-                    KnownMsgsSpec
-             PROVE  KnownMsgsSpec'
-    OBVIOUS
-<1> TypeOK' BY TypeOKInvariant
-<1> SUFFICES ASSUME NEW AL \in SafeAcceptor \cup Learner
-             PROVE  /\ known_msgs[AL]' \in SUBSET msgs'
-                    /\ IsFiniteSet(known_msgs[AL]')
-                    /\ \A M \in known_msgs[AL]' :
-                        /\ KnownRefs(AL, M)'
-                        /\ WellFormed(M)'
-                        /\ Tran(M) \in SUBSET known_msgs[AL]'
-                        /\ \E b \in Ballot : B(M, b)
-    BY DEF KnownMsgsSpec
-<1> DEFINE K == known_msgs[AL]'
-<1> SUFFICES /\ K \in SUBSET msgs'
-             /\ IsFiniteSet(K)
-             /\ \A M \in K :
-                /\ KnownRefs(AL, M)'
-                /\ WellFormed(M)'
-                /\ Tran(M) \in SUBSET K
-                /\ \E b \in Ballot : B(M, b)
-    OBVIOUS
-<1> SUFFICES /\ K \in SUBSET msgs'
-             /\ \A M \in K :
-                /\ IsFiniteSet(K)
-                /\ /\ KnownRefs(AL, M)'
-                   /\ WellFormed(M)'
-                   /\ Tran(M) \in SUBSET K
-                   /\ \E b \in Ballot : B(M, b)
-  \*<2> HIDE DEF K
-  <2> QED BY DEF TypeOK, Acceptor
-<1> SUFFICES ASSUME NEW M \in K
-             PROVE  /\ K \in SUBSET msgs'
-                    /\ IsFiniteSet(K)
-                    /\ KnownRefs(AL, M)'
-                    /\ WellFormed(M)'
-                    /\ Tran(M) \in SUBSET K
-                    /\ \E b \in Ballot : B(M, b)
-  <2> HIDE DEF K
-  <2> QED OBVIOUS
-<1> USE DEF KnownMsgsSpec
-<1>1. CASE \E p \in Proposer : ProposerAction(p)
-  <2> PICK bal \in Ballot : SendProposal(bal)
-      BY <1>1 DEF ProposerAction
-  <2> USE DEF SendProposal
-  <2> known_msgs[AL]' \in SUBSET msgs'
-      BY DEF Send
-  <2> KnownRefs(AL, M)'
-      BY DEF KnownRefs
-  <2> WellFormed(M)'
-      BY WellFormed_monotone DEF Send, TypeOK
-  <2> Tran(M) \in SUBSET known_msgs[AL]'
-      OBVIOUS
-  <2> \E b \in Ballot : B(M, b)
-      OBVIOUS
-  <2> QED OBVIOUS
-<1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
-  <2> PICK acc \in SafeAcceptor, m \in msgs : Process(acc, m)
-      BY <1>3
-  <2> Recv(acc, m)
-      BY DEF Process
-  <2> BVal' = BVal
-      BY DEF Process
-  <2> WellFormed(m)
-      BY DEF Process
-  <2> m \in Message
-      BY DEF WellFormed
-  <2> known_msgs[AL]' \in SUBSET msgs'
-      BY Sent_monotone DEF Recv, TypeOK, Acceptor
-  <2> KnownRefs(AL, M)'
-      BY DEF KnownRefs, Recv, TypeOK, Acceptor
-  <2> WellFormed(M)'
-    <3> CASE M \in known_msgs[AL]
-        BY WellFormed_monotone DEF TypeOK
-    <3> CASE M \notin known_msgs[AL]
-      <4> M = m
-          BY DEF Recv, TypeOK, Acceptor
-      <4> QED BY WellFormed_monotone DEF TypeOK
-    <3> QED OBVIOUS
-  <2> Tran(M) \in SUBSET known_msgs[AL]'
-    <3> CASE M \in known_msgs[AL]
-        BY DEF Recv, TypeOK, Acceptor
-    <3> CASE M \notin known_msgs[AL]
-      <4> M = m
-          BY DEF Recv, TypeOK, Acceptor
-      <4> QED BY Tran_eq, KnownMsgMonotone DEF Recv, KnownRefs, TypeOK, Acceptor
-    <3> QED OBVIOUS
-  <2> \E b \in Ballot : B(M, b)
-      BY DEF WellFormed
-  <2> QED OBVIOUS
-<1>6. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
-  <2> PICK lrn \in Learner, m \in msgs : LearnerRecv(lrn, m)
-      BY <1>6
-  <2> Recv(lrn, m)
-      BY DEF LearnerRecv
-  <2> BVal' = BVal
-      BY DEF LearnerRecv
-  <2> WellFormed(m)
-      BY DEF LearnerRecv
-  <2> m \in Message
-      BY DEF WellFormed
-  <2> known_msgs[AL]' \in SUBSET msgs'
-      BY Sent_monotone DEF Recv, TypeOK, Acceptor
-  <2> KnownRefs(AL, M)'
-      BY DEF KnownRefs, Recv, TypeOK, Acceptor
-  <2> WellFormed(M)'
-      BY WellFormed_monotone DEF TypeOK, Recv, Acceptor
-  <2> Tran(M) \in SUBSET known_msgs[AL]'
-    <3> CASE M \in known_msgs[AL]
-        BY DEF Recv, TypeOK, Acceptor
-    <3> CASE M \notin known_msgs[AL]
-        BY Tran_eq DEF Recv, KnownRefs, TypeOK, Acceptor
-    <3> QED OBVIOUS
-  <2> \E b \in Ballot : B(M, b)
-      BY DEF WellFormed
-  <2> QED OBVIOUS
-<1>7. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
-            LearnerDecide(lrn, bal, val)
-  <2> PICK lrn \in Learner, bal \in Ballot, val \in Value :
-            LearnerDecide(lrn, bal, val)
-      BY <1>7
-  <2> USE DEF LearnerDecide
-  <2> known_msgs[AL]' \in SUBSET msgs'
-      OBVIOUS
-  <2> KnownRefs(AL, M)'
-      BY DEF KnownRefs
-  <2> WellFormed(M)'
-      BY WellFormed_monotone DEF TypeOK
-  <2> Tran(M) \in SUBSET known_msgs[AL]'
-      OBVIOUS
-  <2> \E b \in Ballot : B(M, b)
-      BY DEF WellFormed
-  <2> QED OBVIOUS
-<1>8. CASE \E a \in FakeAcceptor : FakeSendControlMessage(a)
-  <2> PICK acc \in FakeAcceptor : FakeSendControlMessage(acc)
-      BY <1>8
-  <2> USE DEF FakeSendControlMessage
-  <2> known_msgs[AL]' \in SUBSET msgs'
-      BY DEF Send
-  <2> KnownRefs(AL, M)'
-      BY DEF KnownRefs
-  <2> WellFormed(M)'
-      BY WellFormed_monotone DEF TypeOK
-  <2> Tran(M) \in SUBSET known_msgs[AL]'
-      OBVIOUS
-  <2> \E b \in Ballot : B(M, b)
-      OBVIOUS
-  <2> QED OBVIOUS
-<1> QED BY <1>1, <1>3, <1>6, <1>7, <1>8
-        DEF NextTLA, SafeAcceptorAction, LearnerRecv,
-            LearnerAction, FakeAcceptorAction
-
 LEMMA MsgsSafeAcceptorPrevTranLinearSpecInvariant ==
     TypeOK /\ NextTLA /\
     SafeAcceptorPrevSpec1 /\
@@ -1440,7 +1282,7 @@ PROOF
                     NEW m2 \in PrevTran(m1), m2 # m1
              PROVE  m2 \in Tran(m1)
     BY Tran_refl
-       DEF MsgsSafeAcceptorPrevTranSpec, SentBy, Send, Proposal, OneA, TypeOK
+    DEF MsgsSafeAcceptorPrevTranSpec, SentBy, Send, Proposal, OneA, TypeOK
 <1> m1 \in Message
     BY DEF TypeOK
 <1> A \in Acceptor BY DEF Acceptor
@@ -2006,38 +1848,6 @@ PROOF
 \*    PROVE HeterogeneousSpecBase(alpha, beta, L0, bal, bal)
 \*PROOF
 \*<1> QED
-
-\*HeterogeneousSpecCond(x, alpha, gamma, gamma_prev, bal, V_M, m, B_m, r, s, B_m_prev, r_prev, s_prev) ==
-\*        \* auxiliary:
-\*        /\ B(m, B_m)
-\*        \* cond 1:
-\*        /\ (x = 0 => <<alpha, gamma>> \in Ent)
-\*        \* cond 2:
-\*        /\ bal < B_m
-\*        \* cond 3:
-\*        /\ (x > 0 => B_m < B_m_prev[x - 1])
-\*        \* cond 4:
-\*        /\ (x > 0 => m \in Tran(r_prev[x - 1]))
-\*        \* cond 5:
-\*        /\ (x > 0 => gamma \in Con(alpha, r_prev[x - 1]))
-\*        \* cond 6:
-\*        /\ (x > 1 => gamma \notin Con(alpha, r_prev[x - 2]))
-\*        \* cond 7:
-\*        /\ depth(gamma, m) = 1
-\*        \* cond 8:
-\*        /\ r \in q(gamma, m)
-\*        \* cond 9:
-\*        /\ s \in Tran(r)
-\*        \* cond 10:
-\*        /\ (x > 0 => s \in Tran(s_prev[x - 1]))
-\*        \* cond 11:
-\*        /\ r.acc = s.acc
-\*        \* cond 12:
-\*        /\ depth(alpha, s) = maxDepth(alpha) - x
-\*        \* cond 13:
-\*        /\ B(s, bal)
-\*        \* cond 14:
-\*        /\ V(m, V_M)
 
 \*HeterogeneousSpecBase(alpha, beta, L0, bal, val) ==
 \*        <<alpha, beta>> \in Ent /\
@@ -4056,6 +3866,7 @@ PROOF
     BY GeneralNatInduction, Blast
 <1> QED OBVIOUS
 
+\* TODO not used; remove it and remove MsgsSafeAcceptorPrevTranSpec
 \* TODO check if can be reused, in particular ZZZ, <1>caught_safe
 LEMMA SafeAcceptorSentBallotTran ==
     ASSUME MsgsSafeAcceptorPrevTranLinearSpec,
@@ -4068,7 +3879,7 @@ LEMMA SafeAcceptorSentBallotTran ==
            NEW by \in Ballot,
            B(X, bx), B(Y, by),
            bx < by
-    PROVE  X \in Tran(Y) 
+    PROVE  X \in Tran(Y)
 PROOF BY TranBallot, MessageTypeSpec
       DEF MsgsSafeAcceptorPrevTranSpec, MsgsSafeAcceptorPrevTranLinearSpec, SentBy, Ballot, TypeOK
 
