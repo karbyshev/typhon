@@ -1,18 +1,9 @@
 -------------------------- MODULE HPaxos_2_proof ----------------------------
 EXTENDS HPaxos_2, HMessageTheorems, HLearnerGraphTheorems, LibTheorems,
-        FunctionTheorems, FiniteSetTheorems, SequenceTheorems, SequencesExtTheorems
+        FunctionTheorems, FiniteSetTheorems,
+        SequenceTheorems, SequencesExtTheorems
 
 -----------------------------------------------------------------------------
-\* TODO move to separate file
-LEMMA MaxUnique ==
-    ASSUME NEW S,
-           \A x, y \in S : x =< y /\ y =< x => x = y,
-           NEW A \in SUBSET S,
-           NEW x \in A, NEW y \in A,
-           IsMax(x, A),
-           IsMax(y, A)
-    PROVE  x = y
-PROOF BY DEF IsMax
 
 LEMMA BallotFiniteSetMaxExists ==
     ASSUME NEW A \in SUBSET Ballot,
@@ -132,6 +123,8 @@ LEMMA TranBallot ==
            B(m1, b1), B(m2, b2)
     PROVE  b2 =< b1
 PROOF BY Tran_trans DEF B, Get1a
+
+-----------------------------------------------------------------------------
 
 LEMMA LatestSubset ==
     ASSUME NEW P \in SUBSET Message

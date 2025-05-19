@@ -4,6 +4,16 @@ EXTENDS FiniteSetTheorems, Lib, TLAPS
 LEMMA EmptySetMax == IsMax(0, {})
 PROOF BY DEF IsMax
 
+LEMMA MaxUnique ==
+    ASSUME NEW S,
+           \A x, y \in S : x =< y /\ y =< x => x = y,
+           NEW A \in SUBSET S,
+           NEW x \in A, NEW y \in A,
+           IsMax(x, A),
+           IsMax(y, A)
+    PROVE  x = y
+PROOF BY DEF IsMax
+
 \* TODO this can be further generalized to arbitrary linear orders,
 \* and partial orders with IsMax defined by
 \* IsMax(x, S) == \A y \in S : x =< y => x = y
@@ -33,5 +43,5 @@ PROOF BY FS_Union, FS_Subset, FS_Singleton
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 20 00:31:48 CEST 2025 by karbyshev
+\* Last modified Tue May 20 00:34:20 CEST 2025 by karbyshev
 \* Created Tue May 20 00:05:14 CEST 2025 by karbyshev
