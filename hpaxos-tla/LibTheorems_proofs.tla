@@ -22,7 +22,16 @@ PROOF
 <1> HIDE DEF P
 <1>3. QED BY <1>0, <1>1, FS_Induction, Blast
 
+LEMMA StrictSubsetCardinality ==
+    ASSUME NEW X,
+           NEW Y,
+           X \in SUBSET Y,
+           X # Y,
+           IsFiniteSet(Y)
+    PROVE  Cardinality(X) < Cardinality(Y)
+PROOF BY FS_Union, FS_Subset, FS_Singleton
+
 =============================================================================
 \* Modification History
-\* Last modified Tue May 20 00:05:33 CEST 2025 by karbyshev
+\* Last modified Tue May 20 00:31:48 CEST 2025 by karbyshev
 \* Created Tue May 20 00:05:14 CEST 2025 by karbyshev

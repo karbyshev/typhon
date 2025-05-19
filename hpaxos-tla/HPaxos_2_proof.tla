@@ -1720,37 +1720,6 @@ PROOF
     BY SeqDef DEF ConSeq
 <1> QED OBVIOUS
 
-\*THEOREM SequencesInductionAppend ==
-\*  ASSUME NEW P(_), NEW S,
-\*         P(<< >>),
-\*         \A s \in Seq(S), e \in S : P(s) => P(Append(s,e))
-\*  PROVE  \A seq \in Seq(S) : P(seq)
-
-\*THEOREM SequencesInductionTail ==
-\*  ASSUME NEW S,  NEW P(_),
-\*         P(<< >>),
-\*         \A s \in Seq(S) : (s # << >>) /\ P(Tail(s)) => P(s)
-\*  PROVE  \A s \in Seq(S) : P(s)
-
-\*LEMMA ConnectedLearner ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW x \in Message
-\*    PROVE  Con(alpha, x) \in SUBSET Learner
-
-\*ASSUME LearnerGraphCard ==
-\*    Cardinality(Learner) = N_L
-
-\* TODO rename
-LEMMA SmthAboutCard ==
-    ASSUME NEW X,
-           NEW Y,
-           X \in SUBSET Y,
-           X # Y,
-           IsFiniteSet(Y)
-    PROVE  Cardinality(X) + 1 =< Cardinality(Y)
-PROOF
-<1> QED
-
 LEMMA ConSeqBound ==
     ASSUME NEW alpha \in Learner,
            NEW seq \in ConSeq(alpha)
@@ -1833,7 +1802,7 @@ PROOF
           BY DEF Last
       <4> IsFiniteSet(Con(alpha, Last(s2)))
           BY ConFinite
-      <4> QED BY SmthAboutCard
+      <4> QED BY StrictSubsetCardinality, FS_CardinalityType, ConFinite
     <3> QED BY <3>IH, FS_CardinalityType, ConFinite
   <2> QED OBVIOUS
 <1> HIDE DEF P

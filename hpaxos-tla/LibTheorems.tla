@@ -9,7 +9,15 @@ LEMMA NatFiniteSetMaxExists ==
            IsFiniteSet(A)
     PROVE  \E max \in A : IsMax(max, A)
 
+LEMMA StrictSubsetCardinality ==
+    ASSUME NEW X,
+           NEW Y,
+           X \in SUBSET Y,
+           X # Y,
+           IsFiniteSet(Y)
+    PROVE  Cardinality(X) < Cardinality(Y)
+
 =============================================================================
 \* Modification History
-\* Last modified Mon May 19 20:40:18 CEST 2025 by karbyshev
+\* Last modified Tue May 20 00:28:17 CEST 2025 by karbyshev
 \* Created Mon May 19 20:15:40 CEST 2025 by karbyshev
