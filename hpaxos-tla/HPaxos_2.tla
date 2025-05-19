@@ -6,12 +6,6 @@ Assert(P, str) == P
 CONSTANT WellFormed2a(_)
 CONSTANT WellFormed2b(_)
 
-\* TODO remove unused
-IsMax(x, S) == \A y \in S : x >= y
-
-Max(S) == CHOOSE x \in S : IsMax(x, S)
-Min(S) == CHOOSE x \in S : \A y \in S : x <= y
-
 -----------------------------------------------------------------------------
 (* Algorithm specification *)
 
@@ -165,12 +159,27 @@ Min(S) == CHOOSE x \in S : \A y \in S : x <= y
 
     q(alpha, x) == qd(alpha, x, depth(alpha, x))
 
-    maxDepth(alpha) ==
+    maxDepth_old(alpha) ==
         LET I == { n \in 1..N_L :
                     \E f \in [1..n -> Message] :
-                        \A i, j \in 1..n : i < j =>
+                        /\ alpha \in Con(alpha, f[n])
+                        /\ \A i, j \in 1..n : i < j =>
                                /\ f[i] \in Tran(f[j])
-                               /\ Con(alpha, f[i]) # Con(alpha, f[j])}
+                               /\ Con(alpha, f[i]) # Con(alpha, f[j]) }
+        IN Max(I)
+
+    \* TODO better name?
+    \* TODO fix lemma ZZZ
+    ConSeq(alpha) ==
+        { seq \in Seq(Message) :
+            /\ \A i, j \in 1..Len(seq) : i < j =>
+                /\ seq[j] \in Tran(seq[i])
+                /\ Con(alpha, seq[j]) # Con(alpha, seq[i])
+            /\ seq # << >> => alpha \in Con(alpha, Head(seq))
+        }
+
+    maxDepth(alpha) ==
+        LET I == { n \in Nat : \E seq \in ConSeq(alpha) : n = Len(seq) }
         IN Max(I)
 
     ChainRef(m) ==
@@ -458,12 +467,27 @@ depth(alpha, x) ==
 
 q(alpha, x) == qd(alpha, x, depth(alpha, x))
 
-maxDepth(alpha) ==
+maxDepth_old(alpha) ==
     LET I == { n \in 1..N_L :
                 \E f \in [1..n -> Message] :
-                    \A i, j \in 1..n : i < j =>
+                    /\ alpha \in Con(alpha, f[n])
+                    /\ \A i, j \in 1..n : i < j =>
                            /\ f[i] \in Tran(f[j])
-                           /\ Con(alpha, f[i]) # Con(alpha, f[j])}
+                           /\ Con(alpha, f[i]) # Con(alpha, f[j]) }
+    IN Max(I)
+
+
+
+ConSeq(alpha) ==
+    { seq \in Seq(Message) :
+        /\ \A i, j \in 1..Len(seq) : i < j =>
+            /\ seq[j] \in Tran(seq[i])
+            /\ Con(alpha, seq[j]) # Con(alpha, seq[i])
+        /\ seq # << >> => alpha \in Con(alpha, Head(seq))
+    }
+
+maxDepth(alpha) ==
+    LET I == { n \in Nat : \E seq \in ConSeq(alpha) : n = Len(seq) }
     IN Max(I)
 
 ChainRef(m) ==

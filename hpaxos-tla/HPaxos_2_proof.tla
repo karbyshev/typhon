@@ -1742,6 +1742,8 @@ LEMMA CaughtTran ==
     PROVE  Caught(x) \in SUBSET Caught(y)
 PROOF BY Tran_trans DEF Caught, CaughtMsg
 
+-----------------------------------------------------------------------------
+
 LEMMA ConTran ==
     ASSUME NEW y \in Message,
            NEW alpha \in Learner,
@@ -1770,6 +1772,14 @@ PROOF
     BY DEF Con
 <1> QED BY LearnerGraphAssumptionTransitivity, LearnerGraphAssumptionClosure DEF ConByQuorum 
 
+LEMMA ConFinite ==
+    ASSUME NEW alpha \in Learner,
+           NEW x \in Message
+    PROVE  /\ IsFiniteSet(Con(alpha, x))
+           /\ Cardinality(Con(alpha, x)) =< N_L
+PROOF BY ConnectedLearner, LearnerGraphCard, FS_Subset
+
+\* TODO reshuffle
 LEMMA NotCaughtXXX ==
     ASSUME KnownMsgsPrevTranSpec,
            KnownMsgsSpec1,
@@ -1828,9 +1838,7 @@ PROOF BY DEF ConSeq
 LEMMA ConSeqNonTrivial ==
     ASSUME NEW alpha \in Learner,
            <<alpha, alpha>> \in Ent
-    PROVE  \E seq \in ConSeq(alpha) :
-            /\ Len(seq) > 0
-            /\ alpha \in Con(alpha, seq[Len(seq)])
+    PROVE  \E seq \in ConSeq(alpha) : seq # << >>
 PROOF
 <1> PICK bal \in Ballot : TRUE
     BY DEF Ballot
@@ -1890,6 +1898,17 @@ PROOF
 \*ASSUME LearnerGraphCard ==
 \*    Cardinality(Learner) = N_L
 
+\* TODO rename
+LEMMA SmthAboutCard ==
+    ASSUME NEW X,
+           NEW Y,
+           X \in SUBSET Y,
+           X # Y,
+           IsFiniteSet(Y)
+    PROVE  Cardinality(X) + 1 =< Cardinality(Y)
+PROOF
+<1> QED
+
 LEMMA ConSeqBound ==
     ASSUME NEW alpha \in Learner,
            NEW seq \in ConSeq(alpha)
@@ -1898,51 +1917,85 @@ PROOF
 <1> DEFINE P(s) ==
         s # << >> /\
         (\A i, j \in 1..Len(s) : i < j =>
-            /\ s[i] \in Tran(s[j])
-            /\ Con(alpha, s[i]) # Con(alpha, s[j])) =>
-        Len(s) =< Cardinality(Con(alpha, Head(s)))
+            /\ s[j] \in Tran(s[i])
+            /\ Con(alpha, s[j]) # Con(alpha, s[i])) /\
+        alpha \in Con(alpha, Head(s)) =>
+        Len(s) =< Cardinality(Con(alpha, Last(s)))
 <1> SUFFICES ASSUME NEW s1 \in Seq(Message) PROVE P(s1)
   <2> seq \in Seq(Message)
       BY DEF ConSeq
   <2> CASE seq # << >>
     <3> Len(seq) \in Nat
         OBVIOUS
-    <3> Len(seq) =< Cardinality(Con(alpha, Head(seq)))
+    <3> Len(seq) =< Cardinality(Con(alpha, Last(seq)))
         BY DEF ConSeq
-    <3> Head(seq) \in Message
-        BY HeadTailProperties
-    <3> Con(alpha, Head(seq)) \in SUBSET Learner
+    <3> Last(seq) \in Message
+        BY LastProperties
+    <3> Con(alpha, Last(seq)) \in SUBSET Learner
         BY ConnectedLearner
-    <3> /\ IsFiniteSet(Con(alpha, Head(seq)))
-        /\ Cardinality(Con(alpha, Head(seq))) =< Cardinality(Learner)
+    <3> /\ IsFiniteSet(Con(alpha, Last(seq)))
+        /\ Cardinality(Con(alpha, Last(seq))) =< Cardinality(Learner)
         BY FS_Subset, LearnerGraphCard
-    <3> Cardinality(Con(alpha, Head(seq))) =< N_L
+    <3> Cardinality(Con(alpha, Last(seq))) =< N_L
         BY LearnerGraphCard
     <3> QED BY LearnerGraphSize, FS_CardinalityType
   <2> QED BY LearnerGraphSize
 <1>0. P(<< >>)
       OBVIOUS
-<1>1. \A s \in Seq(Message) : (s # << >>) /\ P(Tail(s)) => P(s)
+<1>1. \A s \in Seq(Message), msg \in Message : P(s) => P(Append(s, msg))
   <2> SUFFICES ASSUME NEW s \in Seq(Message),
-                      s # << >>,
-                      P(Tail(s)),
-                      (\A i, j \in 1..Len(s) : i < j =>
-                        /\ s[i] \in Tran(s[j])
-                        /\ Con(alpha, s[i]) # Con(alpha, s[j]))
-               PROVE  Len(s) =< Cardinality(Con(alpha, Head(s)))
+                      NEW msg \in Message,
+                      P(s)
+               PROVE  P(Append(s, msg))
       OBVIOUS
-  <2> s = Cons(Head(s), Tail(s))
-      BY ConsHeadTail
-  <2> CASE Tail(s) = << >>
-    <3> s = << Head(s) >>
-        BY ConsEmpty
-    <3> Len(s) = 1
+  <2> DEFINE s2 == Append(s, msg)
+  <2> SUFFICES ASSUME \A i, j \in 1..Len(s2) : i < j =>
+                        /\ s2[j] \in Tran(s2[i])
+                        /\ Con(alpha, s2[j]) # Con(alpha, s2[i]),
+                      alpha \in Con(alpha, Head(s2))
+               PROVE  Len(s2) =< Cardinality(Con(alpha, Last(s2)))
+      OBVIOUS
+  <2> CASE s = << >>
+    <3> Len(s2) = 1
+        BY AppendProperties
+    <3> Last(s2) = msg
+        BY FrontLastAppend
+    <3> Head(s2) = msg
+        BY HeadTailAppend
+    <3> Cardinality(Con(alpha, msg)) >= 1
+      <4> {alpha} \in SUBSET Con(alpha, msg)
+          OBVIOUS
+      <4> Cardinality({alpha}) = 1
+          BY FS_Singleton
+      <4> QED BY FS_Subset, ConFinite
+    <3> QED OBVIOUS
+  <2> CASE s # << >>
+    <3> Last(s) \in Message
+        BY DEF Last
+    <3> Len(s2) = Len(s) + 1
+        BY AppendProperties
+    <3> Len(s) < Len(s2)
         OBVIOUS
-    <3> 
-    <3> QED
-  <2> QED
+    <3> 1..Len(s) \in SUBSET 1..Len(s2)
+        OBVIOUS
+    <3> Last(s2) = msg
+        BY FrontLastAppend
+    <3>IH. Len(s) =< Cardinality(Con(alpha, Last(s)))
+           OBVIOUS
+    <3> Cardinality(Con(alpha, Last(s))) + 1 =< Cardinality(Con(alpha, Last(s2)))
+      <4> Con(alpha, Last(s)) \in SUBSET Con(alpha, Last(s2))
+        <5> Last(s2) \in Tran(Last(s))
+            BY DEF Last
+        <5> QED BY ConTran
+      <4> Con(alpha, Last(s)) # Con(alpha, Last(s2))
+          BY DEF Last
+      <4> IsFiniteSet(Con(alpha, Last(s2)))
+          BY ConFinite
+      <4> QED BY SmthAboutCard
+    <3> QED BY <3>IH, FS_CardinalityType, ConFinite
+  <2> QED OBVIOUS
 <1> HIDE DEF P
-<1> QED BY <1>0, <1>1, SequencesInductionTail, Blast
+<1> QED BY <1>0, <1>1, SequencesInductionAppend, Blast
 
 -----------------------------------------------------------------------------
 
