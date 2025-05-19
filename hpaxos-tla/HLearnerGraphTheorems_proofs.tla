@@ -1,5 +1,5 @@
 -------------------- MODULE HLearnerGraphTheorems_proofs --------------------
-EXTENDS HLearnerGraph, TLAPS
+EXTENDS HLearnerGraph
 
 LEMMA TrustSafeSelfAgreement ==
     ASSUME NEW E \in TrustSafe
@@ -42,5 +42,5 @@ PROOF BY LearnerGraphAssumptionTransitivity DEF Ent
 
 =============================================================================
 \* Modification History
-\* Last modified Mon May 19 20:47:08 CEST 2025 by karbyshev
+\* Last modified Tue May 20 01:27:47 CEST 2025 by karbyshev
 \* Created Mon May 19 20:43:23 CEST 2025 by karbyshev
