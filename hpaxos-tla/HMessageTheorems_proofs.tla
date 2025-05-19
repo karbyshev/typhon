@@ -311,7 +311,7 @@ PROOF
      <3> QED BY RefCardinalitySpec DEF MessageDepthRange, Message
   <2> QED BY MessageRec_eq1 DEF MessageRec1
 <1>2. HIDE DEF P 
-<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+<1>3. QED BY <1>0, <1>1, NatInduction, Blast
 
 LEMMA MessageRec_min ==
     ASSUME NEW m \in Message
@@ -326,7 +326,7 @@ PROOF
       OBVIOUS
 <1>3. PICK n1 \in Nat : P(n1) BY MessageRec_spec
 <1>4. HIDE DEF P
-<1>5. QED BY <1>3, SmallestNatural, Isa
+<1>5. QED BY <1>3, SmallestNatural, Blast
 
 LEMMA Message_ref_acyclic ==
     ASSUME NEW m \in Message
@@ -354,26 +354,26 @@ PROOF
 <1>0. P(0)
       BY MessageRec_eq0 DEF MessageRec0, NoMessage
 <1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
-  <2> k + 1 - 1 = k
+  <2> (k + 1) - 1 = k
       OBVIOUS
   <2> QED BY <1>1, MessageRec_eq1 DEF MessageRec1, NoMessage
 <1>2. HIDE DEF P
-<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+<1>3. QED BY <1>0, <1>1, NatInduction, Blast
 
 LEMMA MessageSpec ==
     ASSUME NEW m \in Message
-    PROVE \/ /\ m.type = "1a"
-             /\ m.bal \in Ballot
-             /\ m.prev = NoMessage
-             /\ m.refs = {}
-          \/ /\ \/ m.type = "1b"
-                \/ m.type = "2a"
-                \/ m.type = "2b"
-             /\ m.acc \in Acceptor
-             /\ m.prev \in Message \cup {NoMessage}
+    PROVE  \/ /\ m.type = "1a"
+              /\ m.bal \in Ballot
+              /\ m.prev = NoMessage
+              /\ m.refs = {}
+           \/ /\ \/ m.type = "1b"
+                 \/ m.type = "2a"
+                 \/ m.type = "2b"
+              /\ m.acc \in Acceptor
+              /\ m.prev \in Message \cup {NoMessage}
 \*             /\ m.refs # {}
-             /\ m.refs \in SUBSET Message
-             /\ m.lrns \in SUBSET Learner
+              /\ m.refs \in SUBSET Message
+              /\ m.lrns \in SUBSET Learner
 PROOF
 <1> DEFINE P(n) ==
         \A x \in MessageRec[n] :
@@ -420,7 +420,7 @@ PROOF
     <3> QED BY <3>1, MessageRec_spec, MessageRec_nontriv, FinSubset_sub
   <2> QED BY <2>1, <2>3
 <1>2. HIDE DEF P
-<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+<1>3. QED BY <1>0, <1>1, NatInduction, Blast
 
 LEMMA MessageTypeSpec ==
     ASSUME NEW m \in Message
@@ -458,11 +458,8 @@ LEMMA TranBound_def ==
                     IF n = 0
                     THEN TranBound0
                     ELSE TranBound1(TranBound[n - 1], n)]
-PROOF BY Isa, NatInductiveDef
-DEF
-NatInductiveDefHypothesis,
-NatInductiveDefConclusion,
-TranBound
+PROOF BY NatInductiveDef, Isa
+      DEF NatInductiveDefHypothesis, NatInductiveDefConclusion, TranBound
 
 LEMMA Tran_spec ==
     ASSUME NEW m \in Message
@@ -499,7 +496,7 @@ PROOF
   <2> CASE n # 0
     <3> CASE x # m
       <4> PICK r \in m.refs : x \in TranBound[n - 1][r]
-          BY TranBound_eq1, Isa
+          BY Isa, TranBound_eq1
       <4> QED BY Tran_spec, MessageSpec
     <3> QED OBVIOUS
   <2> QED OBVIOUS
@@ -543,7 +540,7 @@ PROOF
   <2>2. r \in Message BY Message_ref
   <2>3. QED BY <1>1, <2>2
 <1>2. HIDE DEF P
-<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+<1>3. QED BY <1>0, <1>1, NatInduction, Blast
 
 LEMMA Tran_Message ==
     ASSUME NEW m1 \in Message
@@ -568,7 +565,7 @@ PROOF
         BY TranBound_eq1
   <2>6. QED BY <1>1, Message_ref
 <1>2. HIDE DEF P
-<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+<1>3. QED BY <1>0, <1>1, NatInduction, Blast
 
 LEMMA TranBound_monotone ==
     \A n, m \in Nat : n <= m =>
@@ -629,7 +626,7 @@ PROOF
     <3>5. QED BY <3>0, <3>2, TranBound_eq1
   <2>10. QED BY <2>2, <2>3, TranBound_eq1
 <1>4. HIDE DEF P
-<1>5. QED BY <1>2, <1>3, NatInduction, Isa
+<1>5. QED BY <1>2, <1>3, NatInduction, Blast
 
 LEMMA Tran_trans ==
     ASSUME NEW m1 \in Message, NEW m2 \in Tran(m1), NEW m3 \in Tran(m2)
@@ -698,7 +695,7 @@ PROOF
     <3>5. QED BY <3>4, MessageRec_monotone
   <2>3. QED BY <2>1, <2>2, TranBound_eq1
 <1>2. HIDE DEF P
-<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+<1>3. QED BY <1>0, <1>1, NatInduction, Blast
 
 LEMMA Tran_ref_acyclic ==
     ASSUME NEW m \in Message, NEW r \in m.refs
@@ -744,7 +741,7 @@ LEMMA PrevTranBound_def ==
                     IF n = 0
                     THEN PrevTranBound0
                     ELSE PrevTranBound1(PrevTranBound[n - 1], n)]
-PROOF BY NatInductiveDef
+PROOF BY NatInductiveDef, Isa
       DEF NatInductiveDefHypothesis, NatInductiveDefConclusion, PrevTranBound
 
 LEMMA PrevTran_spec ==
@@ -776,7 +773,7 @@ LEMMA PrevTranBound_refl ==
 <1> CASE n = 0
     BY PrevTranBound_eq0
 <1> CASE n # 0
-    BY PrevTranBound_eq1, Isa
+    BY Isa, PrevTranBound_eq1
 <1> QED OBVIOUS
 
 LEMMA PrevTran_refl ==
@@ -843,7 +840,7 @@ PROOF
       BY PrevTranBound_eq1
   <2>3. QED BY <1>1, Message_prev
 <1>2. HIDE DEF P
-<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+<1>3. QED BY <1>0, <1>1, NatInduction, Blast
 
 LEMMA PrevTran_Message ==
     ASSUME NEW m1 \in Message
@@ -875,7 +872,7 @@ PROOF
      <3> QED BY <1>1
   <2> QED OBVIOUS
 <1>2. HIDE DEF P
-<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+<1>3. QED BY <1>0, <1>1, NatInduction, Blast
 
 LEMMA PrevTranBound_monotone ==
     \A n, m \in Nat : n <= m =>
@@ -937,7 +934,7 @@ PROOF
      <3> QED BY PrevTranBound_eq1_prev
   <2> QED BY <2>1, <2>2
 <1>4. HIDE DEF P
-<1>5. QED BY <1>2, <1>3, NatInduction, Isa
+<1>5. QED BY <1>2, <1>3, NatInduction, Blast
 
 LEMMA PrevTran_trans ==
     ASSUME NEW m1 \in Message, NEW m2 \in PrevTran(m1), NEW m3 \in PrevTran(m2)
@@ -978,5 +975,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1
 
 =============================================================================
 \* Modification History
-\* Last modified Mon May 19 21:18:46 CEST 2025 by karbyshev
+\* Last modified Tue May 20 01:27:25 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev
