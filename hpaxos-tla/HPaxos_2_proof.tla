@@ -1675,7 +1675,7 @@ PROOF
 <1> Tran(p) = {p}
     BY Tran_1a
 <1> PrevTran(p) = {p}
-    BY PrevTran_eq
+    BY PrevTran_1a
 
 <1> PICK safe \in SafeAcceptor : TRUE
     BY SafeAcceptorNonTrivial
@@ -3299,7 +3299,7 @@ PROOF
 <1> Tran(p1) = {p1}
     BY Tran_1a
 <1> PrevTran(p1) = {p1}
-    BY PrevTran_eq
+    BY PrevTran_1a
 <1> DEFINE p2 == [ type |-> "1a", bal |-> bal2, prev |-> NoMessage, refs |-> {} ]
 <1> p2 \in Message /\ OneA(p2) /\ p2.bal = bal2
     BY OneA_Message
@@ -3308,7 +3308,7 @@ PROOF
 <1> Tran(p2) = {p2}
     BY Tran_1a
 <1> PrevTran(p2) = {p2}
-    BY PrevTran_eq
+    BY PrevTran_1a
 
 <1> p1 # p2
     OBVIOUS
@@ -4191,5 +4191,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 20 18:27:36 CEST 2025 by karbyshev
+\* Last modified Tue May 20 19:06:30 CEST 2025 by karbyshev
 \* Created Tue Jun 20 00:28:26 CEST 2023 by karbyshev
