@@ -1795,7 +1795,7 @@ PROOF
           BY DEF Last
       <4> IsFiniteSet(Con(alpha, Last(s2)))
           BY ConFinite
-      <4> QED BY StrictSubsetCardinality, FS_CardinalityType, ConFinite
+      <4> QED BY FS_Subset, FS_CardinalityType, ConFinite
     <3> QED BY <3>IH, FS_CardinalityType, ConFinite
   <2> QED OBVIOUS
 <1> HIDE DEF P
