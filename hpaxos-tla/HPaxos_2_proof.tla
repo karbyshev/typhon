@@ -1,7 +1,9 @@
 -------------------------- MODULE HPaxos_2_proof ----------------------------
 EXTENDS HPaxos_2, HMessageTheorems, HLearnerGraphTheorems, LibTheorems,
-        FunctionTheorems, FiniteSetTheorems,
-        SequenceTheorems, SequencesExtTheorems
+        FunctionTheorems, \* only Fun_RangeProperties is used
+        FiniteSetTheorems,
+        SequenceTheorems,
+        SequencesExtTheorems
 
 -----------------------------------------------------------------------------
 
