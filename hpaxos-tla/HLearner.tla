@@ -6,8 +6,10 @@ LOCAL INSTANCE FiniteSets
 CONSTANT Learner
 
 CONSTANT N_L
+
 ASSUME LearnerGraphSize ==
-    N_L \in Nat /\ N_L >= 1
+    /\ N_L \in Nat
+    /\ N_L >= 1
 
 ASSUME LearnerGraphCard ==
     /\ IsFiniteSet(Learner)
@@ -15,5 +17,5 @@ ASSUME LearnerGraphCard ==
 
 =============================================================================
 \* Modification History
-\* Last modified Mon May 19 21:22:49 CEST 2025 by karbyshev
+\* Last modified Tue May 20 09:45:41 CEST 2025 by karbyshev
 \* Created Tue May 14 16:43:44 CEST 2024 by karbyshev
