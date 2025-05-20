@@ -72,18 +72,18 @@ LEMMA TwoA_Message_bis ==
 
 \*LEMMA Message_1a_ref ==
 \*    \A m \in Message : OneA(m) <=> m.refs = {}
-
-LEMMA Message_ref ==
-    ASSUME NEW m \in Message
-    PROVE  m.refs \subseteq Message
-
-LEMMA Message_prev ==
-    ASSUME NEW m \in Message
-    PROVE  m.prev \in Message \cup {NoMessage}
-
-LEMMA Message_ref_acyclic ==
-    ASSUME NEW m \in Message
-    PROVE  m \notin m.refs
+\*
+\*LEMMA Message_ref ==
+\*    ASSUME NEW m \in Message
+\*    PROVE  m.refs \subseteq Message
+\*
+\*LEMMA Message_prev ==
+\*    ASSUME NEW m \in Message
+\*    PROVE  m.prev \in Message \cup {NoMessage}
+\*
+\*LEMMA Message_ref_acyclic ==
+\*    ASSUME NEW m \in Message
+\*    PROVE  m \notin m.refs
 
 -----------------------------------------------------------------------------
 LEMMA NoMessageIsNotAMessage ==
@@ -123,12 +123,12 @@ LEMMA MessageTypeSpec ==
               /\ ~TwoA(m)
               /\  TwoB(m)
 
-LEMMA MessageNonProposalSpec ==
-    ASSUME NEW m \in Message,
-           ~Proposal(m)
-    PROVE  \/ OneB(m)
-           \/ TwoA(m)
-           \/ TwoB(m)
+\*LEMMA MessageNonProposalSpec ==
+\*    ASSUME NEW m \in Message,
+\*           ~Proposal(m)
+\*    PROVE  \/ OneB(m)
+\*           \/ TwoA(m)
+\*           \/ TwoB(m)
 
 -----------------------------------------------------------------------------
 (* Transitive references *)
@@ -179,10 +179,9 @@ LEMMA PrevTran_1a ==
     ASSUME NEW m \in Message, m.type = "1a"
     PROVE  PrevTran(m) = {m}
 
-
-LEMMA PrevTran_Message ==
-    ASSUME NEW m1 \in Message
-    PROVE  PrevTran(m1) \in SUBSET Message
+\*LEMMA PrevTran_Message ==
+\*    ASSUME NEW m1 \in Message
+\*    PROVE  PrevTran(m1) \in SUBSET Message
 
 LEMMA PrevTran_trans ==
     ASSUME NEW m1 \in Message, NEW m2 \in PrevTran(m1), NEW m3 \in PrevTran(m2)
@@ -194,5 +193,5 @@ LEMMA Message_prev_PrevTran ==
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 20 01:20:23 CEST 2025 by karbyshev
+\* Last modified Tue May 20 18:57:35 CEST 2025 by karbyshev
 \* Created Mon May 19 20:59:25 CEST 2025 by karbyshev
