@@ -1707,7 +1707,7 @@ PROOF
 <1> alpha \in Con(alpha, oneb)
   <2> Caught(oneb) = {}
       BY DEF Caught, CaughtMsg
-  <2> QED BY SafeAcceptorIsByzQuorum DEF Con, ConByQuorum, Ent
+  <2> QED BY ByzQuorumProperties DEF Con, ConByQuorum, Ent
 
 <1> [x \in 1..1 |-> oneb] \in ConSeq(alpha)
     BY SeqDef DEF ConSeq
