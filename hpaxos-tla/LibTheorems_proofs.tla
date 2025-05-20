@@ -1,8 +1,26 @@
 ------------------------- MODULE LibTheorems_proofs -------------------------
-EXTENDS FiniteSetTheorems, Lib, TLAPS
+EXTENDS FiniteSetTheorems, SequenceTheorems, Lib, TLAPS
+
+LEMMA InitialSegmentIsFinite ==
+    ASSUME NEW n \in Nat PROVE IsFiniteSet(0..n)
+PROOF
+<1> DEFINE seq == [x \in 1..n + 1 |-> x - 1]
+<1> seq \in Seq(0..n)
+    BY SeqDef
+<1> ASSUME NEW s \in 0..n PROVE \E i \in 1..Len(seq) : seq[i] = s
+  <2> WITNESS s + 1 \in 1..Len(seq)
+  <2> QED OBVIOUS
+<1> QED BY DEF IsFiniteSet
 
 LEMMA EmptySetMax == IsMax(0, {})
 PROOF BY DEF IsMax
+
+LEMMA MaxIsMax ==
+    ASSUME NEW S,
+           NEW s \in S,
+           \E max \in S : IsMax(max, S)
+    PROVE  s =< Max(S)
+PROOF BY DEF Max, IsMax
 
 LEMMA MaxUnique ==
     ASSUME NEW S,
@@ -34,5 +52,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 20 01:33:49 CEST 2025 by karbyshev
+\* Last modified Tue May 20 17:56:41 CEST 2025 by karbyshev
 \* Created Tue May 20 00:05:14 CEST 2025 by karbyshev

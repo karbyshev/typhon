@@ -1801,6 +1801,26 @@ PROOF
 <1> HIDE DEF P
 <1> QED BY <1>0, <1>1, SequencesInductionAppend, Blast
 
+LEMMA ConSeqMaxDepth ==
+    ASSUME NEW alpha \in Learner,
+           NEW seq \in ConSeq(alpha)
+    PROVE  Len(seq) =< maxDepth(alpha)
+PROOF
+<1> seq \in Seq(Message)
+    BY DEF ConSeq
+<1> DEFINE I == { n \in Nat : \E s \in ConSeq(alpha) : n = Len(s) }
+<1> Len(seq) \in I
+    BY LenProperties
+<1> I # {}
+    BY ConSeqContainsEmpty
+<1> IsFiniteSet(I)
+  <2> I \in SUBSET 0..N_L
+      BY ConSeqBound
+  <2> IsFiniteSet(0..N_L)
+      BY InitialSegmentIsFinite, LearnerGraphSize
+  <2> QED BY FS_Subset
+<1> QED BY MaxIsMax, NatFiniteSetMaxExists DEF maxDepth
+
 -----------------------------------------------------------------------------
 
 \*LEMMA XXX ==
@@ -3179,25 +3199,6 @@ PROOF
 <1> HIDE DEF P
 <1>3. QED BY <1>0, <1>1, INDUCTION_SCHEME, Blast
 
-\* TODO rename and prove
-LEMMA maxDepth_XXX ==
-    ASSUME NEW alpha \in Learner,
-           NEW seq \in Seq(Message),
-           alpha \in Con(alpha, seq[Len(seq)]),
-           \A i, j \in 1..Len(seq) : i < j =>
-               /\ seq[i] \in Tran(seq[j])
-               /\ Con(alpha, seq[i]) # Con(alpha, seq[j])
-    PROVE  Len(seq) =< maxDepth(alpha)
-
-\*    maxDepth(alpha) ==
-\*        LET I == { n \in 1..N_L :
-\*                    \E f \in [1..n -> Message] :
-\*                        /\ alpha \in Con(alpha, f[n])
-\*                        /\ \A i, j \in 1..n : i < j =>
-\*                               /\ f[i] \in Tran(f[j])
-\*                               /\ Con(alpha, f[i]) # Con(alpha, f[j]) }
-\*        IN Max(I)
-
 -----------------------------------------------------------------------------
 
 \*LEMMA Union_cup ==
@@ -3812,8 +3813,9 @@ PROOF
     <3> QED OBVIOUS
   <2> QED BY <2>1, <2>2
 
+\* TODO fix
 <1>seq3. Len(mseq) =< maxDepth(alpha)
-    BY Zenon, <1>seq0, <1>seq1, <1>seq2, maxDepth_XXX
+    BY Zenon, <1>seq0, <1>seq1, <1>seq2, ConSeqMaxDepth
 <1> QED BY <1>0, <1>seq3
 
 -----------------------------------------------------------------------------
@@ -4203,5 +4205,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Mon May 19 23:10:45 CEST 2025 by karbyshev
+\* Last modified Tue May 20 18:19:16 CEST 2025 by karbyshev
 \* Created Tue Jun 20 00:28:26 CEST 2023 by karbyshev
