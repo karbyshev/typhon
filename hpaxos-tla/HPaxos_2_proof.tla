@@ -1649,22 +1649,6 @@ PROOF BY LearnerGraphAssumptionClosure, EntanglementSym
 
 -----------------------------------------------------------------------------
 
-\*ConSeq(alpha) ==
-\*        { seq \in Seq(Message) :
-\*            /\ Len(seq) > 0
-\*            /\ \A i, j \in 1..Len(seq) : i < j =>
-\*                /\ seq[i] \in Tran(seq[j])
-\*                /\ Con(alpha, seq[i]) # Con(alpha, seq[j])
-\*        }
-\*
-\*
-\*maxDepth(alpha) ==
-\*        LET I == { n \in Nat :
-\*                    \E seq \in ConSeq(alpha) :
-\*                        /\ n = Len(seq)
-\*                        /\ alpha \in Con(alpha, seq[n]) }
-\*        IN Max(I)
-
 LEMMA ConSeqContainsEmpty ==
     ASSUME NEW alpha \in Learner
     PROVE  << >> \in ConSeq(alpha)
@@ -4205,5 +4189,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 20 18:19:16 CEST 2025 by karbyshev
+\* Last modified Tue May 20 18:27:36 CEST 2025 by karbyshev
 \* Created Tue Jun 20 00:28:26 CEST 2023 by karbyshev
