@@ -50,7 +50,57 @@ PROOF
 <1> HIDE DEF P
 <1>3. QED BY <1>0, <1>1, FS_Induction, Blast
 
+LEMMA SmallestIndexExists ==
+    ASSUME NEW S, NEW P(_),
+           NEW n \in Nat, NEW seq \in [1..n -> S],
+           NEW n0 \in 1..n,
+           P(seq[n0])
+    PROVE  \E i \in 1..n : SmallestIndex(seq, P, i)
+PROOF
+<1> DEFINE A(x) == x \in 0..n - 1 /\ P(seq[x + 1])
+<1>1. SUFFICES \E k \in Nat :
+                /\ A(k)
+                /\ k = 0 \/ \A i \in 0 .. (k - 1) : ~A(i)
+  <2> PICK k \in Nat :
+            /\ A(k)
+            /\ k = 0 \/ \A i \in 0 .. (k - 1) : ~A(i)
+      BY <1>1
+  <2> WITNESS k + 1 \in 1..n
+  <2>1. P(seq[k + 1])
+        OBVIOUS
+  <2>2. ASSUME NEW i \in 1..k PROVE ~P(seq[i])
+    <3> CASE k = 0 OBVIOUS
+    <3> CASE k > 0
+      <4> i - 1 \in 0..n - 1
+          OBVIOUS
+      <4> QED OBVIOUS
+    <3> QED OBVIOUS
+  <2> QED BY <2>1, <2>2 DEF SmallestIndex
+<1> n0 - 1 \in Nat
+    OBVIOUS
+<1> A(n0 - 1)
+    OBVIOUS
+<1> HIDE DEF A
+<1> QED BY <1>1, SmallestNatural, Blast
+
+\* TODO rename
+LEMMA INDUCTION_SCHEME ==
+    ASSUME NEW P(_),
+           P(0),
+           \A k \in Nat : k > 0 /\ P(k - 1) => P(k)
+    PROVE  \A n \in Nat : P(n)
+PROOF
+<1> DEFINE Q(x) == x > 0 => P(x - 1)
+<1> SUFFICES \A n \in Nat : Q(n)
+    OBVIOUS
+<1>0. Q(0)
+    OBVIOUS
+<1>1. ASSUME NEW m \in Nat, Q(m) PROVE Q(m + 1)
+      BY <1>1
+<1> HIDE DEF Q
+<1> QED BY <1>0, <1>1, NatInduction, Isa
+
 =============================================================================
 \* Modification History
-\* Last modified Tue May 20 17:56:41 CEST 2025 by karbyshev
+\* Last modified Wed May 21 12:59:47 CEST 2025 by karbyshev
 \* Created Tue May 20 00:05:14 CEST 2025 by karbyshev

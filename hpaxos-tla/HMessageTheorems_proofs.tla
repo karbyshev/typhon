@@ -2,11 +2,12 @@
 EXTENDS HMessage,
         HLearnerGraph,
         LibTheorems,
-        FiniteSetTheorems,
-        FunctionTheorems,
-        NaturalsInduction,
-        WellFoundedInduction,
+        Sequences,
         TLAPS
+
+LOCAL INSTANCE FunctionTheorems
+LOCAL INSTANCE FiniteSetTheorems
+LOCAL INSTANCE WellFoundedInduction
 
 -----------------------------------------------------------------------------
 
@@ -336,7 +337,8 @@ PROOF
         /\ m \in MessageRec[n]
         /\ \A k \in 0 .. n - 1 : m \notin MessageRec[k]
       BY MessageRec_min
-<1>1. CASE n = 0 BY <1>0, <1>1, MessageRec_eq0 DEF MessageRec0
+<1>1. CASE n = 0
+      BY <1>0, <1>1, MessageRec_eq0 DEF MessageRec0
 <1>2. CASE n # 0 /\ m \in m.refs
   <2>1. m.refs \in SUBSET MessageRec[n - 1]
         BY <1>0, <1>2, MessageRec_eq1, MessageRec_ref1, FinSubset_sub, MaxRefCardinalityAssumption
@@ -528,8 +530,10 @@ LEMMA TranBound_Message ==
     PROVE  TranBound[n][m1] \in SUBSET Message
 PROOF
 <1> DEFINE P(j) == \A x \in Message : TranBound[j][x] \in SUBSET Message
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) BY DEF Tran
-<1>0. P(0) BY TranBound_eq0
+<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+    BY DEF Tran
+<1>0. P(0)
+      BY TranBound_eq0
 <1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
   <2> SUFFICES ASSUME NEW x \in Message
                PROVE TranBound[k + 1][x] \in SUBSET Message
@@ -537,7 +541,8 @@ PROOF
   <2> SUFFICES ASSUME NEW r \in x.refs
                PROVE TranBound[k][r] \in SUBSET Message
       BY TranBound_eq1
-  <2>2. r \in Message BY Message_ref
+  <2>2. r \in Message
+        BY Message_ref
   <2>3. QED BY <1>1, <2>2
 <1>2. HIDE DEF P
 <1>3. QED BY <1>0, <1>1, NatInduction, Blast
@@ -553,7 +558,8 @@ LEMMA TranBound_monotone_1 ==
 PROOF
 <1> DEFINE P(j) == \A mm \in Message :
                     TranBound[j][mm] \subseteq TranBound[j + 1][mm]
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) OBVIOUS
+<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+    OBVIOUS
 <1>0. P(0) BY TranBound_eq0, TranBound_eq1
 <1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
   <2> SUFFICES ASSUME NEW mm \in Message
@@ -604,8 +610,10 @@ PROOF
         \A y \in TranBound[n][x] :
         \A z \in TranBound[k][y] :
             z \in TranBound[n + k][x]
-<1>1. SUFFICES \A n \in Nat : P(n) OBVIOUS
-<1>2. P(0) BY TranBound_eq0
+<1>1. SUFFICES \A n \in Nat : P(n)
+      OBVIOUS
+<1>2. P(0)
+      BY TranBound_eq0
 <1>3. ASSUME NEW n \in Nat, P(n) PROVE P(n + 1)
   <2> n + 1 \in Nat
       OBVIOUS
@@ -649,10 +657,14 @@ LEMMA MessageRec0_Tran ==
     ASSUME NEW m1 \in MessageRec[0], NEW m2 \in Tran(m1)
     PROVE  m1 = m2
 PROOF
-<1> m1 \in Message BY MessageRec_spec DEF MessageDepthRange
-<1> PICK k \in Nat : m2 \in TranBound[k][m1] BY Tran_spec
-<1> m2 \in Message BY Tran_Message
-<1>1. CASE k = 0 BY TranBound_eq0, <1>1
+<1> m1 \in Message
+    BY MessageRec_spec DEF MessageDepthRange
+<1> PICK k \in Nat : m2 \in TranBound[k][m1]
+    BY Tran_spec
+<1> m2 \in Message
+    BY Tran_Message
+<1>1. CASE k = 0
+      BY TranBound_eq0, <1>1
 <1>2. CASE k # 0
   <2>1. CASE m2 \in UNION { TranBound[k - 1][r] : r \in m1.refs }
         BY <2>1, MessageRec_eq0 DEF MessageRec0
@@ -829,7 +841,8 @@ LEMMA PrevTranBound_Message ==
     PROVE  PrevTranBound[n][m1] \in SUBSET Message
 PROOF
 <1> DEFINE P(j) == \A x \in Message : PrevTranBound[j][x] \in SUBSET Message
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) BY DEF PrevTran
+<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+    BY DEF PrevTran
 <1>0. P(0) BY PrevTranBound_eq0
 <1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
   <2> SUFFICES ASSUME NEW x \in Message
@@ -854,7 +867,8 @@ PROOF
 <1> DEFINE P(j) ==
             \A mm \in Message :
                 PrevTranBound[j][mm] \subseteq PrevTranBound[j + 1][mm]
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) OBVIOUS
+<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+    OBVIOUS
 <1>0. P(0)
       BY PrevTranBound_eq0, PrevTranBound_eq1
 <1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
@@ -975,5 +989,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 20 01:27:25 CEST 2025 by karbyshev
+\* Last modified Wed May 21 23:34:08 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev

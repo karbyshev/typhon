@@ -1,6 +1,8 @@
 -------------------------- MODULE HMessageTheorems --------------------------
 EXTENDS HMessage
 
+LOCAL INSTANCE FiniteSets
+
 -----------------------------------------------------------------------------
 
 \* TODO clean, not used
@@ -193,5 +195,5 @@ LEMMA Message_prev_PrevTran ==
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 20 18:57:35 CEST 2025 by karbyshev
+\* Last modified Wed May 21 22:55:15 CEST 2025 by karbyshev
 \* Created Mon May 19 20:59:25 CEST 2025 by karbyshev

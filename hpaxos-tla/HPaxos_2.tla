@@ -1,5 +1,7 @@
 ----------------------------- MODULE HPaxos_2 -------------------------------
-EXTENDS Lib, HQuorum, HLearnerGraph, HMessage, TLAPS
+EXTENDS Lib, HQuorum, HLearnerGraph, HMessage, Sequences
+
+LOCAL INSTANCE TLAPS
 
 Assert(P, str) == P
 

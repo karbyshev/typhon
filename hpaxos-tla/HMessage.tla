@@ -1,5 +1,5 @@
 ------------------------------ MODULE HMessage ------------------------------
-EXTENDS Naturals, Sequences, Functions, HQuorum, HLearner
+EXTENDS HQuorum, HLearner, Lib
 
 CONSTANT LastBallot
 ASSUME LastBallot \in Nat
@@ -19,11 +19,6 @@ ASSUME MaxRefCardinalityAssumption ==
 
 \*RefCardinality == Nat
 RefCardinality == 1..MaxRefCardinality
-
-FINSUBSET(R) == { Range(seq) : seq \in Seq(R) }
-\*FINSUBSET(S, R) == { Range(seq) : seq \in [R -> S] }
-\*FINSUBSET(S, K) == { Range(seq) : seq \in [1..K -> S] }
-\*FINSUBSET(S, R) == UNION { {Range(seq) : seq \in [1..K -> S]} : K \in R }
 
 -----------------------------------------------------------------------------
 (* Non-message value *)
@@ -106,5 +101,5 @@ PrevTran(m) == UNION {PrevTranBound[n][m] : n \in PrevTranDepthRange}
 
 =============================================================================
 \* Modification History
-\* Last modified Mon May 19 20:58:51 CEST 2025 by karbyshev
+\* Last modified Wed May 21 23:33:47 CEST 2025 by karbyshev
 \* Created Tue May 14 16:39:44 CEST 2024 by karbyshev
