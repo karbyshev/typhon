@@ -3,7 +3,8 @@ EXTENDS HPaxos_2_Structures,
         HPaxos_2_Invariants,
         HMessageTheorems, HLearnerGraphTheorems,
         LibTheorems,
-        SequenceTheorems
+        SequenceTheorems,
+        TLAPS
 
 LOCAL INSTANCE FiniteSetTheorems
 LOCAL INSTANCE WellFoundedInduction
@@ -1717,9 +1718,9 @@ PROOF
     OBVIOUS
 <1> maxDepth(alpha) =< Len(mseq)
     OBVIOUS
-<1> \A i \in 1..maxDepth(alpha) : mseq[i] = seq[maxDepth(alpha) - i + 1].r
+<1> \A i \in 2..maxDepth(alpha) + 1 : mseq[i] = seq[i - 1].r
     OBVIOUS
-<1> mseq[maxDepth(alpha) + 1] = M0
+<1> mseq[1] = M0
     OBVIOUS
 <1> mseq \in [1..maxDepth(alpha) + 1 -> Message]
     BY WhateverSpec
@@ -1727,6 +1728,16 @@ PROOF
     BY SeqDef
 <1>0. Len(mseq) = maxDepth(alpha) + 1
     OBVIOUS
+
+\* We show now that mseq \in ConSeq(Message)
+
+\*    ConSeq(alpha) ==
+\*        { seq \in Seq(Message) :
+\*            /\ \A i, j \in 1..Len(seq) : i < j =>
+\*                /\ seq[j] \in Tran(seq[i])
+\*                /\ Con(alpha, seq[j]) # Con(alpha, seq[i])
+\*            /\ seq # << >> => alpha \in Con(alpha, Head(seq))
+\*        }
 
 <1>seq0. alpha \in Con(alpha, M0)
   <2> <<alpha, alpha>> \in Ent
@@ -1736,68 +1747,74 @@ PROOF
 \* We need to show that mseq \in I (see Def of maxDepth)
 \* Since Length(mseq) = maxDepth(alpha) + 1, we get a contradiction with the definition of maxDepth.
 
-<1>seq1. \A i, j \in 1..Len(mseq) : i < j => mseq[i] \in Tran(mseq[j])
+<1>seq1. \A i, j \in 1..Len(mseq) : i < j => mseq[j] \in Tran(mseq[i])
   <2> HIDE DEF mseq
-  <2>1. \A i, j \in 1..maxDepth(alpha) : i < j => mseq[i] \in Tran(mseq[j])
-    <3> SUFFICES ASSUME NEW k \in 1..maxDepth(alpha),
-                        NEW l \in 1..maxDepth(alpha),
-                        k < l
-                 PROVE  seq[maxDepth(alpha) - k + 1].r \in Tran(seq[maxDepth(alpha) - l + 1].r)
+  <2>1. \A i, j \in 2..maxDepth(alpha) + 1 : i < j => mseq[j] \in Tran(mseq[i])
+    <3> SUFFICES ASSUME NEW i0 \in 1..maxDepth(alpha),
+                        NEW j0 \in 1..maxDepth(alpha),
+                        i0 < j0
+                 PROVE  seq[j0].r \in Tran(seq[i0].r)
         OBVIOUS
-    <3> DEFINE l0 == maxDepth(alpha) - l + 1
-    <3> DEFINE k0 == maxDepth(alpha) - k + 1
-    <3> l0 < k0
+    <3> i0 =< Len(seq)
         OBVIOUS
-    <3> k0 =< Len(seq)
+    <3> j0 =< Len(seq)
         OBVIOUS
-    <3> l0 =< Len(seq)
+    <3> i0 \in 1..Len(seq)
         OBVIOUS
-    <3> k0 \in 1..Len(seq)
+    <3> j0 \in 1..Len(seq)
         OBVIOUS
-    <3> l0 \in 1..Len(seq)
+    <3> SUFFICES seq[j0].r \in Tran(seq[i0].r)
         OBVIOUS
-    <3> SUFFICES seq[k0].r \in Tran(seq[l0].r)
-        OBVIOUS
-    <3> HIDE DEF k0, l0, oneb_1, oneb_2, M0
-    <3> \A i \in 1..Len(seq) :
-            HeterogeneousSpecCond(alpha, bal, M, V_M, seq, i)
+    <3> HIDE DEF oneb_1, oneb_2, M0
+    <3> \A x \in 1..Len(seq) :
+            HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x)
         OBVIOUS
     <3> QED BY HeterogeneousSpecCondProperties
-  <2>2. \A i \in 1..maxDepth(alpha) : mseq[i] \in Tran(mseq[maxDepth(alpha) + 1])
-    <3> SUFFICES ASSUME NEW j \in 1..maxDepth(alpha)
-                 PROVE  seq[j].r \in Tran(M0)
+  <2>2. \A j \in 2..maxDepth(alpha) + 1 : mseq[j] \in Tran(mseq[1])
+    <3> SUFFICES ASSUME NEW j0 \in 1..maxDepth(alpha)
+                 PROVE  seq[j0].r \in Tran(M0)
         OBVIOUS
     <3> HIDE DEF oneb_1, oneb_2
-    <3> SUFFICES seq[j].r \in Tran(M)
+    <3> SUFFICES seq[j0].r \in Tran(M)
         BY Tran_trans
-    <3> QED BY HeterogeneousSpecCondProperties
+    <3>  \A i \in 1..Len(seq) :
+            seq[i].r \in Tran(M)
+         BY HeterogeneousSpecCondProperties
+    <3> QED OBVIOUS
   <2> QED BY <2>1, <2>2
 
 \*        \* cond 5:
 \*        /\ x > 1 => gamma \in Con(alpha, seq[x - 1].r)
 \*        \* cond 6:
 \*        /\ x > 2 => gamma \notin Con(alpha, seq[x - 2].r)
-<1>seq2. \A i, j \in 1..Len(mseq) : i < j => Con(alpha, mseq[i]) # Con(alpha, mseq[j])
-  <2> HIDE DEF mseq
-  <2>1. \A i, j \in 1..maxDepth(alpha) : i < j => Con(alpha, mseq[i]) # Con(alpha, mseq[j])
-    <3> SUFFICES ASSUME NEW k \in 1..maxDepth(alpha),
-                        NEW l \in 1..maxDepth(alpha),
-                        k < l
-                 PROVE  Con(alpha, seq[maxDepth(alpha) - k + 1].r) # Con(alpha, seq[maxDepth(alpha) - l + 1].r)
+<1>seq2. \A i, j \in 1..Len(mseq) : i < j => Con(alpha, mseq[j]) # Con(alpha, mseq[i])
+  <2> HIDE DEF mseq, oneb_1, oneb_2
+  <2>1. \A i, j \in 2..maxDepth(alpha) + 1 : i < j => Con(alpha, mseq[j]) # Con(alpha, mseq[i])
+    <3> SUFFICES ASSUME NEW i0 \in 1..maxDepth(alpha),
+                        NEW j0 \in 1..maxDepth(alpha),
+                        i0 < j0
+                 PROVE  Con(alpha, seq[j0].r) # Con(alpha, seq[i0].r)
         OBVIOUS
-    <3> DEFINE l0 == maxDepth(alpha) - l + 1
-    <3> DEFINE k0 == maxDepth(alpha) - k + 1
-    <3> l0 < k0
+    <3> maxDepth(alpha) + 1 =< Len(seq)
         OBVIOUS
-    <3> l0 \in 1..Len(seq)
+    <3> i0 < j0
         OBVIOUS
-    <3> k0 \in 1..Len(seq)
+    <3> i0 \in 1..Len(seq)
         OBVIOUS
-    <3> k0 < Len(seq)
+    <3> j0 \in 1..Len(seq)
         OBVIOUS
-    <3> QED BY HeterogeneousSpecCondProperties
+    <3> j0 < Len(seq)
+        OBVIOUS
+    <3> \A x \in 1..Len(seq) : HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x)
+        OBVIOUS
+    <3>1. \A i, j \in 1..Len(seq) :
+            i < j /\ j < Len(seq) =>
+                /\ Con(alpha, seq[i].r) \in SUBSET Con(alpha, seq[j].r)
+                /\ Con(alpha, seq[i].r) # Con(alpha, seq[j].r)
+        BY HeterogeneousSpecCondProperties
+    <3> QED BY <3>1
 
-  <2>2. \A i \in 1..maxDepth(alpha) : Con(alpha, mseq[i]) # Con(alpha, mseq[maxDepth(alpha) + 1])
+  <2>2. \A j \in 2..maxDepth(alpha) + 1 : Con(alpha, mseq[j]) # Con(alpha, mseq[1])
     <3> SUFFICES ASSUME NEW j0 \in 1..maxDepth(alpha)
                  PROVE  Con(alpha, seq[j0].r) # Con(alpha, M0)
         OBVIOUS
@@ -1835,8 +1852,6 @@ PROOF
       <4> seq[2].gamma \in Learner
           BY WhateverSpec
 
-\*Ent == { LL \in Learner \X Learner :
-\*         [from |-> LL[1], to |-> LL[2], q |-> SafeAcceptor] \in TrustSafe }
       <4> <<alpha, seq[2].gamma>> \notin Ent
         <5> SUFFICES ASSUME <<alpha, seq[2].gamma>> \in Ent PROVE FALSE
             OBVIOUS
@@ -1845,8 +1860,6 @@ PROOF
         \* such that it satisfies HeterogeneousSpecCond(alpha, bal, M, V_M, [1 |-> w0], 1)
         \* Then we compare the sequence with seq1 = [1 |-> seq[1]]
         \* For S, we have HeterogeneousSpecCondMin(alpha, bal, M, V_M, S, 1)
-
-
 
         \* We then show that B_m0 < seq1[1].B_m, which is a contradiction.
 
