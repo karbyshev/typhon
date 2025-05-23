@@ -1982,10 +1982,12 @@ PROOF
     <3> QED OBVIOUS
   <2> QED BY <2>1, <2>2
 
-\* TODO fix
-<1>seq3. Len(mseq) =< maxDepth(alpha)
-    BY Zenon, <1>seq0, <1>seq1, <1>seq2, ConSeqMaxDepth
-<1> QED BY <1>0, <1>seq3
+<1>seq3. mseq \in ConSeq(alpha)
+         BY <1>seq0, <1>seq1, <1>seq2 DEF ConSeq 
+
+<1>seq4. Len(mseq) =< maxDepth(alpha)
+         BY <1>seq3, ConSeqMaxDepth
+<1> QED BY <1>0, <1>seq4
 
 -----------------------------------------------------------------------------
 
