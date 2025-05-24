@@ -1787,9 +1787,11 @@ PROOF
 \*        /\ x > 1 => gamma \in Con(alpha, seq[x - 1].r)
 \*        \* cond 6:
 \*        /\ x > 2 => gamma \notin Con(alpha, seq[x - 2].r)
-<1>seq2. \A i, j \in 1..Len(mseq) : i < j => Con(alpha, mseq[j]) # Con(alpha, mseq[i])
+<1>seq2. \A i, j \in 1..Len(mseq) : i < j =>
+            Con(alpha, mseq[j]) # Con(alpha, mseq[i])
   <2> HIDE DEF mseq, oneb_1, oneb_2
-  <2>1. \A i, j \in 2..maxDepth(alpha) + 1 : i < j => Con(alpha, mseq[j]) # Con(alpha, mseq[i])
+  <2>1. \A i, j \in 2..maxDepth(alpha) + 1 : i < j =>
+            Con(alpha, mseq[j]) # Con(alpha, mseq[i])
     <3> SUFFICES ASSUME NEW i0 \in 1..maxDepth(alpha),
                         NEW j0 \in 1..maxDepth(alpha),
                         i0 < j0
