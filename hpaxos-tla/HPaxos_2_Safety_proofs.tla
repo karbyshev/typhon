@@ -661,7 +661,7 @@ LEMMA YYY ==
            KnownMsgsPrevTranSpec,
            KnownMsgsSpec1,
            KnownMsgsSpec2,
-           CaughtSpec,
+           CaughtSpec, \* used by EntConnected
            TypeOK
     PROVE  \A i \in 0..maxDepth(alpha) :
             \E seq \in [1 .. i + 1 -> Whatever] :
@@ -1993,15 +1993,16 @@ PROOF
 
 -----------------------------------------------------------------------------
 
-THEOREM GeneralBallotInduction ==
-    ASSUME NEW P(_),
-           \A bal \in Ballot : (\A b \in Ballot : b < bal => P(b)) => P(bal)
-    PROVE  \A bal \in Ballot : P(bal)
-PROOF
-<1> USE DEF Ballot
-<1> SUFFICES \A n \in Nat : (\A m \in 0..n - 1 : P(m)) => P(n)
-    BY GeneralNatInduction, Blast
-<1> QED OBVIOUS
+\* TODO not used
+\*THEOREM GeneralBallotInduction ==
+\*    ASSUME NEW P(_),
+\*           \A bal \in Ballot : (\A b \in Ballot : b < bal => P(b)) => P(bal)
+\*    PROVE  \A bal \in Ballot : P(bal)
+\*PROOF
+\*<1> USE DEF Ballot
+\*<1> SUFFICES \A n \in Nat : (\A m \in 0..n - 1 : P(m)) => P(n)
+\*    BY GeneralNatInduction, Blast
+\*<1> QED OBVIOUS
 
 \* TODO not used; remove it and remove MsgsSafeAcceptorPrevTranSpec
 \* TODO check if can be reused, in particular ZZZ, <1>caught_safe
@@ -2381,5 +2382,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Wed May 21 23:34:45 CEST 2025 by karbyshev
+\* Last modified Sat May 24 16:20:03 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev
