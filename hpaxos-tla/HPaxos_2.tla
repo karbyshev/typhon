@@ -116,42 +116,32 @@ CONSTANT WellFormed2b(_)
     Fresh000(alpha, x) == \* alpha : Learner, x : 1b
         \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
 
-    qd_aux[alpha, x, d, i \in Nat] ==
-        IF i = 0 THEN [y \in Message |-> {}]
-        ELSE [y \in Message |-> {}]
-\*        (IF i = 1 THEN
-\*                    [y \in Tran(x) |->
-\*                        { m \in Tran(y) :
-\*                            /\ SameBallot(m, y)
-\*                            /\ OneB(m)
-\*                            /\ Fresh000(alpha, m) }
-\*                    ]
-\*                ELSE [y \in Tran(x) |->
-\*                    { m \in Tran(y) :
-\*                        /\ SameBallot(m, y)
-\*                        /\ [lr |-> alpha,
-\*                            q |-> { z.acc : z \in qd_aux[i - 1][y] }] \in TrustLive }]
-\*                )
+    QRec0 == [ LM \in Learner \X Message |-> [x \in Message |-> {}] ]
 
-    \* Quorum of messages referenced by 2a for a learner instance
-    qd(alpha, x, d) ==
-        LET helper[i \in Nat] ==
-            IF i = 0 THEN [y \in Message |-> {}]
-            ELSE
-                (IF i = 1 THEN
-                    [y \in Tran(x) |->
+    QRec1(Q, n) ==
+        [ LM \in Learner \X Message |->
+            LET alpha == LM[1] IN
+            LET x == LM[2] IN
+                IF n = 1 THEN
+                    [ y \in Tran(x) |->
                         { m \in Tran(y) :
                             /\ SameBallot(m, y)
                             /\ OneB(m)
-                            /\ Fresh000(alpha, m) }
-                    ]
-                ELSE [y \in Tran(x) |->
-                    { m \in Tran(y) :
-                        /\ SameBallot(m, y)
-                        /\ [lr |-> alpha,
-                            q |-> { z.acc : z \in helper[i - 1][y] }] \in TrustLive }]
-                )
-        IN helper[d][x]
+                            /\ Fresh000(alpha, m) } ]
+                ELSE
+                    [ y \in Tran(x) |->
+                        { m \in Tran(y) :
+                            /\ SameBallot(m, y)
+                            /\ [ lr |-> alpha,
+                                 q  |-> { z.acc : z \in Q[LM][y] } ] \in TrustLive } ]
+        ]
+
+    QRec[n \in Nat] ==
+        IF n = 0 THEN QRec0 ELSE QRec1(QRec[n - 1], n)
+
+    \* Quorum of messages referenced by 2a for a learner instance
+    qd(alpha, x, d) ==
+        IF TwoA(x) THEN QRec[d][<<alpha, x>>][x] ELSE {}
 
     depthIdx(alpha, x) ==
         {d \in 1..N_L : [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, x, d)}] \in TrustLive }
@@ -407,6 +397,7 @@ D(alpha, x, m) ==
 
     /\ m.lrns \cap Con(alpha, x) # {}
 
+
 Latest(P) ==
     { x \in P :
         \A bx \in Ballot :
@@ -417,49 +408,32 @@ Latest(P) ==
 Fresh000(alpha, x) ==
     \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
 
+QRec0 == [ LM \in Learner \X Message |-> [x \in Message |-> {}] ]
 
-
-
-
-
-
-
-qd_aux[alpha, x, d, i \in Nat] ==
-    IF i = 0 THEN [y \in Message |-> {}]
-    ELSE [y \in Message |-> {}]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-qd(alpha, x, d) ==
-    LET helper[i \in Nat] ==
-        IF i = 0 THEN [y \in Message |-> {}]
-        ELSE
-            (IF i = 1 THEN
-                [y \in Tran(x) |->
+QRec1(Q, n) ==
+    [ LM \in Learner \X Message |->
+        LET alpha == LM[1] IN
+        LET x == LM[2] IN
+            IF n = 1 THEN
+                [ y \in Tran(x) |->
                     { m \in Tran(y) :
                         /\ SameBallot(m, y)
                         /\ OneB(m)
-                        /\ Fresh000(alpha, m) }
-                ]
-            ELSE [y \in Tran(x) |->
-                { m \in Tran(y) :
-                    /\ SameBallot(m, y)
-                    /\ [lr |-> alpha,
-                        q |-> { z.acc : z \in helper[i - 1][y] }] \in TrustLive }]
-            )
-    IN helper[d][x]
+                        /\ Fresh000(alpha, m) } ]
+            ELSE
+                [ y \in Tran(x) |->
+                    { m \in Tran(y) :
+                        /\ SameBallot(m, y)
+                        /\ [ lr |-> alpha,
+                             q  |-> { z.acc : z \in Q[LM][y] } ] \in TrustLive } ]
+    ]
+
+QRec[n \in Nat] ==
+    IF n = 0 THEN QRec0 ELSE QRec1(QRec[n - 1], n)
+
+
+qd(alpha, x, d) ==
+    IF TwoA(x) THEN QRec[d][<<alpha, x>>][x] ELSE {}
 
 depthIdx(alpha, x) ==
     {d \in 1..N_L : [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, x, d)}] \in TrustLive }
