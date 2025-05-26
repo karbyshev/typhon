@@ -125,15 +125,16 @@ CONSTANT WellFormed2b(_)
                 IF n = 1 THEN
                     [ y \in Tran(x) |->
                         { m \in Tran(y) :
-                            /\ SameBallot(m, y)
                             /\ OneB(m)
+                            /\ SameBallot(m, y)
                             /\ Fresh000(alpha, m) } ]
                 ELSE
                     [ y \in Tran(x) |->
                         { m \in Tran(y) :
+                            /\ TwoA(m)
                             /\ SameBallot(m, y)
                             /\ [ lr |-> alpha,
-                                 q  |-> { z.acc : z \in Q[LM][y] } ] \in TrustLive } ]
+                                 q  |-> { z.acc : z \in Q[LM][m] } ] \in TrustLive } ]
         ]
 
     QRec[n \in Nat] ==
@@ -417,15 +418,16 @@ QRec1(Q, n) ==
             IF n = 1 THEN
                 [ y \in Tran(x) |->
                     { m \in Tran(y) :
-                        /\ SameBallot(m, y)
                         /\ OneB(m)
+                        /\ SameBallot(m, y)
                         /\ Fresh000(alpha, m) } ]
             ELSE
                 [ y \in Tran(x) |->
                     { m \in Tran(y) :
+                        /\ TwoA(m)
                         /\ SameBallot(m, y)
                         /\ [ lr |-> alpha,
-                             q  |-> { z.acc : z \in Q[LM][y] } ] \in TrustLive } ]
+                             q  |-> { z.acc : z \in Q[LM][m] } ] \in TrustLive } ]
     ]
 
 QRec[n \in Nat] ==
