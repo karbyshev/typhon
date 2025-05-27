@@ -704,7 +704,267 @@ PROOF
   <2> QED BY FS_Subset
 <1> QED BY Zenon, MaxIsMax, NatFiniteSetMaxExists DEF maxDepth
 
+-----------------------------------------------------------------------------
+
+LEMMA QRec_def ==
+    QRec = [n \in Nat |->
+                IF n = 0
+                THEN QRec0
+                ELSE QRec1(QRec[n - 1], n)]
+PROOF BY NatInductiveDef, Isa
+      DEF NatInductiveDefHypothesis,
+          NatInductiveDefConclusion,
+          QRec
+
+QRecType(Q) ==
+    \A L \in Learner : \A M \in Message :
+        \A y \in Tran(M) : Q[<<L, M>>][y] \in SUBSET Message
+
+LEMMA QRec0_spec == QRecType(QRec0)
+PROOF BY Tran_Message DEF QRecType, QRec0
+
+LEMMA QRec1_spec ==
+    ASSUME NEW v,
+           QRecType(v),
+           NEW n \in Nat \ {0}
+    PROVE  QRecType(QRec1(v, n))
+PROOF BY Tran_Message DEF QRecType, QRec1
+
+LEMMA QRec_spec ==
+    \A n \in Nat : QRecType(QRec[n])
+PROOF
+<1> DEFINE P(m) == QRecType(QRec[m])
+<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) OBVIOUS
+<1>0. P(0)
+      BY QRec0_spec, QRec_def
+<1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
+      BY <1>1, QRec1_spec, QRec_def
+<1>2. HIDE DEF P
+<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+
+LEMMA Qd_spec ==
+    ASSUME NEW alpha \in Learner,
+           NEW x \in Message,
+           NEW d \in Nat
+    PROVE  qd(alpha, x, d) \in SUBSET Message
+PROOF BY QRec_spec, Tran_refl DEF qd, QRecType
+
+LEMMA QRec_eq_0 ==
+    ASSUME NEW alpha \in Learner,
+           NEW x \in Message,
+           NEW y \in Message
+    PROVE  QRec[0][<<alpha, x>>][y] = {}
+PROOF BY QRec_def DEF QRec0
+
+LEMMA QRec_eq_1 ==
+    ASSUME NEW alpha \in Learner,
+           NEW x \in Message,
+           NEW y \in Tran(x)
+    PROVE  QRec[1][<<alpha, x>>][y] =
+            { m \in Tran(y) :
+                /\ SameBallot(m, y)
+                /\ OneB(m)
+                /\ Fresh000(alpha, m) }
+PROOF BY QRec_def, Tran_refl DEF QRec1
+
+LEMMA QRec_eq_2 ==
+    ASSUME NEW alpha \in Learner,
+           NEW x \in Message,
+           NEW y \in Tran(x),
+           NEW n \in Nat,
+           1 < n
+    PROVE  QRec[n][<<alpha, x>>][y] =
+            { m \in Tran(y) :
+                /\ SameBallot(m, y)
+                /\ TwoA(m)
+                /\ [ lr |-> alpha, q  |-> { z.acc : z \in QRec[n - 1][<<alpha, x>>][m] } ] \in TrustLive }
+PROOF BY QRec_def, Tran_refl DEF QRec1
+
+LEMMA QRec_compat ==
+    ASSUME NEW alpha \in Learner
+    PROVE  \A n \in Nat :
+            \A x, y \in Message :
+            \A z \in Tran(x) \cap Tran(y) :
+                QRec[n][<<alpha, x>>][z] = QRec[n][<<alpha, y>>][z]
+PROOF
+<1> DEFINE P(k) ==
+        \A x, y \in Message :
+            \A z \in Tran(x) \cap Tran(y) :
+                QRec[k][<<alpha, x>>][z] = QRec[k][<<alpha, y>>][z]
+<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+    OBVIOUS
+<1>0. P(0)
+      BY QRec_eq_0, Tran_Message
+<1>1. ASSUME NEW h \in Nat, P(h) PROVE P(h + 1)
+  <2>1. CASE h = 0
+        BY <2>1, QRec_eq_1
+  <2>2. CASE h > 0
+    <3> SUFFICES ASSUME NEW x \in Message,
+                        NEW y \in Message,
+                        NEW z \in Tran(x),
+                        z \in Tran(y)
+                 PROVE  QRec[h + 1][<<alpha, x>>][z] = QRec[h + 1][<<alpha, y>>][z]
+        OBVIOUS
+    <3> 1 < h + 1
+        BY <2>2
+    <3> h + 1 \in Nat
+        BY <1>1
+    <3> SUFFICES
+        { m \in Tran(z) :
+            /\ SameBallot(m, z)
+            /\ TwoA(m)
+            /\ [lr |-> alpha,
+                q  |-> { w.acc : w \in QRec[(h + 1) - 1][<<alpha, x>>][m] }] \in TrustLive } =
+        { m \in Tran(z) :
+            /\ SameBallot(m, z)
+            /\ TwoA(m)
+            /\ [lr |-> alpha,
+                q  |-> { w.acc : w \in QRec[(h + 1) - 1][<<alpha, y>>][m] }] \in TrustLive }
+        BY QRec_eq_2, Isa
+    <3> SUFFICES ASSUME NEW m \in Tran(z)
+                 PROVE  QRec[h][<<alpha, x>>][m] = QRec[h][<<alpha, y>>][m]
+        OBVIOUS
+    <3> QED BY <1>1, Tran_trans
+  <2> QED BY <2>1, <2>2
+<1>2. HIDE DEF P
+<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+
+LEMMA Qd_eq ==
+    ASSUME NEW alpha \in Learner,
+           NEW x \in Message,
+           NEW d \in Nat
+    PROVE  qd(alpha, x, d) =
+            IF TwoA(x) THEN (
+                IF d = 0 THEN {}
+                ELSE (
+                    IF d = 1 THEN
+                        { m \in Tran(x) :
+                            /\ SameBallot(m, x)
+                            /\ OneB(m)
+                            /\ Fresh000(alpha, m) }
+                    ELSE
+                        { m \in Tran(x) :
+                            /\ SameBallot(m, x)
+                            /\ TwoA(m)
+                            /\ [ lr |-> alpha, q  |-> { z.acc : z \in qd(alpha, m, d - 1) } ] \in TrustLive }
+                )
+            )
+            ELSE {}
+PROOF
+<1> CASE TwoA(x)
+  <2>0. CASE d = 0
+        BY <2>0, QRec_eq_0 DEF qd
+  <2>1. CASE d = 1
+        BY <2>1, QRec_eq_1, Tran_refl, Isa DEF qd
+  <2>2. CASE d > 1
+    <3> DEFINE qd1(L, M, DD) == qd(L, M, DD)
+    <3> SUFFICES qd(alpha, x, d) = { m \in Tran(x) :
+                        /\ SameBallot(m, x)
+                        /\ TwoA(m)
+                        /\ [ lr |-> alpha, q  |-> { z.acc : z \in qd1(alpha, m, d - 1) } ] \in TrustLive }
+        BY <2>2
+    <3> SUFFICES QRec[d][<<alpha, x>>][x] =
+                    { m \in Tran(x) :
+                        /\ SameBallot(m, x)
+                        /\ TwoA(m)
+                        /\ [ lr |-> alpha, q  |-> { z.acc : z \in qd1(alpha, m, d - 1) } ] \in TrustLive }
+      <4> HIDE DEF qd1
+      <4> QED BY DEF qd
+    <3> SUFFICES
+        { m \in Tran(x) :
+            /\ SameBallot(m, x)
+            /\ TwoA(m)
+            /\ [ lr |-> alpha, q  |-> { z.acc : z \in QRec[d - 1][<<alpha, x>>][m] } ] \in TrustLive } =
+        { m \in Tran(x) :
+            /\ SameBallot(m, x)
+            /\ TwoA(m)
+            /\ [ lr |-> alpha, q  |-> { z.acc : z \in qd1(alpha, m, d - 1) } ] \in TrustLive }
+        BY QRec_eq_2, <2>2, Tran_refl
+    <3> SUFFICES ASSUME NEW m \in Tran(x),
+                        TwoA(m)
+                 PROVE  QRec[d - 1][<<alpha, x>>][m] = qd1(alpha, m, d - 1)
+        OBVIOUS
+    <3> m \in Message
+        BY Tran_Message
+    <3> SUFFICES QRec[d - 1][<<alpha, x>>][m] = QRec[d - 1][<<alpha, m>>][m]
+        BY DEF qd
+    <3> d - 1 \in Nat
+        BY <2>2
+    <3> QED BY QRec_compat, Tran_refl
+  <2> QED BY <2>0, <2>1, <2>2
+<1> QED BY DEF qd
+
+\*LEMMA QuorumNonTwoA ==
+\*    ASSUME NEW alpha \in Learner,
+\*           NEW x \in Message,
+\*           ~TwoA(x),
+\*           NEW d \in Nat
+\*    PROVE  qd(alpha, x, d) = {}
+\*PROOF BY DEF qd
+\*
+\*LEMMA QuorumProperty0 ==
+\*    ASSUME NEW alpha \in Learner,
+\*           NEW x \in Message,
+\*           Proposal(x),
+\*           NEW d \in Nat
+\*    PROVE  qd(alpha, x, d) = {}
+\*PROOF BY DEF qd, Proposal, OneA, TwoA
+
+\*LEMMA Qd_eq_0 ==
+\*    ASSUME NEW alpha \in Learner,
+\*           NEW x \in Message
+\*    PROVE  qd(alpha, x, 0) = {}
+\*PROOF BY Qd_eq
+\*
+\*LEMMA Qd_eq_1 ==
+\*    ASSUME NEW alpha \in Learner,
+\*           NEW x \in Message,
+\*           TwoA(x)
+\*    PROVE  qd(alpha, x, 1) =
+\*            { m \in Tran(x) :
+\*                /\ SameBallot(m, x)
+\*                /\ OneB(m)
+\*                /\ Fresh000(alpha, m) }
+\*PROOF BY Qd_eq
+
+\*    QRec0 == [ LM \in Learner \X Message |-> [x \in Message |-> {}] ]
+\*
+\*    QRec1(Q, n) ==
+\*        [ LM \in Learner \X Message |->
+\*            LET alpha == LM[1] IN
+\*            LET x == LM[2] IN
+\*                IF n = 1 THEN
+\*                    [ y \in Tran(x) |->
+\*                        { m \in Tran(y) :
+\*                            /\ SameBallot(m, y)
+\*                            /\ OneB(m)
+\*                            /\ Fresh000(alpha, m) } ]
+\*                ELSE
+\*                    [ y \in Tran(x) |->
+\*                        { m \in Tran(y) :
+\*                            /\ SameBallot(m, y)
+\*                            /\ [ lr |-> alpha,
+\*                                 q  |-> { z.acc : z \in Q[LM][m] } ] \in TrustLive } ]
+\*        ]
+\*
+\*    QRec[n \in Nat] ==
+\*        IF n = 0 THEN QRec0 ELSE QRec1(QRec[n - 1], n)
+\*
+\*    \* Quorum of messages referenced by 2a for a learner instance
+\*    qd(alpha, x, d) ==
+\*        IF TwoA(x) THEN QRec[d][<<alpha, x>>][x] ELSE {}
+
+LEMMA QdProperty1 ==
+    ASSUME NEW alpha \in Learner,
+           NEW x \in Message,
+           NEW d \in Nat
+    PROVE  \A y \in qd(alpha, x, d) :
+            /\ y \in Tran(x)
+            /\ ~Proposal(y)
+PROOF BY Qd_eq, MessageTypeSpec, Tran_Message DEF OneA, Proposal
+
+
 =============================================================================
 \* Modification History
-\* Last modified Wed May 21 23:34:57 CEST 2025 by karbyshev
+\* Last modified Tue May 27 14:43:20 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

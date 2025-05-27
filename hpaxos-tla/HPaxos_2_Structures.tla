@@ -393,7 +393,24 @@ LEMMA ConSeqMaxDepth ==
            NEW seq \in ConSeq(alpha)
     PROVE  Len(seq) =< maxDepth(alpha)
 
+-----------------------------------------------------------------------------
+
+\*LEMMA QuorumProperty0 ==
+\*    ASSUME NEW alpha \in Learner,
+\*           NEW x \in Message,
+\*           Proposal(x),
+\*           NEW d \in Nat
+\*    PROVE  qd(alpha, x, d) = {}
+
+LEMMA QuorumProperty1 ==
+    ASSUME NEW alpha \in Learner,
+           NEW x \in Message,
+           NEW d \in Nat
+    PROVE  \A y \in qd(alpha, x, d) :
+            /\ y \in Tran(x)
+            /\ ~Proposal(y)
+
 =============================================================================
 \* Modification History
-\* Last modified Wed May 21 22:54:32 CEST 2025 by karbyshev
+\* Last modified Tue May 27 14:16:29 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev

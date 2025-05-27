@@ -357,114 +357,44 @@ PROOF
 \*    [x \in 0..0 |-> [RRR |-> 42]] \in [Nat -> [RRR : Nat]]
 \*OBVIOUS
 
-LEMMA QuorumNonTwoA ==
-    ASSUME NEW alpha \in Learner,
-           NEW x \in Message,
-           ~TwoA(x),
-           NEW d \in Nat
-    PROVE  qd(alpha, x, d) = {}
-PROOF BY DEF qd
 
-LEMMA QuorumCaseZero ==
-    ASSUME NEW alpha \in Learner,
-           NEW x \in Message
-    PROVE  qd(alpha, x, 0) = {}
-PROOF
-<1> CASE TwoA(x)
-  <2> DEFINE helper[i \in 0..0] == [y \in Message |-> {}]
-  <2> 0 .. 0 = {0}
-      OBVIOUS
-  <2> qd(alpha, x, 0) = helper[0][x]
-      BY DEF qd
-  <2> QED OBVIOUS
-<1> QED BY DEF qd
-
-LEMMA QuorumCaseOne ==
-    ASSUME NEW alpha \in Learner,
-           NEW x \in Message,
-           TwoA(x)
-    PROVE  qd(alpha, x, 1) = { y \in Tran(x) : /\ SameBallot(y, x)
-                                               /\ OneB(x)
-                                               /\ Fresh000(alpha, x) }
-PROOF
-<1> DEFINE helper[i \in 0..1] ==
-        IF i = 0 THEN [y \in Message |-> {}]
-        ELSE
-            (IF i = 1 THEN
-                [y \in Tran(x) |->
-                    { m \in Tran(y) :
-                        /\ SameBallot(m, y)
-                        /\ OneB(m)
-                        /\ Fresh000(alpha, m) }
-                ]
-            ELSE [y \in Tran(x) |->
-                { m \in Tran(y) :
-                    /\ SameBallot(m, y)
-                    /\ [lr |-> alpha,
-                        q |-> { z.acc : z \in helper[i - 1][m] }] \in TrustLive }]
-            )
-<1> qd(alpha, x, 1) = helper[1][x]
-    BY DEF qd
-<1> 1 \in 0..1
-    OBVIOUS
-<1> 0..1 = {0, 1}
-    OBVIOUS
-<1> helper[1] = [y \in Tran(x) |->
-                                  {m \in Tran(y) :
-                                     /\ SameBallot(m, y)
-                                     /\ OneB(m)
-                                     /\ Fresh000(alpha, m)}]
- OBVIOUS
-<1> QED OBVIOUS
-
-LEMMA QuorumProperty0 ==
-    ASSUME NEW alpha \in Learner,
-           NEW x \in Message,
-           Proposal(x),
-           NEW d \in Nat
-    PROVE  qd(alpha, x, d) = {}
-PROOF BY DEF qd, Proposal, OneA, TwoA
-
-\* TODO useful lemma
-LEMMA QuorumProperty1 ==
-    ASSUME NEW alpha \in Learner,
-           NEW x \in Message,
-           NEW d \in Nat
-    PROVE  \A y \in qd(alpha, x, d) :
-            /\ y \in Tran(x)
-            /\ ~Proposal(y)
-PROOF
-<1> CASE TwoA(x)
-  <2> DEFINE helper[i \in 0..d] ==
-        IF i = 0 THEN [y \in Message |-> {}]
-        ELSE
-            (IF i = 1 THEN
-                [y \in Tran(x) |->
-                    { m \in Tran(y) :
-                        /\ SameBallot(m, y)
-                        /\ OneB(m)
-                        /\ Fresh000(alpha, m) }
-                ]
-            ELSE [y \in Tran(x) |->
-                { m \in Tran(y) :
-                    /\ SameBallot(m, y)
-                    /\ [lr |-> alpha,
-                        q |-> { z.acc : z \in helper[i - 1][m] }] \in TrustLive }]
-            )
-  <2> qd(alpha, x, d) = helper[d][x]
-      BY DEF qd
-  <2> CASE d = 0
-      BY QuorumCaseZero
-  <2> CASE d = 1
-    <3> QED
-  <2> SUFFICES ASSUME NEW y \in helper[d][x]
-               PROVE  /\ y \in Tran(x)
-                      /\ ~Proposal(y)
-      OBVIOUS
-  <2> CASE d = 1
-      BY DEF Proposal, OneB
-  <2> QED OBVIOUS
-<1> QED BY DEF qd
+\*LEMMA QuorumCaseOne ==
+\*    ASSUME NEW alpha \in Learner,
+\*           NEW x \in Message,
+\*           TwoA(x)
+\*    PROVE  qd(alpha, x, 1) = { y \in Tran(x) : /\ SameBallot(y, x)
+\*                                               /\ OneB(x)
+\*                                               /\ Fresh000(alpha, x) }
+\*PROOF
+\*<1> DEFINE helper[i \in 0..1] ==
+\*        IF i = 0 THEN [y \in Message |-> {}]
+\*        ELSE
+\*            (IF i = 1 THEN
+\*                [y \in Tran(x) |->
+\*                    { m \in Tran(y) :
+\*                        /\ SameBallot(m, y)
+\*                        /\ OneB(m)
+\*                        /\ Fresh000(alpha, m) }
+\*                ]
+\*            ELSE [y \in Tran(x) |->
+\*                { m \in Tran(y) :
+\*                    /\ SameBallot(m, y)
+\*                    /\ [lr |-> alpha,
+\*                        q |-> { z.acc : z \in helper[i - 1][m] }] \in TrustLive }]
+\*            )
+\*<1> qd(alpha, x, 1) = helper[1][x]
+\*    BY DEF qd
+\*<1> 1 \in 0..1
+\*    OBVIOUS
+\*<1> 0..1 = {0, 1}
+\*    OBVIOUS
+\*<1> helper[1] = [y \in Tran(x) |->
+\*                                  {m \in Tran(y) :
+\*                                     /\ SameBallot(m, y)
+\*                                     /\ OneB(m)
+\*                                     /\ Fresh000(alpha, m)}]
+\* OBVIOUS
+\*<1> QED OBVIOUS
 
 \* TODO join with Property1
 LEMMA QuorumProperty2 ==
@@ -559,7 +489,7 @@ PROOF
   \* from cond 8
   <2>2. \A i \in 1..K :
             seq[i].r \in Tran(seq[i].m)
-        BY WhateverSpec, QuorumProperty1 DEF HeterogeneousSpecCond
+        BY WhateverSpec, QdProperty1 DEF HeterogeneousSpecCond
   \* from cond 4
   <2>3. \A i \in 2..K :
             seq[i].m \in Tran(seq[1].r)
@@ -574,7 +504,7 @@ PROOF
                         i < j
                  PROVE seq[j].r \in Tran(seq[i].r)
         OBVIOUS
-    <3> QED BY Tran_trans, WhateverSpec, QuorumProperty1 DEF HeterogeneousSpecCond
+    <3> QED BY Tran_trans, WhateverSpec, QdProperty1 DEF HeterogeneousSpecCond
   <2>6. \A i, j \in 1..K : i < j =>
             Con(alpha, seq[i].r) \in SUBSET Con(alpha, seq[j].r)
         BY <2>5, WhateverSpec, ConTran
@@ -716,7 +646,7 @@ PROOF
     <3> [lr |-> beta, q |-> { mm.acc : mm \in Q2 }] \in TrustLive
         BY <3>22
     <3> Q2 \in SUBSET Tran(M)
-        BY QuorumProperty1
+        BY QdProperty1
     <3> Q2 \in SUBSET Message
         BY Tran_Message
     <3> Q2 \in SUBSET known_msgs[L0]
@@ -868,7 +798,7 @@ PROOF
       <4> seq[i].r \in qd(seq[i].gamma, seq[i].m, 1)
           BY DEF HeterogeneousSpecCond
       <4> qd(seq[i].gamma, seq[i].m, 1) \in SUBSET Tran(seq[i].m)
-          BY QuorumProperty1
+          BY QdProperty1
       <4> QED OBVIOUS
 
     \* We prove the following useful property of alpha and gamma:
@@ -1010,7 +940,7 @@ PROOF
     <3> [lr |-> gamma0, q |-> { mm.acc : mm \in Q2 }] \in TrustLive
         BY <3>20
     <3> Q2 \in SUBSET Tran(m0)
-        BY QuorumProperty1
+        BY QdProperty1
     <3> Q2 \in SUBSET Message
         BY Tran_Message
     <3> Q2 \in SUBSET known_msgs[L0]
@@ -1045,7 +975,7 @@ PROOF
     <3> [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
         BY DEF HeterogeneousSpecCond \* cond 12
     <3> Q1 \in SUBSET Tran(seq[k].s)
-        BY QuorumProperty1
+        BY QdProperty1
     \* Therefore..
     <3> Q1 \in SUBSET Tran(seq[k].r)
         BY Tran_trans DEF HeterogeneousSpecCond \* cond 9
@@ -1059,9 +989,9 @@ PROOF
     <3> r0 \in Message /\ s0 \in Message
         BY DEF KnownMsgsSpec2, TypeOK
     <3> ~Proposal(s0)
-        BY QuorumProperty1
+        BY QdProperty1
     <3> ~Proposal(r0)
-        BY QuorumProperty1
+        BY QdProperty1
     <3> B(r0, B_m0)
         BY QuorumProperty2
     <3> B(s0, bal)
@@ -1160,7 +1090,7 @@ PROOF
           <6> [lr |-> alpha, q |-> { mm.acc : mm \in Q1_star }] \in TrustLive
               BY DEF HeterogeneousSpecCond
           <6> Q1_star \in SUBSET Tran(seq[k_star].s)
-              BY QuorumProperty1
+              BY QdProperty1
           \* ..from which we conclude
           <6> Q1_star \in SUBSET Tran(seq[k_star].r)
               BY Tran_trans DEF HeterogeneousSpecCond
@@ -1169,7 +1099,7 @@ PROOF
           \* We DEFINE Q2 == qd(gamma0, m0, 1)
           \* and <3>cond4 \A i \in 1..k : m0 \in Tran(seq[i].r)
           <6> Q2 \in SUBSET Tran(seq[k_star].r)
-              BY QuorumProperty1, <3>cond4, Tran_trans
+              BY QdProperty1, <3>cond4, Tran_trans
 
           <6> PICK p_star \in Acceptor, s_star \in Q1_star, r_star \in Q2 :
                 /\ p_star \notin Caught(seq[k_star].r)
@@ -1186,9 +1116,9 @@ PROOF
           <6> B(s_star, bal)
               BY QuorumProperty2
           <6> ~Proposal(r_star)
-              BY QuorumProperty1
+              BY QdProperty1
           <6> ~Proposal(s_star)
-              BY QuorumProperty1
+              BY QdProperty1
 
           <6> seq[k_star].r \in known_msgs[L0]
               BY DEF KnownMsgsSpec2
@@ -1910,7 +1840,7 @@ PROOF
         <5> [lr |-> seq[2].gamma, q |-> { mm.acc : mm \in Q2 }] \in TrustLive
             BY <5>2 DEF HeterogeneousSpecCond
         <5> Q2 \in SUBSET Tran(seq[2].m)
-            BY QuorumProperty1
+            BY QdProperty1
         <5> Q2 \in SUBSET Message
             BY Tran_Message
         <5> Q2 \in SUBSET known_msgs[L0]
@@ -1918,7 +1848,7 @@ PROOF
         <5> Q2 \in SUBSET msgs
             BY DEF KnownMsgsSpec1
         <5> \A x \in Q2 : ~OneA(x)
-            BY QuorumProperty1 DEF Proposal, OneA
+            BY QdProperty1 DEF Proposal, OneA
         <5> \A x \in Q2 : B(x, seq[2].B_m)
             BY QuorumProperty2 DEF HeterogeneousSpecCond
         <5> PICK p \in SafeAcceptor, s0 \in Q1, r0 \in Q2 :
@@ -2382,5 +2312,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Sat May 24 16:20:03 CEST 2025 by karbyshev
+\* Last modified Tue May 27 14:37:59 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev
