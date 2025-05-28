@@ -395,22 +395,47 @@ LEMMA ConSeqMaxDepth ==
 
 -----------------------------------------------------------------------------
 
-\*LEMMA QuorumProperty0 ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW x \in Message,
-\*           Proposal(x),
-\*           NEW d \in Nat
-\*    PROVE  qd(alpha, x, d) = {}
+LEMMA Qd_eq ==
+    ASSUME NEW alpha \in Learner,
+           NEW x \in Message,
+           NEW d \in Nat
+    PROVE  qd(alpha, x, d) =
+            IF TwoA(x) THEN (
+                IF d = 0 THEN {}
+                ELSE (
+                    IF d = 1 THEN
+                        { m \in Tran(x) :
+                            /\ SameBallot(m, x)
+                            /\ OneB(m)
+                            /\ Fresh000(alpha, m) }
+                    ELSE
+                        { m \in Tran(x) :
+                            /\ SameBallot(m, x)
+                            /\ TwoA(m)
+                            /\ [ lr |-> alpha, q  |-> { z.acc : z \in qd(alpha, m, d - 1) } ] \in TrustLive }
+                )
+            )
+            ELSE {}
 
-LEMMA QuorumProperty1 ==
+LEMMA QdProperty1 ==
     ASSUME NEW alpha \in Learner,
            NEW x \in Message,
            NEW d \in Nat
     PROVE  \A y \in qd(alpha, x, d) :
             /\ y \in Tran(x)
             /\ ~Proposal(y)
+            /\ SameBallot(y, x)
+
+LEMMA QdProperty4 ==
+    ASSUME NEW alpha \in Learner,
+           Accurate(alpha),
+           NEW m \in Message,
+           NEW d \in Nat, 1 =< d,
+           NEW d1 \in Nat, d =< d1
+    PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d1) }] \in TrustLive =>
+           [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d) }] \in TrustLive
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 27 14:16:29 CEST 2025 by karbyshev
+\* Last modified Wed May 28 22:55:35 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev

@@ -894,65 +894,50 @@ PROOF
   <2> QED BY <2>0, <2>1, <2>2
 <1> QED BY DEF qd
 
-\*LEMMA QuorumNonTwoA ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW x \in Message,
-\*           ~TwoA(x),
-\*           NEW d \in Nat
-\*    PROVE  qd(alpha, x, d) = {}
-\*PROOF BY DEF qd
-\*
-\*LEMMA QuorumProperty0 ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW x \in Message,
-\*           Proposal(x),
-\*           NEW d \in Nat
-\*    PROVE  qd(alpha, x, d) = {}
-\*PROOF BY DEF qd, Proposal, OneA, TwoA
-
-\*LEMMA Qd_eq_0 ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW x \in Message
-\*    PROVE  qd(alpha, x, 0) = {}
-\*PROOF BY Qd_eq
-\*
-\*LEMMA Qd_eq_1 ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW x \in Message,
-\*           TwoA(x)
-\*    PROVE  qd(alpha, x, 1) =
-\*            { m \in Tran(x) :
-\*                /\ SameBallot(m, x)
-\*                /\ OneB(m)
-\*                /\ Fresh000(alpha, m) }
-\*PROOF BY Qd_eq
-
-\*    QRec0 == [ LM \in Learner \X Message |-> [x \in Message |-> {}] ]
-\*
-\*    QRec1(Q, n) ==
-\*        [ LM \in Learner \X Message |->
-\*            LET alpha == LM[1] IN
-\*            LET x == LM[2] IN
-\*                IF n = 1 THEN
-\*                    [ y \in Tran(x) |->
-\*                        { m \in Tran(y) :
-\*                            /\ SameBallot(m, y)
-\*                            /\ OneB(m)
-\*                            /\ Fresh000(alpha, m) } ]
-\*                ELSE
-\*                    [ y \in Tran(x) |->
-\*                        { m \in Tran(y) :
-\*                            /\ SameBallot(m, y)
-\*                            /\ [ lr |-> alpha,
-\*                                 q  |-> { z.acc : z \in Q[LM][m] } ] \in TrustLive } ]
-\*        ]
-\*
-\*    QRec[n \in Nat] ==
-\*        IF n = 0 THEN QRec0 ELSE QRec1(QRec[n - 1], n)
-\*
-\*    \* Quorum of messages referenced by 2a for a learner instance
-\*    qd(alpha, x, d) ==
-\*        IF TwoA(x) THEN QRec[d][<<alpha, x>>][x] ELSE {}
+\* TODO fix name
+LEMMA Qd_monotone ==
+    ASSUME NEW alpha \in Learner,
+           NEW x \in Message,
+           NEW d \in Nat,
+           NEW y \in qd(alpha, x, d),
+           NEW c \in Nat,
+           NEW z \in qd(alpha, y, c)
+    PROVE  z \in qd(alpha, x, c)
+PROOF
+<1> TwoA(x) /\ 0 < d
+    BY Qd_eq
+<1> y \in Message
+    BY Qd_spec
+<1> /\ y \in Tran(x)
+    /\ SameBallot(y, x)
+    BY Qd_eq
+<1> TwoA(y) /\ 0 < c
+    BY Qd_eq
+<1> z \in Message
+    BY Qd_spec
+<1> CASE c = 1
+  <2> /\ z \in Tran(y)
+      /\ SameBallot(z, y)
+      /\ OneB(z)
+      /\ Fresh000(alpha, z)
+      BY Qd_eq
+  <2> z \in Tran(x)
+      BY Tran_trans
+  <2> SameBallot(z, x)
+      BY DEF SameBallot
+  <2> QED BY Qd_eq
+<1> CASE c > 1
+  <2> /\ z \in Tran(y)
+      /\ SameBallot(z, y)
+      /\ TwoA(z)
+      /\ [ lr |-> alpha, q  |-> { m.acc : m \in qd(alpha, z, c - 1) } ] \in TrustLive
+      BY Qd_eq
+  <2> z \in Tran(x)
+      BY Tran_trans
+  <2> SameBallot(z, x)
+      BY DEF SameBallot
+  <2> QED BY Qd_eq
+<1> QED OBVIOUS
 
 LEMMA QdProperty1 ==
     ASSUME NEW alpha \in Learner,
@@ -961,10 +946,62 @@ LEMMA QdProperty1 ==
     PROVE  \A y \in qd(alpha, x, d) :
             /\ y \in Tran(x)
             /\ ~Proposal(y)
+            /\ SameBallot(y, x)
 PROOF BY Qd_eq, MessageTypeSpec, Tran_Message DEF OneA, Proposal
 
+LEMMA QdProperty4 ==
+    ASSUME NEW alpha \in Learner,
+           Accurate(alpha),
+           NEW m \in Message,
+           NEW d \in Nat, 1 =< d,
+           NEW d1 \in Nat, d =< d1
+    PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d1) }] \in TrustLive =>
+           [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d) }] \in TrustLive
+PROOF
+<1> DEFINE P(n) ==
+            \A k \in Nat :
+                1 =< k /\ k =< n /\ [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, n) }] \in TrustLive =>
+                [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, k) }] \in TrustLive
+<1> SUFFICES \A n \in Nat : P(n)
+    OBVIOUS
+<1>0. P(0)
+      OBVIOUS
+<1>1. ASSUME NEW n \in Nat, P(n) PROVE P(n + 1)
+  <2>0. CASE n = 0
+        BY <2>0
+  <2>1. CASE 0 < n
+    <3> n + 1 \in Nat
+        OBVIOUS
+    <3> 1 < n + 1
+        BY <2>1
+    <3> SUFFICES ASSUME [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, n + 1) }] \in TrustLive
+                 PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, n) }] \in TrustLive
+        BY <1>1
+    <3> DEFINE Q2 == { mm.acc : mm \in qd(alpha, m, n + 1) }
+    <3> Q2 \in ByzQuorum
+        BY Qd_spec, MessageSpec, QdProperty1 DEF ByzQuorum, Proposal
+    <3> PICK acc \in SafeAcceptor : acc \in Q2
+        BY EntaglementTrustLiveNonEmpty DEF Accurate
+    <3> acc \in Acceptor
+        BY DEF Acceptor
+    <3> PICK m2 \in qd(alpha, m, n + 1) : TRUE
+        OBVIOUS
+    <3> /\ TwoA(m)
+        /\ m2 \in Tran(m)
+        /\ [ lr |-> alpha, q |-> { z.acc : z \in qd(alpha, m2, n) } ] \in TrustLive
+        BY Qd_eq
+    <3> { z.acc : z \in qd(alpha, m, n) } \in ByzQuorum
+        BY Qd_spec, MessageSpec, QdProperty1 DEF ByzQuorum, TwoA, Proposal
+    <3> qd(alpha, m2, n) \in SUBSET qd(alpha, m, n)
+        BY Qd_monotone
+    <3> { z.acc : z \in qd(alpha, m2, n) } \in SUBSET { mm.acc : mm \in qd(alpha, m, n) }
+        OBVIOUS
+    <3> QED BY LearnerGraphAssumptionClosureLive
+  <2> QED BY <2>0, <2>1
+<1> HIDE DEF P
+<1> QED BY <1>0, <1>1, NatInduction, Isa
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 27 14:43:20 CEST 2025 by karbyshev
+\* Last modified Wed May 28 22:56:49 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev
