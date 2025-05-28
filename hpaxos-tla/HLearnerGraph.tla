@@ -8,6 +8,11 @@ ASSUME TrustLiveAssumption ==
 ASSUME TrustLiveNonEmpty ==
     \A L \in TrustLive : L.q # {}
 
+ASSUME LearnerGraphAssumptionClosureLive ==
+    \A X \in TrustLive : \A Q \in ByzQuorum :
+        X.q \subseteq Q =>
+        [lr |-> X.lr, q |-> Q] \in TrustLive
+
 CONSTANT TrustSafe
 ASSUME TrustSafeAssumption ==
     TrustSafe \in SUBSET [from : Learner, to : Learner, q : ByzQuorum]
