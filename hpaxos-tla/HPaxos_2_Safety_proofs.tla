@@ -598,6 +598,8 @@ LEMMA YYY ==
                 \A x \in 1 .. i + 1 :
                     HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x)
 PROOF
+<1> Accurate(alpha)
+    BY EntangledAccurate
 <1> DEFINE P(n) ==
             n \in 0 .. maxDepth(alpha) =>
             \E seq \in [1 .. n + 1 -> Whatever] :
@@ -1670,9 +1672,9 @@ PROOF
 \*        }
 
 <1>seq0. alpha \in Con(alpha, M0)
-  <2> <<alpha, alpha>> \in Ent
-      BY EntanglementSelf
-  <2> QED BY <1>caught_safe, ConnectedXXX
+  <2> Accurate(alpha)
+      BY EntangledAccurate
+  <2> QED BY <1>caught_safe, ConnectedXXX DEF Accurate
 
 \* We need to show that mseq \in I (see Def of maxDepth)
 \* Since Length(mseq) = maxDepth(alpha) + 1, we get a contradiction with the definition of maxDepth.

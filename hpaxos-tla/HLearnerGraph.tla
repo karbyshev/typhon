@@ -44,7 +44,9 @@ ASSUME LearnerGraphAssumptionValidity ==
 Ent == { LL \in Learner \X Learner :
          [from |-> LL[1], to |-> LL[2], q |-> SafeAcceptor] \in TrustSafe }
 
+Accurate(alpha) == <<alpha, alpha>> \in Ent
+
 =============================================================================
 \* Modification History
-\* Last modified Fri Apr 04 00:10:42 CEST 2025 by karbyshev
+\* Last modified Thu May 29 00:14:13 CEST 2025 by karbyshev
 \* Created Tue May 14 17:03:34 CEST 2024 by karbyshev

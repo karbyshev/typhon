@@ -554,7 +554,7 @@ PROOF BY DEF ConSeq
 
 LEMMA ConSeqNonTrivial ==
     ASSUME NEW alpha \in Learner,
-           <<alpha, alpha>> \in Ent
+           Accurate(alpha)
     PROVE  \E seq \in ConSeq(alpha) : seq # << >>
 PROOF
 <1> PICK bal \in Ballot : TRUE
@@ -590,7 +590,7 @@ PROOF
 <1> alpha \in Con(alpha, oneb)
   <2> Caught(oneb) = {}
       BY DEF Caught, CaughtMsg
-  <2> QED BY ByzQuorumProperties DEF Con, ConByQuorum, Ent
+  <2> QED BY ByzQuorumProperties DEF Con, ConByQuorum, Ent, Accurate
 
 <1> [x \in 1..1 |-> oneb] \in ConSeq(alpha)
     BY SeqDef DEF ConSeq
