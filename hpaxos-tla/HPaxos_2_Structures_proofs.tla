@@ -900,9 +900,8 @@ LEMMA Qd_monotone ==
            NEW x \in Message,
            NEW d \in Nat,
            NEW y \in qd(alpha, x, d),
-           NEW c \in Nat,
-           NEW z \in qd(alpha, y, c)
-    PROVE  z \in qd(alpha, x, c)
+           NEW c \in Nat
+    PROVE  qd(alpha, y, c) \in SUBSET qd(alpha, x, c)
 PROOF
 <1> TwoA(x) /\ 0 < d
     BY Qd_eq
@@ -911,33 +910,33 @@ PROOF
 <1> /\ y \in Tran(x)
     /\ SameBallot(y, x)
     BY Qd_eq
-<1> TwoA(y) /\ 0 < c
-    BY Qd_eq
-<1> z \in Message
-    BY Qd_spec
-<1> CASE c = 1
+<1> SUFFICES ASSUME NEW z \in qd(alpha, y, c) PROVE z \in qd(alpha, x, c)
+    OBVIOUS
+<1>0. CASE c = 0
+      BY <1>0, Qd_eq
+<1>1. CASE c = 1
   <2> /\ z \in Tran(y)
       /\ SameBallot(z, y)
       /\ OneB(z)
       /\ Fresh000(alpha, z)
-      BY Qd_eq
+      BY <1>1, Qd_eq
   <2> z \in Tran(x)
       BY Tran_trans
   <2> SameBallot(z, x)
       BY DEF SameBallot
   <2> QED BY Qd_eq
-<1> CASE c > 1
+<1>2. CASE c > 1
   <2> /\ z \in Tran(y)
       /\ SameBallot(z, y)
       /\ TwoA(z)
       /\ [ lr |-> alpha, q  |-> { m.acc : m \in qd(alpha, z, c - 1) } ] \in TrustLive
-      BY Qd_eq
+      BY <1>2, Qd_eq
   <2> z \in Tran(x)
       BY Tran_trans
   <2> SameBallot(z, x)
       BY DEF SameBallot
   <2> QED BY Qd_eq
-<1> QED OBVIOUS
+<1> QED BY <1>0, <1>1, <1>2
 
 LEMMA QdProperty1 ==
     ASSUME NEW alpha \in Learner,
@@ -1003,5 +1002,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Wed May 28 22:56:49 CEST 2025 by karbyshev
+\* Last modified Wed May 28 23:08:40 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

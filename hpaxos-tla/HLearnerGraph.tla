@@ -2,18 +2,21 @@
 EXTENDS HQuorum, HLearner
 
 CONSTANT TrustLive
+
 ASSUME TrustLiveAssumption ==
     TrustLive \in SUBSET [lr : Learner, q : ByzQuorum]
 
+\* TODO check if can be removed
 ASSUME TrustLiveNonEmpty ==
     \A L \in TrustLive : L.q # {}
 
-ASSUME LearnerGraphAssumptionClosureLive ==
-    \A X \in TrustLive : \A Q \in ByzQuorum :
-        X.q \subseteq Q =>
-        [lr |-> X.lr, q |-> Q] \in TrustLive
+ASSUME TrustLiveClosure ==
+    \A L \in TrustLive : \A Q \in ByzQuorum :
+        L.q \in SUBSET Q =>
+        [lr |-> L.lr, q |-> Q] \in TrustLive
 
 CONSTANT TrustSafe
+
 ASSUME TrustSafeAssumption ==
     TrustSafe \in SUBSET [from : Learner, to : Learner, q : ByzQuorum]
 
@@ -28,7 +31,7 @@ ASSUME LearnerGraphAssumptionTransitivity ==
 
 ASSUME LearnerGraphAssumptionClosure ==
     \A E \in TrustSafe : \A Q \in ByzQuorum :
-        E.q \subseteq Q =>
+        E.q \in SUBSET Q =>
         [from |-> E.from, to |-> E.to, q |-> Q] \in TrustSafe
 
 ASSUME LearnerGraphAssumptionValidity ==
