@@ -13,6 +13,11 @@ LEMMA EntanglementSelf ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner, <<L1, L2>> \in Ent
     PROVE  <<L1, L1>> \in Ent
 
+\* TODO remove if not used
+LEMMA EntangledAccurate ==
+    ASSUME NEW L1 \in Learner, NEW L2 \in Learner, <<L1, L2>> \in Ent
+    PROVE  Accurate(L1)
+
 LEMMA EntanglementTrustLive ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner,
            NEW Q1 \in ByzQuorum, NEW Q2 \in ByzQuorum,

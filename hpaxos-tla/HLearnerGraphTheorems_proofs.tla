@@ -17,6 +17,11 @@ LEMMA EntanglementSelf ==
 PROOF BY LearnerGraphAssumptionSymmetry,
          LearnerGraphAssumptionTransitivity DEF Ent
 
+LEMMA EntangledAccurate ==
+    ASSUME NEW L1 \in Learner, NEW L2 \in Learner, <<L1, L2>> \in Ent
+    PROVE  Accurate(L1)
+PROOF BY EntanglementSelf DEF Accurate
+
 LEMMA EntanglementTrustLive ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner,
            NEW Q1 \in ByzQuorum, NEW Q2 \in ByzQuorum,
