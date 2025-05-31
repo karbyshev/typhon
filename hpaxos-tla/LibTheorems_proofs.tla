@@ -44,7 +44,8 @@ PROOF
 <1> DEFINE P(X) == X # {} /\ X \in SUBSET Nat => \E max \in X : IsMax(max, X)
 <1> SUFFICES ASSUME NEW S, IsFiniteSet(S) PROVE P(S)
     OBVIOUS
-<1>0. P({}) OBVIOUS
+<1>0. P({})
+      OBVIOUS
 <1>1. ASSUME NEW T, NEW x, IsFiniteSet(T), P(T), x \notin T PROVE P(T \cup {x})
       BY <1>1 DEF IsMax
 <1> HIDE DEF P
@@ -94,7 +95,7 @@ PROOF
 <1> SUFFICES \A n \in Nat : Q(n)
     OBVIOUS
 <1>0. Q(0)
-    OBVIOUS
+      OBVIOUS
 <1>1. ASSUME NEW m \in Nat, Q(m) PROVE Q(m + 1)
       BY <1>1
 <1> HIDE DEF Q
@@ -102,5 +103,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Wed May 21 12:59:47 CEST 2025 by karbyshev
+\* Last modified Thu May 29 22:41:37 CEST 2025 by karbyshev
 \* Created Tue May 20 00:05:14 CEST 2025 by karbyshev

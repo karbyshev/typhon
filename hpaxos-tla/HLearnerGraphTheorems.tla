@@ -9,6 +9,11 @@ LEMMA EntanglementSym ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner, <<L1, L2>> \in Ent
     PROVE  <<L2, L1>> \in Ent
 
+LEMMA EntanglementTransitive ==
+    ASSUME NEW L1 \in Learner, NEW L2 \in Learner, NEW L3 \in Learner,
+           <<L1, L2>> \in Ent, <<L2, L3>> \in Ent
+    PROVE  <<L1, L3>> \in Ent
+
 LEMMA EntanglementSelf ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner, <<L1, L2>> \in Ent
     PROVE  <<L1, L1>> \in Ent
@@ -33,12 +38,7 @@ LEMMA EntaglementTrustLiveNonEmpty ==
            [lr |-> L1, q |-> Q] \in TrustLive
     PROVE  \E N \in SafeAcceptor : N \in Q
 
-LEMMA EntanglementTransitive ==
-    ASSUME NEW L1 \in Learner, NEW L2 \in Learner, NEW L3 \in Learner,
-           <<L1, L2>> \in Ent, <<L2, L3>> \in Ent
-    PROVE  <<L1, L3>> \in Ent
-
 =============================================================================
 \* Modification History
-\* Last modified Mon May 19 20:47:13 CEST 2025 by karbyshev
+\* Last modified Wed May 28 21:05:50 CEST 2025 by karbyshev
 \* Created Mon May 19 20:42:04 CEST 2025 by karbyshev

@@ -19,6 +19,19 @@ Safety ==
 
 -----------------------------------------------------------------------------
 
+\* TODO not used
+THEOREM GeneralBallotInduction ==
+    ASSUME NEW P(_),
+           \A bal \in Ballot : (\A b \in Ballot : b < bal => P(b)) => P(bal)
+    PROVE  \A bal \in Ballot : P(bal)
+PROOF
+<1> USE DEF Ballot
+<1> SUFFICES \A n \in Nat : (\A m \in 0..n - 1 : P(m)) => P(n)
+    BY GeneralNatInduction, Blast
+<1> QED OBVIOUS
+
+-----------------------------------------------------------------------------
+
 \*LEMMA XXX ==
 \*    ASSUME NEW alpha \in Learner, NEW beta \in Learner, NEW L0 \in Learner,
 \*           NEW bal \in Ballot,
@@ -1925,17 +1938,6 @@ PROOF
 
 -----------------------------------------------------------------------------
 
-\* TODO not used
-\*THEOREM GeneralBallotInduction ==
-\*    ASSUME NEW P(_),
-\*           \A bal \in Ballot : (\A b \in Ballot : b < bal => P(b)) => P(bal)
-\*    PROVE  \A bal \in Ballot : P(bal)
-\*PROOF
-\*<1> USE DEF Ballot
-\*<1> SUFFICES \A n \in Nat : (\A m \in 0..n - 1 : P(m)) => P(n)
-\*    BY GeneralNatInduction, Blast
-\*<1> QED OBVIOUS
-
 \* TODO not used; remove it and remove MsgsSafeAcceptorPrevTranSpec
 \* TODO check if can be reused, in particular ZZZ, <1>caught_safe
 LEMMA SafeAcceptorSentBallotTran ==
@@ -2275,7 +2277,7 @@ PROOF
     OBVIOUS
 <1>1. CASE NextTLA
       BY <1>1,
-         BValNext,  
+         BValNext,
          BValInvariant,
          TypeOKInvariant,
          KnownMsgsSpec1Invariant,

@@ -68,7 +68,8 @@ LEMMA MessageRec_monotone ==
     \A n, m \in Nat : n <= m => MessageRec[n] \subseteq MessageRec[m]
 PROOF
 <1> DEFINE P(m) == \A n \in Nat : n < m => MessageRec[n] \subseteq MessageRec[m]
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) OBVIOUS
+<1> SUFFICES \A j \in Nat : P(j)
+    OBVIOUS
 <1>0. P(0) OBVIOUS
 <1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
       BY <1>1, MessageRec_monotone_1
@@ -79,7 +80,8 @@ LEMMA MessageRec_nontriv ==
     \A n \in Nat : MessageRec[n] # {}
 PROOF
 <1> DEFINE P(m) == MessageRec[m] # {}
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) OBVIOUS
+<1> SUFFICES \A j \in Nat : P(j)
+    OBVIOUS
 <1>0. P(0)
   <2> [type |-> "1a", bal |-> 0, prev |-> NoMessage, refs |-> {}] \in MessageRec[0]
       BY MessageRec_eq0 DEF MessageRec0, Ballot
@@ -103,7 +105,8 @@ PROOF
 <1> DEFINE P(j) ==
             j # 0 =>
             \A mm \in MessageRec[j] : mm.refs \subseteq MessageRec[j - 1]
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) OBVIOUS
+<1> SUFFICES \A j \in Nat : P(j)
+    OBVIOUS
 <1>0. P(0) OBVIOUS
 <1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
   <2> SUFFICES ASSUME NEW mm \in MessageRec[m + 1]
@@ -293,7 +296,7 @@ LEMMA Message_prev ==
     PROVE  m.prev \in Message \cup {NoMessage}
 PROOF
 <1> DEFINE P(j) ==  \A mm \in MessageRec[j] : mm.prev \in Message \cup {NoMessage}
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+<1> SUFFICES \A j \in Nat : P(j)
     BY RefCardinalitySpec DEF Message, MessageDepthRange
 <1>0. P(0)
       BY MessageRec_eq0 DEF MessageRec0
@@ -391,8 +394,10 @@ PROOF
 \*               /\ x.refs # {}
                /\ x.refs \in SUBSET Message
                /\ x.lrns \in SUBSET Learner
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) BY MessageRec_spec
-<1>0. P(0) BY MessageRec_eq0 DEF MessageRec0
+<1> SUFFICES \A j \in Nat : P(j)
+    BY MessageRec_spec
+<1>0. P(0)
+      BY MessageRec_eq0 DEF MessageRec0
 <1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
   <2> k + 1 \in Nat
       OBVIOUS
@@ -530,7 +535,7 @@ LEMMA TranBound_Message ==
     PROVE  TranBound[n][m1] \in SUBSET Message
 PROOF
 <1> DEFINE P(j) == \A x \in Message : TranBound[j][x] \in SUBSET Message
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+<1> SUFFICES \A j \in Nat : P(j)
     BY DEF Tran
 <1>0. P(0)
       BY TranBound_eq0
@@ -558,7 +563,7 @@ LEMMA TranBound_monotone_1 ==
 PROOF
 <1> DEFINE P(j) == \A mm \in Message :
                     TranBound[j][mm] \subseteq TranBound[j + 1][mm]
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+<1> SUFFICES \A j \in Nat : P(j)
     OBVIOUS
 <1>0. P(0) BY TranBound_eq0, TranBound_eq1
 <1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
@@ -581,7 +586,7 @@ PROOF
 <1> DEFINE P(m) ==
         \A n \in Nat : n < m =>
             \A mm \in Message : TranBound[n][mm] \subseteq TranBound[m][mm]
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) OBVIOUS
+<1> SUFFICES \A j \in Nat : P(j) OBVIOUS
 <1>0. P(0) OBVIOUS
 <1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
       BY <1>1, TranBound_monotone_1
@@ -679,7 +684,7 @@ PROOF
                    \A x \in MessageRec[k] :
                    \A y \in TranBound[l][x] :
                         y \in MessageRec[k]
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+<1> SUFFICES \A j \in Nat : P(j)
     BY Tran_spec, MessageRec_spec DEF MessageDepthRange
 <1>0. P(0) BY TranBound_eq0, MessageRec_spec
 <1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
@@ -841,7 +846,7 @@ LEMMA PrevTranBound_Message ==
     PROVE  PrevTranBound[n][m1] \in SUBSET Message
 PROOF
 <1> DEFINE P(j) == \A x \in Message : PrevTranBound[j][x] \in SUBSET Message
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+<1> SUFFICES \A j \in Nat : P(j)
     BY DEF PrevTran
 <1>0. P(0) BY PrevTranBound_eq0
 <1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
@@ -853,7 +858,7 @@ PROOF
       BY PrevTranBound_eq1
   <2>3. QED BY <1>1, Message_prev
 <1>2. HIDE DEF P
-<1>3. QED BY <1>0, <1>1, NatInduction, Blast
+<1>3. QED BY <1>0, <1>1, NatInduction, Isa
 
 LEMMA PrevTran_Message ==
     ASSUME NEW m1 \in Message
@@ -867,7 +872,7 @@ PROOF
 <1> DEFINE P(j) ==
             \A mm \in Message :
                 PrevTranBound[j][mm] \subseteq PrevTranBound[j + 1][mm]
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+<1> SUFFICES \A j \in Nat : P(j)
     OBVIOUS
 <1>0. P(0)
       BY PrevTranBound_eq0, PrevTranBound_eq1
@@ -886,7 +891,7 @@ PROOF
      <3> QED BY <1>1
   <2> QED OBVIOUS
 <1>2. HIDE DEF P
-<1>3. QED BY <1>0, <1>1, NatInduction, Blast
+<1>3. QED BY <1>0, <1>1, NatInduction, Isa
 
 LEMMA PrevTranBound_monotone ==
     \A n, m \in Nat : n <= m =>
@@ -896,7 +901,8 @@ PROOF
 <1> DEFINE P(m) ==
             \A n \in Nat : n < m =>
                 \A mm \in Message : PrevTranBound[n][mm] \subseteq PrevTranBound[m][mm]
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) OBVIOUS
+<1> SUFFICES \A j \in Nat : P(j)
+    OBVIOUS
 <1>0. P(0) OBVIOUS
 <1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
       BY <1>1, PrevTranBound_monotone_1
@@ -923,8 +929,10 @@ PROOF
         \A y \in PrevTranBound[n][x] :
         \A z \in PrevTranBound[k][y] :
             z \in PrevTranBound[n + k][x]
-<1>1. SUFFICES \A n \in Nat : P(n) OBVIOUS
-<1>2. P(0) BY PrevTranBound_eq0
+<1>1. SUFFICES \A n \in Nat : P(n)
+      OBVIOUS
+<1>2. P(0)
+      BY PrevTranBound_eq0
 <1>3. ASSUME NEW n \in Nat, P(n) PROVE P(n + 1)
   <2> n + 1 \in Nat
       OBVIOUS
@@ -948,7 +956,7 @@ PROOF
      <3> QED BY PrevTranBound_eq1_prev
   <2> QED BY <2>1, <2>2
 <1>4. HIDE DEF P
-<1>5. QED BY <1>2, <1>3, NatInduction, Blast
+<1>5. QED BY <1>2, <1>3, NatInduction, Isa
 
 LEMMA PrevTran_trans ==
     ASSUME NEW m1 \in Message, NEW m2 \in PrevTran(m1), NEW m3 \in PrevTran(m2)
@@ -989,5 +997,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1
 
 =============================================================================
 \* Modification History
-\* Last modified Wed May 21 23:34:08 CEST 2025 by karbyshev
+\* Last modified Thu May 29 00:25:08 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev

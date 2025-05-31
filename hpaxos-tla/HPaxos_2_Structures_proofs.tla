@@ -734,13 +734,14 @@ LEMMA QRec_spec ==
     \A n \in Nat : QRecType(QRec[n])
 PROOF
 <1> DEFINE P(m) == QRecType(QRec[m])
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j) OBVIOUS
+<1> SUFFICES \A j \in Nat : P(j)
+    OBVIOUS
 <1>0. P(0)
       BY QRec0_spec, QRec_def
 <1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
       BY <1>1, QRec1_spec, QRec_def
-<1>2. HIDE DEF P
-<1>3. QED BY <1>0, <1>1, NatInduction, Isa
+<1> HIDE DEF P
+<1> QED BY <1>0, <1>1, NatInduction, Isa
 
 LEMMA Qd_spec ==
     ASSUME NEW alpha \in Learner,
@@ -995,12 +996,12 @@ PROOF
         BY Qd_monotone
     <3> { z.acc : z \in qd(alpha, m2, n) } \in SUBSET { mm.acc : mm \in qd(alpha, m, n) }
         OBVIOUS
-    <3> QED BY LearnerGraphAssumptionClosureLive
+    <3> QED BY TrustLiveClosure
   <2> QED BY <2>0, <2>1
 <1> HIDE DEF P
 <1> QED BY <1>0, <1>1, NatInduction, Isa
 
 =============================================================================
 \* Modification History
-\* Last modified Wed May 28 23:08:40 CEST 2025 by karbyshev
+\* Last modified Thu May 29 00:16:54 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev
