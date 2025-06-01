@@ -25,11 +25,12 @@ LEMMA CaughtMsgSpec ==
            /\ \A X \in CaughtMsg(M) : ~Proposal(X)
 
 -----------------------------------------------------------------------------
-LEMMA ReplyTypeSpec ==
-    ASSUME NEW m \in Message,
-           NEW t \in {"1b", "2a", "2b"},
-           ReplyType(m, t)
-    PROVE  ~TwoB(m)
+\* TODO clean
+\*LEMMA ReplyTypeSpec ==
+\*    ASSUME NEW m \in Message,
+\*           NEW t \in {"1b", "2a", "2b"},
+\*           ReplyType(m, t)
+\*    PROVE  ~TwoB(m)
 
 -----------------------------------------------------------------------------
 (* Facts about Get1a, B and V relations *)

@@ -32,12 +32,13 @@ LEMMA CaughtMsgSpec ==
 BY Tran_Message DEF CaughtMsg, Proposal
 
 -----------------------------------------------------------------------------
-LEMMA ReplyTypeSpec ==
-    ASSUME NEW m \in Message,
-           NEW t \in {"1b", "2a", "2b"},
-           ReplyType(m, t)
-    PROVE  ~TwoB(m)
-PROOF BY MessageTypeSpec DEF ReplyType, TwoB
+\* TODO clean
+\*LEMMA ReplyTypeSpec ==
+\*    ASSUME NEW m \in Message,
+\*           NEW t \in {"1b", "2a", "2b"},
+\*           ReplyType(m, t)
+\*    PROVE  ~TwoB(m)
+\*PROOF BY MessageTypeSpec DEF ReplyType, TwoB
 
 -----------------------------------------------------------------------------
 (* Facts about Get1a, B and V relations *)
@@ -504,6 +505,7 @@ PROOF
 
 \* TODO rename Quorum -> LiveQuorum
 \* TODO check if implies by the lemmas above
+\* TODO see HLearnerGraphTheorems
 LEMMA EntQuorumIntersection ==
     ASSUME NEW alpha \in Learner, NEW beta \in Learner,
            <<alpha, beta>> \in Ent,
@@ -792,7 +794,7 @@ PROOF
         \A x, y \in Message :
             \A z \in Tran(x) \cap Tran(y) :
                 QRec[k][<<alpha, x>>][z] = QRec[k][<<alpha, y>>][z]
-<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
+<1> SUFFICES \A j \in Nat : P(j)
     OBVIOUS
 <1>0. P(0)
       BY QRec_eq_0, Tran_Message

@@ -232,247 +232,22 @@ PROOF
 \*OBVIOUS
 
 \* TODO rename
-LEMMA PPP ==
-    ASSUME NEW alpha \in Learner,
-           NEW m \in Message
-    PROVE LET S == {0} \cup depthIdx(alpha, m) IN \E d \in S : IsMax(d, S)
-PROOF
-<1> depthIdx(alpha, m) \in SUBSET Nat
-    BY DEF depthIdx
-<1> depthIdx(alpha, m) \in SUBSET 0..N_L
-    BY DEF depthIdx
-<1> IsFiniteSet(0..N_L)
-    BY FS_Interval, LearnerGraphSize
-<1> IsFiniteSet(depthIdx(alpha, m))
-    BY FS_Subset
-<1> IsFiniteSet({0} \cup depthIdx(alpha, m))
-    BY FS_AddElement
-<1> QED BY NatFiniteSetMaxExists
-
-\*LEMMA KnownDepthPlusOne ==
-\*    ASSUME NEW LA \in Learner \cup SafeAcceptor,
-\*           NEW alpha \in Learner,
-\*           NEW M \in known_msgs[LA],
-\*           NEW k \in Nat,
-\*           k + 1 =< N_L,
-\*           depth(alpha, M) = k + 1,
-\*           \* TODO
-\*\*           \A l \in Learner, x \in Message : depthIdx(l, x) \in SUBSET 1..N_L,
-\*           KnownMsgsSpec,
-\*           TypeOK
-\*    PROVE  \E X \in Tran(M) :
-\*            /\ depth(alpha, X) = k
-\*            /\ SameBallot(X, M)
+\*LEMMA PPP ==
+\*    ASSUME NEW alpha \in Learner,
+\*           NEW m \in Message
+\*    PROVE LET S == {0} \cup depthIdx(alpha, m) IN \E d \in S : IsMax(d, S)
 \*PROOF
-\*<1> M \in Message
-\*    BY DEF KnownMsgsSpec, TypeOK
-\*\*<1> PICK d0 \in {0} \cup depthIdx(alpha, M) : IsMax(d0, {0} \cup depthIdx(alpha, M))
-\*\*    BY PPP
-\*\*<1> depth(alpha, M) = d0
-\*\*    BY MaxUnique DEF depth, Max
-\*<1> k + 1 \in depthIdx(alpha, M)
-\*    BY PPP, MaxUnique DEF depth, Max
-\*<1> [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, M, k + 1)}] \in TrustLive
+\*<1> depthIdx(alpha, m) \in SUBSET Nat
 \*    BY DEF depthIdx
-\*
-\*
-\*\*qd(alpha, x, d) ==
-\*\*        LET helper[i \in Nat] ==
-\*\*            IF i = 0 THEN [y \in Message |-> {}]
-\*\*            ELSE
-\*\*                (IF i = 1 THEN
-\*\*                    [y \in Tran(x) |->
-\*\*                        { m \in Tran(y) :
-\*\*                            /\ SameBallot(m, y)
-\*\*                            /\ OneB(m)
-\*\*                            /\ Fresh000(alpha, m) }
-\*\*                    ]
-\*\*                ELSE [y \in Tran(x) |->
-\*\*                    { m \in Tran(y) :
-\*\*                        /\ SameBallot(m, y)
-\*\*                        /\ [lr |-> alpha, q |-> { z.acc : z \in helper[i - 1][y] }] \in TrustLive }]
-\*\*                )
-\*\*        IN helper[d][x]
-\*
-\*\*    depthIdx(alpha, x) ==
-\*\*        {d \in 1..N_L : [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, x, d)}] \in TrustLive }
-\*\*
-\*\*    depth(alpha, x) ==
-\*\*        Max({0} \cup depthIdx(alpha, x))
-\*\*  <2> 
-\*\*    BY DEF Max, depth, KnownMsgsSpec, TypeOK
-\*<1> QED BY DEF TypeOK
-
-\* TODO remove if not used; depends on KnownDepthPlusOne
-\*LEMMA KnownDepthGtOneAux ==
-\*    ASSUME NEW LA \in Learner \cup SafeAcceptor,
-\*           NEW alpha \in Learner,
-\*           KnownMsgsSpec,
-\*           TypeOK
-\*    PROVE  \A n \in Nat : \A M \in known_msgs[LA] :
-\*             n = depth(alpha, M) /\ n >= 1 =>
-\*             \E X \in Tran(M) :
-\*                /\ depth(alpha, X) = 1
-\*                /\ SameBallot(X, M)
-\*PROOF
-\*<1> DEFINE P(n) == \A M \in known_msgs[LA] :
-\*             n = depth(alpha, M) /\ n >= 1 =>
-\*             \E X \in Tran(M) :
-\*                /\ depth(alpha, X) = 1
-\*                /\ SameBallot(X, M)
-\*<1> SUFFICES ASSUME NEW n \in Nat PROVE P(n) OBVIOUS
-\*<1>0. P(0) OBVIOUS
-\*<1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
-\*  <2> SUFFICES ASSUME NEW M \in known_msgs[LA],
-\*                      k + 1 = depth(alpha, M)
-\*               PROVE \E X \in Tran(M) :
-\*                        /\ depth(alpha, X) = 1
-\*                        /\ SameBallot(X, M)
-\*      OBVIOUS
-\*  <2> CASE k = 0
-\*      BY Tran_refl DEF KnownMsgsSpec, TypeOK, SameBallot
-\*  <2> CASE k > 0
-\*    <3> PICK X_1 \in Tran(M) :
-\*            /\ depth(alpha, X_1) = k
-\*            /\ SameBallot(X_1, M)
-\*        BY KnownDepthPlusOne DEF KnownMsgsSpec, TypeOK
-\*    <3> QED BY <1>1, Tran_trans DEF KnownMsgsSpec, TypeOK, SameBallot
-\*  <2> QED OBVIOUS
-\*<1> HIDE DEF P
-\*<1>3. QED BY <1>0, <1>1, NatInduction, Isa
-
-\*LEMMA KnownDepthGtOne ==
-\*    ASSUME NEW LA \in Learner \cup SafeAcceptor,
-\*           NEW alpha \in Learner,
-\*           NEW M \in known_msgs[LA],
-\*           depth(alpha, M) >= 1
-\*    PROVE  \E X \in Tran(M) : depth(alpha, X) = 1
-\*PROOF
-\*<1> QED
-
-\*LEMMA TEST3 ==
-\*    [x \in Nat |-> 1] \in [Nat -> Nat]
-\*OBVIOUS
-\*
-\*LEMMA TEST4 ==
-\*    [x \in Nat |-> [RRR |-> 42]] \in [Nat -> [RRR : Nat]]
-\*OBVIOUS
-\*
-\*LEMMA TEST5 ==
-\*    [x \in 0..0 |-> [RRR |-> 42]] \in [{0} -> [RRR : Nat]]
-\*OBVIOUS
-\*
-\*LEMMA TEST6 ==
-\*    [x \in 0..0 |-> [RRR |-> 42]] \in [0..0 -> [RRR : Nat]]
-\*OBVIOUS
-\*
-\*LEMMA TEST7 ==
-\*    [x \in 0..0 |-> [RRR |-> 42]] \in [Nat -> [RRR : Nat]]
-\*OBVIOUS
-
-
-\*LEMMA QuorumCaseOne ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW x \in Message,
-\*           TwoA(x)
-\*    PROVE  qd(alpha, x, 1) = { y \in Tran(x) : /\ SameBallot(y, x)
-\*                                               /\ OneB(x)
-\*                                               /\ Fresh000(alpha, x) }
-\*PROOF
-\*<1> DEFINE helper[i \in 0..1] ==
-\*        IF i = 0 THEN [y \in Message |-> {}]
-\*        ELSE
-\*            (IF i = 1 THEN
-\*                [y \in Tran(x) |->
-\*                    { m \in Tran(y) :
-\*                        /\ SameBallot(m, y)
-\*                        /\ OneB(m)
-\*                        /\ Fresh000(alpha, m) }
-\*                ]
-\*            ELSE [y \in Tran(x) |->
-\*                { m \in Tran(y) :
-\*                    /\ SameBallot(m, y)
-\*                    /\ [lr |-> alpha,
-\*                        q |-> { z.acc : z \in helper[i - 1][m] }] \in TrustLive }]
-\*            )
-\*<1> qd(alpha, x, 1) = helper[1][x]
-\*    BY DEF qd
-\*<1> 1 \in 0..1
-\*    OBVIOUS
-\*<1> 0..1 = {0, 1}
-\*    OBVIOUS
-\*<1> helper[1] = [y \in Tran(x) |->
-\*                                  {m \in Tran(y) :
-\*                                     /\ SameBallot(m, y)
-\*                                     /\ OneB(m)
-\*                                     /\ Fresh000(alpha, m)}]
-\* OBVIOUS
-\*<1> QED OBVIOUS
-
-\* TODO join with Property1
-LEMMA QuorumProperty2 ==
-    ASSUME NEW alpha \in Learner,
-           NEW x \in Message,
-           NEW bal \in Ballot,
-           B(x, bal),
-           NEW d \in Nat
-    PROVE  \A m \in qd(alpha, x, d) :
-                /\ B(m, bal)
-                /\ d = 1 => OneB(m) /\ Fresh000(alpha, m)
-\*            /\ qd(alpha, x, 1) \in SUBSET { mm \in Tran(x) : Fresh000(alpha, mm) }
-PROOF
-<1> DEFINE P(n) ==
-            /\ \A m \in qd(alpha, x, n) :
-                /\ ~OneA(m)
-                /\ B(m, bal)
-                /\ d = 1 => OneB(m) /\ Fresh000(alpha, m)
-<1> SUFFICES \A n \in Nat : P(n)
-    OBVIOUS
-<1>0. P(0)
-  <2> QED BY DEF qd
-<1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
-<1> HIDE DEF P
-<1> QED BY <1>0, <1>1, NatInduction, Isa
-\*<1> QED \*BY Tran_trans, Tran_Message DEF qd
-
-\* TODO
-\*LEMMA QuorumProperty3 ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW x \in Message,
-\*           NEW x1 \in Message,
-\*           NEW bal \in Ballot,
-\*           B(x, bal),
-\*           NEW d \in Nat, 0 < d,
-\*           NEW d1 \in Nat, d < d1,
-\*           x \in qd(alpha, x1, d1)
-\*    PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, x, d) }] \in TrustLive
-\*PROOF
-\*<1> QED
-
-\* TODO
-LEMMA QuorumProperty4 ==
-    ASSUME NEW alpha \in Learner,
-           NEW m \in Message,
-           NEW d \in Nat, d >= 1,
-           NEW d1 \in Nat, d1 >= d
-    PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d1) }] \in TrustLive =>
-           [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d) }] \in TrustLive
-PROOF
-<1> QED
-
-\* TODO
-LEMMA QuorumProperty5 ==
-    ASSUME NEW alpha \in Learner,
-           NEW y \in Message,
-           NEW d \in Nat, d >= 1,
-           NEW x \in qd(alpha, y, d + 1)
-    PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, x, d)}] \in TrustLive
-\* follows somehow from the definition:
-\*                ELSE [y \in Tran(x) |->
-\*                    { m \in Tran(y) :
-\*                        /\ SameBallot(m, y)
-\*                        /\ [lr |-> alpha,
-\*                            q |-> { z.acc : z \in helper[i - 1][y] }] \in TrustLive }]
+\*<1> depthIdx(alpha, m) \in SUBSET 0..N_L
+\*    BY DEF depthIdx
+\*<1> IsFiniteSet(0..N_L)
+\*    BY FS_Interval, LearnerGraphSize
+\*<1> IsFiniteSet(depthIdx(alpha, m))
+\*    BY FS_Subset
+\*<1> IsFiniteSet({0} \cup depthIdx(alpha, m))
+\*    BY FS_AddElement
+\*<1> QED BY NatFiniteSetMaxExists
 
 \* TODO move up
 LEMMA HeterogeneousSpecCondProperties ==
@@ -559,29 +334,6 @@ PROOF
 \*PROOF
 \*<1> seq \in Seq(Nat) BY SeqDef
 \*<1> QED OBVIOUS
-
-
-
-\* TODO
-\*LEMMA QdEq0 ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW y \in Message,
-\*           NEW d \in Nat,
-\*           ~TwoA(y)
-\*    PROVE  qd(alpha, y, d) = {}
-\*PROOF
-\*<1> QED BY DEF qd
-
-\*LEMMA QdEq1 ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW y \in Message,
-\*           TwoA(y)
-\*    PROVE  qd(alpha, y, 1) = { m \in Tran(y) :
-\*                            /\ SameBallot(m, y)
-\*                            /\ OneB(m)
-\*                            /\ Fresh000(alpha, m) }
-\*PROOF
-\*<1> QED
 
 LEMMA YYY ==
     ASSUME BVal \in [Ballot -> Value],
@@ -674,7 +426,7 @@ PROOF
     <3> B(ma, bal)
         BY DEF Known2a
     <3> B(mb, B_M)
-        BY QuorumProperty2
+        BY QdProperty1 DEF SameBallot
     <3> ma \in known_msgs[alpha]
         BY DEF Known2a
     <3> mb \in known_msgs[L0]
@@ -686,7 +438,7 @@ PROOF
     <3> ~OneA(ma)
          BY MessageTypeSpec DEF Known2a
     <3> ~OneA(mb)
-         BY QuorumProperty2, MessageTypeSpec
+         BY QdProperty1 DEF OneA, Proposal
     <3> ma \in Tran(mb)
       <4> ma \in Tran(mb) \/ mb \in Tran(ma)
           BY DEF MsgsSafeAcceptorPrevTranLinearSpec, KnownMsgsPrevTranSpec, SentBy
@@ -755,7 +507,7 @@ PROOF
             /\ OneB(seq[x].r)
             /\ B(seq[x].r, seq[x].B_m)
             /\ Fresh000(seq[x].gamma, seq[x].r)
-        BY QuorumProperty2 DEF HeterogeneousSpecCond
+        BY Qd_eq DEF HeterogeneousSpecCond, SameBallot
     <3> \A x \in 1..k :
             /\ seq[x].m \in Tran(M)
             /\ seq[x].r \in Tran(M)
@@ -801,9 +553,9 @@ PROOF
           BY DEF HeterogeneousSpecCond
       <4> maxDepth(alpha) - k + 1 >= 1
           OBVIOUS
-      \* Therefore, by QuorumProperty4,
+      \* Therefore, by QdProperty4,
       <4> [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq[k].s, 1) }] \in TrustLive
-          BY QuorumProperty4
+          BY QdProperty4
       \* ..which by definition of WellFormed-ness for seq[k].s results in
       <4> QED BY DEF WellFormed
 
@@ -1008,9 +760,9 @@ PROOF
     <3> ~Proposal(r0)
         BY QdProperty1
     <3> B(r0, B_m0)
-        BY QuorumProperty2
+        BY QdProperty1 DEF SameBallot
     <3> B(s0, bal)
-        BY QuorumProperty2
+        BY QdProperty1 DEF SameBallot
 
     <3> s0 \in Tran(r0)
         \* From bal < B_m0 (Property 1), we conclude
@@ -1127,9 +879,9 @@ PROOF
           <6> r_star \in Message
               BY Tran_Message
           <6> B(r_star, B_m0)
-              BY QuorumProperty2
+              BY QdProperty1 DEF SameBallot
           <6> B(s_star, bal)
-              BY QuorumProperty2
+              BY QdProperty1 DEF SameBallot
           <6> ~Proposal(r_star)
               BY QdProperty1
           <6> ~Proposal(s_star)
@@ -1191,8 +943,8 @@ PROOF
                    OBVIOUS
             <7>12. k_star + 1 =< maxDepth(alpha) =>
                     [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq_star[k_star + 1].s, maxDepth(alpha) - (k_star + 1) + 1) }] \in TrustLive
-              \* By definition of s_star, s_star \in Q1_star, with Q1_star == qd(alpha, seq[k_star].s, (maxDepth(alpha) - k_star + 1))
-              <8> QED BY QuorumProperty5
+                   \* By definition of s_star, s_star \in Q1_star, with Q1_star == qd(alpha, seq[k_star].s, (maxDepth(alpha) - k_star + 1))
+                   BY Qd_eq \* QdProperty3 \* TODO clean
             <7>13. B(seq_star[k_star + 1].s, bal)
                    OBVIOUS
             <7>14. V(seq_star[k_star + 1].m, V_M)
@@ -1259,7 +1011,7 @@ PROOF
              OBVIOUS
       <4>12. k + 1 =< maxDepth(alpha) =>
                 [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq0[k + 1].s, maxDepth(alpha) - (k + 1) + 1) }] \in TrustLive
-             BY QuorumProperty5
+             BY Qd_eq \* QdProperty3 \* TODO clean
       <4>13. B(seq0[k + 1].s, bal)
              OBVIOUS
       <4>14. V(seq0[k + 1].m, V_M)
@@ -1654,7 +1406,6 @@ PROOF
     <3> QED BY <1>M0_prevtran
   <2> QED OBVIOUS
 
-\*<1> DEFINE mseq == [x \in 1..maxDepth(alpha) + 1 |-> IF x = maxDepth(alpha) + 1 THEN M0 ELSE seq[maxDepth(alpha) - x + 1].r]
 <1> DEFINE mseq == [x \in 1..maxDepth(alpha) + 1 |-> IF x = 1 THEN M0 ELSE seq[x - 1].r]
 
 <1> Len(mseq) = maxDepth(alpha) + 1
@@ -1865,7 +1616,7 @@ PROOF
         <5> \A x \in Q2 : ~OneA(x)
             BY QdProperty1 DEF Proposal, OneA
         <5> \A x \in Q2 : B(x, seq[2].B_m)
-            BY QuorumProperty2 DEF HeterogeneousSpecCond
+            BY QdProperty1 DEF HeterogeneousSpecCond, SameBallot
         <5> PICK p \in SafeAcceptor, s0 \in Q1, r0 \in Q2 :
                 /\ s0.acc = p
                 /\ r0.acc = p
