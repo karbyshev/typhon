@@ -319,22 +319,6 @@ PROOF
   <2> QED BY <2>1, <2>2, <2>3, <2>4, <2>5, <2>6, <2>7, Tran_trans
 <1> QED OBVIOUS
 
-
-
-\*LEMMA WTF0 == FALSE
-\*PROOF
-\*<1> DEFINE seq == [x \in 1..1 |-> 42]
-\*<1> seq \in Seq(Nat) BY SeqDef
-\*<1> QED OBVIOUS
-\*
-\*LEMMA WTF ==
-\*    ASSUME NEW N \in Nat,
-\*           NEW seq \in [1..N -> Nat]
-\*    PROVE  FALSE
-\*PROOF
-\*<1> seq \in Seq(Nat) BY SeqDef
-\*<1> QED OBVIOUS
-
 LEMMA YYY ==
     ASSUME BVal \in [Ballot -> Value],
            NEW alpha \in Learner, NEW beta \in Learner, NEW L0 \in Learner,

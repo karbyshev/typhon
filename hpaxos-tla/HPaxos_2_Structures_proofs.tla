@@ -1003,6 +1003,23 @@ PROOF
 <1> HIDE DEF P
 <1> QED BY <1>0, <1>1, NatInduction, Isa
 
+\****************************************
+\* BUG REPRODUCER
+\****************************************
+\*LEMMA WTF0 == FALSE
+\*PROOF
+\*<1> DEFINE seq == [x \in 1..1 |-> 42]
+\*<1> seq \in Seq(Nat) BY SeqDef
+\*<1> QED OBVIOUS
+\*
+\*LEMMA WTF ==
+\*    ASSUME NEW N \in Nat,
+\*           NEW seq \in [1..N -> Nat]
+\*    PROVE  FALSE
+\*PROOF
+\*<1> seq \in Seq(Nat) BY SeqDef
+\*<1> QED OBVIOUS
+
 =============================================================================
 \* Modification History
 \* Last modified Thu May 29 00:16:54 CEST 2025 by karbyshev
