@@ -99,7 +99,6 @@ LEMMA MessageSpec ==
               /\ m.refs = {}
            \/ /\ \/ m.type = "1b"
                  \/ m.type = "2a"
-                 \/ m.type = "2b"
               /\ m.acc \in Acceptor
               /\ m.prev \in Message \cup {NoMessage}
 \*              /\ m.refs # {}
@@ -111,26 +110,18 @@ LEMMA MessageTypeSpec ==
     PROVE  \/ /\  OneA(m)
               /\ ~OneB(m)
               /\ ~TwoA(m)
-              /\ ~TwoB(m)
            \/ /\ ~OneA(m)
               /\  OneB(m)
               /\ ~TwoA(m)
-              /\ ~TwoB(m)
            \/ /\ ~OneA(m)
               /\ ~OneB(m)
               /\  TwoA(m)
-              /\ ~TwoB(m)
-           \/ /\ ~OneA(m)
-              /\ ~OneB(m)
-              /\ ~TwoA(m)
-              /\  TwoB(m)
 
 \*LEMMA MessageNonProposalSpec ==
 \*    ASSUME NEW m \in Message,
 \*           ~Proposal(m)
 \*    PROVE  \/ OneB(m)
 \*           \/ TwoA(m)
-\*           \/ TwoB(m)
 
 -----------------------------------------------------------------------------
 (* Transitive references *)

@@ -373,7 +373,6 @@ LEMMA MessageSpec ==
               /\ m.refs = {}
            \/ /\ \/ m.type = "1b"
                  \/ m.type = "2a"
-                 \/ m.type = "2b"
               /\ m.acc \in Acceptor
               /\ m.prev \in Message \cup {NoMessage}
 \*             /\ m.refs # {}
@@ -388,7 +387,6 @@ PROOF
                /\ x.refs = {}
             \/ /\ \/ x.type = "1b"
                   \/ x.type = "2a"
-                  \/ x.type = "2b"
                /\ x.acc \in Acceptor
                /\ x.prev \in Message \cup {NoMessage}
 \*               /\ x.refs # {}
@@ -408,7 +406,6 @@ PROOF
                          /\ x.refs = {}
                       \/ /\ \/ x.type = "1b"
                             \/ x.type = "2a"
-                            \/ x.type = "2b"
                          /\ x.acc \in Acceptor
                          /\ x.prev \in Message \cup {NoMessage}
 \*                         /\ x.refs # {}
@@ -418,7 +415,7 @@ PROOF
   <2>1. CASE x \in MessageRec[k]
         BY <1>1, <2>1
   <2>3. CASE x \notin MessageRec[k]
-     <3>1. x \in [ type : {"1b", "2a", "2b"},
+     <3>1. x \in [ type : {"1b", "2a"},
                    acc : Acceptor,
                    prev : MessageRec[k] \cup {NoMessage},
                    refs : FINSUBSET(MessageRec[k]),
@@ -434,27 +431,19 @@ LEMMA MessageTypeSpec ==
     PROVE \/ /\  OneA(m)
              /\ ~OneB(m)
              /\ ~TwoA(m)
-             /\ ~TwoB(m)
           \/ /\ ~OneA(m)
              /\  OneB(m)
              /\ ~TwoA(m)
-             /\ ~TwoB(m)
           \/ /\ ~OneA(m)
              /\ ~OneB(m)
              /\  TwoA(m)
-             /\ ~TwoB(m)
-          \/ /\ ~OneA(m)
-             /\ ~OneB(m)
-             /\ ~TwoA(m)
-             /\  TwoB(m)
-PROOF BY MessageSpec DEF OneA, OneB, TwoA, TwoB
+PROOF BY MessageSpec DEF OneA, OneB, TwoA
 
 LEMMA MessageNonProposalSpec ==
     ASSUME NEW m \in Message,
            ~Proposal(m)
     PROVE  \/ OneB(m)
            \/ TwoA(m)
-           \/ TwoB(m)
 PROOF BY MessageTypeSpec DEF Proposal, OneA
 
 -----------------------------------------------------------------------------

@@ -29,7 +29,7 @@ MessageRec0 ==
 
 MessageRec1(M, n) ==
     M \cup
-    [ type : {"1b", "2a", "2b"},
+    [ type : {"1b", "2a"},
       acc  : Acceptor,
       prev : M \cup {NoMessage},
       refs : FINSUBSET(M),
@@ -60,8 +60,6 @@ OneA(m) == m.type = "1a"
 OneB(m) == m.type = "1b"
 
 TwoA(m) == m.type = "2a"
-
-TwoB(m) == m.type = "2b"
 
 -----------------------------------------------------------------------------
 (* Transitive references *)
