@@ -6,7 +6,6 @@ LOCAL INSTANCE TLAPS
 Assert(P, str) == P
 
 CONSTANT WellFormed2a(_)
-CONSTANT WellFormed2b(_)
 
 -----------------------------------------------------------------------------
 (* Algorithm specification *)
@@ -58,6 +57,7 @@ CONSTANT WellFormed2b(_)
                 /\ m \notin PrevTran(m1)
                 /\ m1 \notin PrevTran(m)
 \*                /\ m.prev = m1.prev
+\* TODO change it back
          }
 
     Caught(x) == { m.acc : m \in CaughtMsg(x) }
@@ -97,6 +97,7 @@ CONSTANT WellFormed2b(_)
                 /\ beta \in Con(alpha, x)
                 /\ ~Buried(beta, m, x) }
 
+    \* TODO clean
     \* Fresh 1b messages
     Fresh(alpha, x) == \* alpha : Learner, x : 1b
         \A m \in Con2as(alpha, x) : \A v \in Value : V(x, v) <=> V(m, v)
@@ -144,25 +145,16 @@ CONSTANT WellFormed2b(_)
     qd(alpha, x, d) ==
         IF TwoA(x) THEN QRec[d][<<alpha, x>>][x] ELSE {}
 
+    \* TODO clean -- not used
     depthIdx(alpha, x) ==
-        {d \in 1..N_L : [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, x, d)}] \in TrustLive }
-
+        { d \in 1..N_L : [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, x, d)}] \in TrustLive }
+    \* TODO clean -- not used
     depth(alpha, x) ==
         Max({0} \cup depthIdx(alpha, x))
-
+    \* TODO clean -- not used
     q(alpha, x) == qd(alpha, x, depth(alpha, x))
 
-    maxDepth_old(alpha) ==
-        LET I == { n \in 1..N_L :
-                    \E f \in [1..n -> Message] :
-                        /\ alpha \in Con(alpha, f[n])
-                        /\ \A i, j \in 1..n : i < j =>
-                               /\ f[i] \in Tran(f[j])
-                               /\ Con(alpha, f[i]) # Con(alpha, f[j]) }
-        IN Max(I)
-
     \* TODO better name?
-    \* TODO fix lemma ZZZ
     ConSeq(alpha) ==
         { seq \in Seq(Message) :
             /\ \A i, j \in 1..Len(seq) : i < j =>
@@ -189,15 +181,14 @@ CONSTANT WellFormed2b(_)
         /\ \E b \in Ballot : B(m, b) \* TODO prove it
         /\ ChainRef(m)
 \*        /\ m.lrns = { l \in Learner : depth(l, m) > 0 } \* notice that it implies that m.lrns = {} for 1b messages
-        \* TODO check if equivalent to the above one
         /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
+        \* TODO check if equivalent to the above one
         /\ OneB(m) => WellFormed1b(m)
         /\ TwoA(m) =>
             \* TODO check if this can be removed (most likely, is is not required for safety).
-            \* Implied by the condition m.lrns # {}
-            /\ m.refs # {}
+\*            /\ m.refs # {}
             \* Since the message structure embodies the learner values in our formalization,
-            \* we must validate the correctness of these values.
+            \* we must validate correctness of these values.
             /\ WellFormed2a(m)
 
     Known2a(alpha, b, v) ==
@@ -209,16 +200,14 @@ CONSTANT WellFormed2b(_)
 
     ChosenIn(alpha, b, v) ==
         \E S \in SUBSET Known2a(alpha, b, v) :
-\*            /\ \A x \in S : depth(alpha, x) >= maxDepth(alpha)
-            \* TODO check if equivalent to the above
             /\ \A x \in S : [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
             /\ [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
 
     ReplyType(m, t) ==
         \/ OneA(m) /\ t = "1b"
         \/ OneB(m) /\ t = "2a"
-\*        \/ TwoA(m) /\ t = "2b"
-  }
+        \/ TwoA(m) /\ t = "2a"
+  } \* define
 
   macro Send(m) { msgs := msgs \cup {m} }
 
@@ -233,7 +222,7 @@ CONSTANT WellFormed2b(_)
   }
 
   macro Process(m) {
-    with (T \in {"1b", "2a", "2b"},
+    with (T \in {"1b", "2a"},
           LL \in SUBSET Learner,
           new = [type |-> T,
                  acc  |-> self,
@@ -241,6 +230,7 @@ CONSTANT WellFormed2b(_)
                  refs |-> recent_msgs[self] \cup {m},
                  lrns |-> LL])
     {
+      \* TODO prove that new \in Message
       assert new \in Message ;
       either {
         when ReplyType(m, T);
@@ -250,6 +240,8 @@ CONSTANT WellFormed2b(_)
         Send(new)
       }
       or {
+        \* TODO fix BUG: this branch is triggered when LL is picked to be non-wellformed;
+        \* TODO replace picking by defining it
         when ReplyType(m, T);
         when ~WellFormed(new) ;
         when ~OneA(m) ;
@@ -259,11 +251,12 @@ CONSTANT WellFormed2b(_)
   }
 
   macro FakeSendControlMessage() {
-    with (fin \in FINSUBSET(msgs, RefCardinality),
+    with (fin \in FINSUBSET(msgs),
           LL \in SUBSET Learner,
-          T \in {"1b", "2a", "2b"},
+          T \in {"1b", "2a"},
           msg = [type |-> T, acc |-> self, refs |-> fin, lrns |-> LL])
     {
+      \* TODO can we remove the well-formedness condition here?
       when WellFormed(msg) ;
       Send(msg)
     }
@@ -310,7 +303,7 @@ CONSTANT WellFormed2b(_)
 }
 
 ****************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "c175b0b0" /\ chksum(tla) = "f9c20dfd")
+\* BEGIN TRANSLATION (chksum(pcal) = "246784fe" /\ chksum(tla) = "1e6bbfa8")
 VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision, BVal
 
 (* define statement *)
@@ -351,6 +344,7 @@ CaughtMsg(x) ==
             /\ m \notin PrevTran(m1)
             /\ m1 \notin PrevTran(m)
 
+
      }
 
 Caught(x) == { m.acc : m \in CaughtMsg(x) }
@@ -389,6 +383,7 @@ Con2as(alpha, x) ==
         /\ \E beta \in m.lrns :
             /\ beta \in Con(alpha, x)
             /\ ~Buried(beta, m, x) }
+
 
 
 Fresh(alpha, x) ==
@@ -437,23 +432,14 @@ QRec[n \in Nat] ==
 qd(alpha, x, d) ==
     IF TwoA(x) THEN QRec[d][<<alpha, x>>][x] ELSE {}
 
+
 depthIdx(alpha, x) ==
-    {d \in 1..N_L : [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, x, d)}] \in TrustLive }
+    { d \in 1..N_L : [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, x, d)}] \in TrustLive }
 
 depth(alpha, x) ==
     Max({0} \cup depthIdx(alpha, x))
 
 q(alpha, x) == qd(alpha, x, depth(alpha, x))
-
-maxDepth_old(alpha) ==
-    LET I == { n \in 1..N_L :
-                \E f \in [1..n -> Message] :
-                    /\ alpha \in Con(alpha, f[n])
-                    /\ \A i, j \in 1..n : i < j =>
-                           /\ f[i] \in Tran(f[j])
-                           /\ Con(alpha, f[i]) # Con(alpha, f[j]) }
-    IN Max(I)
-
 
 
 ConSeq(alpha) ==
@@ -482,13 +468,12 @@ WellFormed(m) ==
     /\ \E b \in Ballot : B(m, b)
     /\ ChainRef(m)
 
-
     /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
+
     /\ OneB(m) => WellFormed1b(m)
     /\ TwoA(m) =>
 
 
-        /\ m.refs # {}
 
 
         /\ WellFormed2a(m)
@@ -502,14 +487,13 @@ Known2a(alpha, b, v) ==
 
 ChosenIn(alpha, b, v) ==
     \E S \in SUBSET Known2a(alpha, b, v) :
-
-
         /\ \A x \in S : [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
         /\ [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
 
 ReplyType(m, t) ==
     \/ OneA(m) /\ t = "1b"
     \/ OneB(m) /\ t = "2a"
+    \/ TwoA(m) /\ t = "2a"
 
 
 vars == << msgs, known_msgs, recent_msgs, prev_msg, decision, BVal >>
@@ -534,7 +518,7 @@ safe_acceptor(self) == /\ \E m \in msgs:
                                /\ KnownRefs(self, m)
                             /\ known_msgs' = [known_msgs EXCEPT ![self] = known_msgs[self] \cup {m}]
                             /\ WellFormed(m)
-                            /\ \E T \in {"1b", "2a", "2b"}:
+                            /\ \E T \in {"1b", "2a"}:
                                  \E LL \in SUBSET Learner:
                                    LET new == [type |-> T,
                                                acc  |-> self,
@@ -542,7 +526,7 @@ safe_acceptor(self) == /\ \E m \in msgs:
                                                refs |-> recent_msgs[self] \cup {m},
                                                lrns |-> LL] IN
                                      /\ Assert(new \in Message, 
-                                               "Failure of assertion at line 247, column 7 of macro called at line 296, column 9.")
+                                               "Failure of assertion at line 234, column 7 of macro called at line 286, column 9.")
                                      /\ \/ /\ ReplyType(m, T)
                                            /\ WellFormed(new)
                                            /\ prev_msg' = [prev_msg EXCEPT ![self] = new]
@@ -568,9 +552,9 @@ learner(self) == /\ \/ /\ \E m \in msgs:
                        /\ UNCHANGED known_msgs
                  /\ UNCHANGED << msgs, recent_msgs, prev_msg, BVal >>
 
-fake_acceptor(self) == /\ \E fin \in FINSUBSET(msgs, RefCardinality):
+fake_acceptor(self) == /\ \E fin \in FINSUBSET(msgs):
                             \E LL \in SUBSET Learner:
-                              \E T \in {"1b", "2a", "2b"}:
+                              \E T \in {"1b", "2a"}:
                                 LET msg == [type |-> T, acc |-> self, refs |-> fin, lrns |-> LL] IN
                                   /\ WellFormed(msg)
                                   /\ msgs' = (msgs \cup {msg})
@@ -604,7 +588,7 @@ Process(a, m) ==
     /\ Recv(a, m)
     /\ WellFormed(m)
     /\ \E LL \in SUBSET Learner :
-       \E T \in {"1b", "2a", "2b"} :
+       \E T \in {"1b", "2a"} :
         LET new == [type |-> T,
                     acc  |-> a,
                     prev |-> prev_msg[a],
@@ -621,9 +605,6 @@ Process(a, m) ==
               /\ ~OneA(m)
               /\ recent_msgs' = [recent_msgs EXCEPT ![a] = recent_msgs[a] \cup {m}]
               /\ UNCHANGED << msgs, prev_msg >>
-           \/ /\ TwoB(m)
-              /\ recent_msgs' = [recent_msgs EXCEPT ![a] = recent_msgs[a] \cup {m}]
-              /\ UNCHANGED << msgs, prev_msg >>
     /\ UNCHANGED decision
     /\ UNCHANGED BVal
 
@@ -634,9 +615,9 @@ SafeAcceptorAction(a) ==
     \E m \in msgs : Process(a, m)
 
 FakeSendControlMessage(a) ==
-    /\ \E fin \in FINSUBSET(msgs, RefCardinality) :
+    /\ \E fin \in FINSUBSET(msgs) :
         \E LL \in SUBSET Learner :
-        \E T \in {"1b", "2a", "2b"} :
+        \E T \in {"1b", "2a"} :
             LET new == [type |-> T, acc |-> a, refs |-> fin, lrns |-> LL] IN
             /\ WellFormed(new)
             /\ Send(new)
@@ -692,19 +673,10 @@ THEOREM NextDef == Next <=> NextTLA
 <1>5. QED BY <1>1, <1>2, <1>3, <1>4 DEF Next, NextTLA
 
 -----------------------------------------------------------------------------
-Safety ==
-    \A L1, L2 \in Learner: \A B1, B2 \in Ballot : \A V1, V2 \in Value :
-        <<L1, L2>> \in Ent /\
-        V1 \in decision[L1, B1] /\ V2 \in decision[L2, B2] =>
-        V1 = V2
-
-\* THEOREM SafetyResult == Spec => []Safety
-
------------------------------------------------------------------------------
 (* Sanity check propositions *)
 
-SanityCheck0 ==
-    \A L \in Learner : Cardinality(known_msgs[L]) = 0
+\*SanityCheck0 ==
+\*    \A L \in Learner : Cardinality(known_msgs[L]) = 0
 
 SanityCheck1 ==
     \A L \in Learner : \A m1, m2 \in known_msgs[L] :
@@ -731,5 +703,5 @@ UniqueDecision ==
 
 =============================================================================
 \* Modification History
-\* Last modified Thu Dec 19 23:41:24 CET 2024 by karbyshev
+\* Last modified Wed Jun 04 19:57:51 CEST 2025 by karbyshev
 \* Created Mon Jun 19 12:24:03 CEST 2022 by karbyshev
