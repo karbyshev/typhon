@@ -181,7 +181,7 @@ CONSTANT WellFormed2a(_)
         /\ ChainRef(m)
 \*        /\ m.lrns = { l \in Learner : depth(l, m) > 0 } \* notice that it implies that m.lrns = {} for 1b messages
         /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
-        \* TODO check if equivalent to the above one
+        /\ OneA(m) => B(m, m.bal)
         /\ OneB(m) => WellFormed1b(m)
         /\ TwoA(m) =>
             \* TODO check if this can be removed (most likely, is is not required for safety).
@@ -467,7 +467,7 @@ WellFormed(m) ==
     /\ ChainRef(m)
 
     /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
-
+    /\ OneA(m) => B(m, m.bal)
     /\ OneB(m) => WellFormed1b(m)
     /\ TwoA(m) =>
 
