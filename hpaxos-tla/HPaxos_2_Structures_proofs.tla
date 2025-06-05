@@ -182,39 +182,39 @@ PROOF
 <1> QED
 
 -----------------------------------------------------------------------------
-\* Check equivalence of two well-formedness conditions
+\* Check equivalence of two well-formedness conditions for 1b messages
 
-LEMMA WellFormedCondition1 ==
-    ASSUME NEW m \in Message, OneB(m),
-           \A y \in Tran(m) :
-            m # y /\ SameBallot(m, y) => OneA(y)
-    PROVE  \A y \in Tran(m) :
-            m # y /\ SameBallot(m, y) => y \in Get1a(m)
-PROOF
-<1> SUFFICES ASSUME NEW y \in Tran(m), m # y, SameBallot(m, y)
-             PROVE  y \in Get1a(m)
-    OBVIOUS
-<1> OneA(y) OBVIOUS
-<1> y \in Message BY Tran_Message
-<1> y.bal \in Ballot BY MessageSpec DEF OneA
-<1> B(y, y.bal) BY B_1a
-<1> SUFFICES ASSUME NEW z \in Tran(m), OneA(z)
-             PROVE  z.bal =< y.bal
-    BY DEF Get1a, OneA
-<1> z \in Message BY Tran_Message
-<1> z.bal \in Ballot BY MessageSpec DEF OneA
-<1> B(z, z.bal) BY B_1a
-<1> QED BY TranBallot DEF SameBallot
+\*LEMMA WellFormedCondition1 ==
+\*    ASSUME NEW m \in Message, OneB(m),
+\*           \A y \in Tran(m) :
+\*            m # y /\ SameBallot(m, y) => OneA(y)
+\*    PROVE  \A y \in Tran(m) :
+\*            m # y /\ SameBallot(m, y) => y \in Get1a(m)
+\*PROOF
+\*<1> SUFFICES ASSUME NEW y \in Tran(m), m # y, SameBallot(m, y)
+\*             PROVE  y \in Get1a(m)
+\*    OBVIOUS
+\*<1> OneA(y) OBVIOUS
+\*<1> y \in Message BY Tran_Message
+\*<1> y.bal \in Ballot BY MessageSpec DEF OneA
+\*<1> B(y, y.bal) BY B_1a
+\*<1> SUFFICES ASSUME NEW z \in Tran(m), OneA(z)
+\*             PROVE  z.bal =< y.bal
+\*    BY DEF Get1a, OneA
+\*<1> z \in Message BY Tran_Message
+\*<1> z.bal \in Ballot BY MessageSpec DEF OneA
+\*<1> B(z, z.bal) BY B_1a
+\*<1> QED BY TranBallot DEF SameBallot
 
 \* Equivalence of two well-formedness conditions
-LEMMA WellFormedConditionEquiv1 ==
-    ASSUME NEW m \in Message, OneB(m)
-    PROVE  (\A y \in Tran(m) :
-            m # y /\ SameBallot(m, y) => y \in Get1a(m))
-           <=>
-           (\A y \in Tran(m) :
-            m # y /\ SameBallot(m, y) => OneA(y))
-PROOF BY WellFormedCondition1 DEF Get1a, OneA
+\*LEMMA WellFormedConditionEquiv1 ==
+\*    ASSUME NEW m \in Message, OneB(m)
+\*    PROVE  (\A y \in Tran(m) :
+\*            m # y /\ SameBallot(m, y) => y \in Get1a(m))
+\*           <=>
+\*           (\A y \in Tran(m) :
+\*            m # y /\ SameBallot(m, y) => OneA(y))
+\*PROOF BY WellFormedCondition1 DEF Get1a, OneA
 
 LEMMA WellFormedCondition2 ==
     ASSUME NEW m \in Message, OneB(m),
@@ -226,19 +226,19 @@ LEMMA WellFormedCondition2 ==
                 B(m, bm) /\ B(y, by) => by # bm
 PROOF BY Tran_Message, B_func DEF SameBallot, OneA
 
-LEMMA WellFormedConditionEquiv2 ==
-    ASSUME NEW m \in Message, OneB(m)
-    PROVE (\A y \in Tran(m) :
-            m # y /\
-            (\E bm \in Ballot : B(m, bm)) /\
-            (\E by \in Ballot : B(y, by)) /\
-            SameBallot(m, y) => OneA(y))
-          <=>
-          (\A y \in Tran(m) :
-            m # y /\ ~OneA(y) =>
-            \A bm, by \in Ballot :
-                B(m, bm) /\ B(y, by) => by # bm)
-PROOF BY Tran_Message, B_func DEF SameBallot, OneA
+\*LEMMA WellFormedConditionEquiv2 ==
+\*    ASSUME NEW m \in Message, OneB(m)
+\*    PROVE (\A y \in Tran(m) :
+\*            m # y /\
+\*            (\E bm \in Ballot : B(m, bm)) /\
+\*            (\E by \in Ballot : B(y, by)) /\
+\*            SameBallot(m, y) => OneA(y))
+\*          <=>
+\*          (\A y \in Tran(m) :
+\*            m # y /\ ~OneA(y) =>
+\*            \A bm, by \in Ballot :
+\*                B(m, bm) /\ B(y, by) => by # bm)
+\*PROOF BY Tran_Message, B_func DEF SameBallot, OneA
 
 LEMMA WellFormedCondition3 ==
     ASSUME NEW m \in Message, OneB(m),
@@ -252,18 +252,18 @@ LEMMA WellFormedCondition3 ==
                 B(m, bm) /\ B(y, by) => by < bm
 PROOF BY TranBallot DEF Ballot
 
-LEMMA WellFormedConditionEquiv3 ==
-    ASSUME NEW m \in Message, OneB(m)
-    PROVE (\A y \in Tran(m) :
-            m # y /\ ~OneA(y) =>
-            \A bm, by \in Ballot :
-                B(m, bm) /\ B(y, by) => by # bm)
-          <=>
-          (\A y \in Tran(m) :
-            m # y /\ ~OneA(y) =>
-            \A bm, by \in Ballot :
-                B(m, bm) /\ B(y, by) => by < bm)
-PROOF BY TranBallot DEF Ballot
+\*LEMMA WellFormedConditionEquiv3 ==
+\*    ASSUME NEW m \in Message, OneB(m)
+\*    PROVE (\A y \in Tran(m) :
+\*            m # y /\ ~OneA(y) =>
+\*            \A bm, by \in Ballot :
+\*                B(m, bm) /\ B(y, by) => by # bm)
+\*          <=>
+\*          (\A y \in Tran(m) :
+\*            m # y /\ ~OneA(y) =>
+\*            \A bm, by \in Ballot :
+\*                B(m, bm) /\ B(y, by) => by < bm)
+\*PROOF BY TranBallot DEF Ballot
 
 -----------------------------------------------------------------------------
 \* TODO rename
@@ -1029,5 +1029,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Thu Jun 05 12:21:41 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 00:28:11 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev
