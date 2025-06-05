@@ -210,27 +210,6 @@ PROOF
     OBVIOUS
 <1> QED BY HeterogeneousSpecCondCongr DEF HeterogeneousSpecCondMin
 
-\*LEMMA TEST ==
-\*    ASSUME NEW S \in SUBSET Nat,
-\*           S # {},
-\*           NEW foo \in Nat,
-\*           foo = (CHOOSE x \in S : TRUE)
-\*    PROVE  foo \in S
-\*\*        (\lambda x. x \in S) foo
-\*OBVIOUS
-\*
-\*LEMMA TEST2 ==
-\*    ASSUME NEW P(_),
-\*           NEW N \in Nat,
-\*           NEW S \in SUBSET 1..N,
-\*           S # {},
-\*           NEW foo \in Nat,
-\*           \E bar \in S : P(bar),
-\*           foo = CHOOSE x \in {0} \cup S : P(x),
-\*           foo > 0
-\*    PROVE  foo \in S
-\*OBVIOUS
-
 \* TODO rename
 \*LEMMA PPP ==
 \*    ASSUME NEW alpha \in Learner,
@@ -2051,5 +2030,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Thu Jun 05 21:01:58 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 00:30:51 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev

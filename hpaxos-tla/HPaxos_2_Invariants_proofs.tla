@@ -1,6 +1,7 @@
 --------------------- MODULE HPaxos_2_Invariants_proofs ---------------------
-EXTENDS HPaxos_2_Specs, HMessageTheorems, HPaxos_2_Structures,
-        FiniteSetTheorems
+EXTENDS HPaxos_2_Specs, HMessageTheorems, HPaxos_2_Structures, TLAPS
+
+LOCAL INSTANCE FiniteSetTheorems
 
 -----------------------------------------------------------------------------
 
@@ -43,8 +44,6 @@ PROOF
               /\ prev_msg' = [prev_msg EXCEPT ![acc] = new]
            \/ /\ ReplyType(m, t)
               /\ ~WellFormed(new)
-              /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = recent_msgs[acc] \cup {m}]
-           \/ /\ TwoB(m)
               /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = recent_msgs[acc] \cup {m}]
         BY DEF Process
     <4> DEFINE new == [type |-> t,
@@ -125,6 +124,7 @@ PROOF
 <1>9. QED BY <1>1, <1>3, <1>6, <1>7, <1>8
           DEF NextTLA, SafeAcceptorAction, LearnerAction
 
+\* TODO fix the proof
 LEMMA Qd_monotone ==
     ASSUME NEW alpha \in Learner,
            NEW m \in Message,
@@ -235,9 +235,6 @@ PROOF
          /\ ~OneA(m)
          /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = recent_msgs[acc] \cup {m}]
          /\ UNCHANGED << msgs >>
-      \/ /\ TwoB(m)
-         /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = recent_msgs[acc] \cup {m}]
-         /\ UNCHANGED << msgs >>
       BY DEF Process
   <2> QED BY MessageTypeSpec DEF RecentMsgsSpec1, ReplyType, Recv, Send, SentBy, OneA, TypeOK
 <1>7. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
@@ -338,8 +335,6 @@ PROOF
               /\ ~WellFormed(new)
               /\ ~OneA(m)
               /\ UNCHANGED << prev_msg, msgs >>
-           \/ /\ TwoB(m)
-              /\ UNCHANGED << prev_msg, msgs >>
       BY DEF Process
   <2> DEFINE new == [type |-> t,
                      acc |-> acc,
@@ -348,7 +343,7 @@ PROOF
                      lrns |-> ll]
   <2> new \in Message
       OBVIOUS
-  <2> CASE WellFormed(new) /\ ~TwoB(m)
+  <2> CASE WellFormed(new)
     <3> prev_msg' = [prev_msg EXCEPT ![acc] = new]
         OBVIOUS
     <3> new \in msgs'
@@ -360,8 +355,6 @@ PROOF
     <3> QED BY NoMessageIsNotAMessage DEF SentBy, Send, OneA, TypeOK
   <2> CASE ~WellFormed(new)
       BY DEF SentBy
-  <2> CASE TwoB(m)
-      BY MessageTypeSpec, ReplyTypeSpec DEF SentBy
   <2> QED OBVIOUS
 <1>6. CASE \E l \in Learner : LearnerAction(l)
       BY <1>6 DEF LearnerAction, LearnerRecv, LearnerDecide, Send, SentBy
@@ -422,9 +415,6 @@ PROOF
             /\ ~OneA(m)
             /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = recent_msgs[acc] \cup {m}]
             /\ UNCHANGED << prev_msg, msgs >>
-         \/ /\ TwoB(m)
-            /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = recent_msgs[acc] \cup {m}]
-            /\ UNCHANGED << prev_msg, msgs >>
       BY DEF Process
   <2> DEFINE new == [type |-> t,
                      acc  |-> acc,
@@ -434,7 +424,7 @@ PROOF
   <2> new \in Message
       OBVIOUS
   <2> CASE acc = A
-    <3> CASE WellFormed(new) /\ ~TwoB(m)
+    <3> CASE WellFormed(new)
       <4> msgs' = msgs \cup {new}
           BY DEF Send, OneA
       <4> new # NoMessage
@@ -455,8 +445,6 @@ PROOF
       <4> QED BY PrevTran_trans, PrevTran_refl DEF SafeAcceptorPrevSpec1
     <3> CASE ~WellFormed(new)
         BY DEF SentBy, TypeOK
-    <3> CASE TwoB(m)
-        BY MessageTypeSpec, ReplyTypeSpec DEF SentBy, TypeOK
     <3> QED OBVIOUS
   <2> CASE acc # A
       BY DEF SentBy, Send, TypeOK
@@ -1026,5 +1014,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Wed May 21 23:08:47 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 00:37:12 CEST 2025 by karbyshev
 \* Created Tue May 20 23:09:22 CEST 2025 by karbyshev
