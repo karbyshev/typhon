@@ -57,7 +57,7 @@ CONSTANT WellFormed2a(_)
                 /\ m \notin PrevTran(m1)
                 /\ m1 \notin PrevTran(m)
 \*                /\ m.prev = m1.prev
-\* TODO change it back
+\* TODO revert the change?
          }
 
     Caught(x) == { m.acc : m \in CaughtMsg(x) }
@@ -143,15 +143,6 @@ CONSTANT WellFormed2a(_)
     \* Quorum of messages referenced by 2a for a learner instance
     qd(alpha, x, d) ==
         IF TwoA(x) THEN QRec[d][<<alpha, x>>][x] ELSE {}
-
-    \* TODO clean -- not used
-    depthIdx(alpha, x) ==
-        { d \in 1..N_L : [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, x, d)}] \in TrustLive }
-    \* TODO clean -- not used
-    depth(alpha, x) ==
-        Max({0} \cup depthIdx(alpha, x))
-    \* TODO clean -- not used
-    q(alpha, x) == qd(alpha, x, depth(alpha, x))
 
     \* TODO better name?
     ConSeq(alpha) ==
@@ -302,7 +293,7 @@ CONSTANT WellFormed2a(_)
 }
 
 ****************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "246784fe" /\ chksum(tla) = "1e6bbfa8")
+\* BEGIN TRANSLATION (chksum(pcal) = "60299c6f" /\ chksum(tla) = "88a32b18")
 VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision, BVal
 
 (* define statement *)
@@ -431,15 +422,6 @@ qd(alpha, x, d) ==
     IF TwoA(x) THEN QRec[d][<<alpha, x>>][x] ELSE {}
 
 
-depthIdx(alpha, x) ==
-    { d \in 1..N_L : [lr |-> alpha, q |-> {m.acc : m \in qd(alpha, x, d)}] \in TrustLive }
-
-depth(alpha, x) ==
-    Max({0} \cup depthIdx(alpha, x))
-
-q(alpha, x) == qd(alpha, x, depth(alpha, x))
-
-
 ConSeq(alpha) ==
     { seq \in Seq(Message) :
         /\ \A i, j \in 1..Len(seq) : i < j =>
@@ -524,7 +506,7 @@ safe_acceptor(self) == /\ \E m \in msgs:
                                                refs |-> recent_msgs[self] \cup {m},
                                                lrns |-> LL] IN
                                      /\ Assert(new \in Message, 
-                                               "Failure of assertion at line 234, column 7 of macro called at line 286, column 9.")
+                                               "Failure of assertion at line 224, column 7 of macro called at line 276, column 9.")
                                      /\ \/ /\ ReplyType(m, T)
                                            /\ WellFormed(new)
                                            /\ prev_msg' = [prev_msg EXCEPT ![self] = new]
@@ -701,5 +683,5 @@ UniqueDecision ==
 
 =============================================================================
 \* Modification History
-\* Last modified Wed Jun 04 19:57:51 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 00:30:24 CEST 2025 by karbyshev
 \* Created Mon Jun 19 12:24:03 CEST 2022 by karbyshev
