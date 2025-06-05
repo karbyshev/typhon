@@ -16,8 +16,7 @@ CONSTANT WellFormed2a(_)
             known_msgs = [x \in Acceptor \cup Learner |-> {}],
             recent_msgs = [a \in Acceptor |-> {}],
             prev_msg = [a \in Acceptor |-> NoMessage],
-            decision = [lb \in Learner \X Ballot |-> {}],
-            BVal \in [Ballot -> Value];
+            decision = [lb \in Learner \X Ballot |-> {}];
 
   define {
     Get1a(m) ==
@@ -293,8 +292,8 @@ CONSTANT WellFormed2a(_)
 }
 
 ****************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "60299c6f" /\ chksum(tla) = "88a32b18")
-VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision, BVal
+\* BEGIN TRANSLATION (chksum(pcal) = "90a83cad" /\ chksum(tla) = "a5f11ad0")
+VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision
 
 (* define statement *)
 Get1a(m) ==
@@ -476,7 +475,7 @@ ReplyType(m, t) ==
     \/ TwoA(m) /\ t = "2a"
 
 
-vars == << msgs, known_msgs, recent_msgs, prev_msg, decision, BVal >>
+vars == << msgs, known_msgs, recent_msgs, prev_msg, decision >>
 
 ProcSet == (Proposer) \cup (SafeAcceptor) \cup (Learner) \cup (FakeAcceptor)
 
@@ -486,12 +485,10 @@ Init == (* Global variables *)
         /\ recent_msgs = [a \in Acceptor |-> {}]
         /\ prev_msg = [a \in Acceptor |-> NoMessage]
         /\ decision = [lb \in Learner \X Ballot |-> {}]
-        /\ BVal \in [Ballot -> Value]
 
 proposer(self) == /\ \E b \in Ballot:
                        msgs' = (msgs \cup {([type |-> "1a", bal |-> b, prev |-> NoMessage, refs |-> {}])})
-                  /\ UNCHANGED << known_msgs, recent_msgs, prev_msg, decision, 
-                                  BVal >>
+                  /\ UNCHANGED << known_msgs, recent_msgs, prev_msg, decision >>
 
 safe_acceptor(self) == /\ \E m \in msgs:
                             /\ /\ m \notin known_msgs[self]
@@ -506,7 +503,7 @@ safe_acceptor(self) == /\ \E m \in msgs:
                                                refs |-> recent_msgs[self] \cup {m},
                                                lrns |-> LL] IN
                                      /\ Assert(new \in Message, 
-                                               "Failure of assertion at line 224, column 7 of macro called at line 276, column 9.")
+                                               "Failure of assertion at line 223, column 7 of macro called at line 275, column 9.")
                                      /\ \/ /\ ReplyType(m, T)
                                            /\ WellFormed(new)
                                            /\ prev_msg' = [prev_msg EXCEPT ![self] = new]
@@ -517,7 +514,7 @@ safe_acceptor(self) == /\ \E m \in msgs:
                                            /\ ~OneA(m)
                                            /\ recent_msgs' = [recent_msgs EXCEPT ![self] = recent_msgs[self] \cup {m}]
                                            /\ UNCHANGED <<msgs, prev_msg>>
-                       /\ UNCHANGED << decision, BVal >>
+                       /\ UNCHANGED decision
 
 learner(self) == /\ \/ /\ \E m \in msgs:
                             /\ WellFormed(m)
@@ -530,7 +527,7 @@ learner(self) == /\ \/ /\ \E m \in msgs:
                               /\ ChosenIn(self, b, v)
                               /\ decision' = [decision EXCEPT ![<<self, b>>] = decision[self, b] \cup {v}]
                        /\ UNCHANGED known_msgs
-                 /\ UNCHANGED << msgs, recent_msgs, prev_msg, BVal >>
+                 /\ UNCHANGED << msgs, recent_msgs, prev_msg >>
 
 fake_acceptor(self) == /\ \E fin \in FINSUBSET(msgs):
                             \E LL \in SUBSET Learner:
@@ -539,7 +536,7 @@ fake_acceptor(self) == /\ \E fin \in FINSUBSET(msgs):
                                   /\ WellFormed(msg)
                                   /\ msgs' = (msgs \cup {msg})
                        /\ UNCHANGED << known_msgs, recent_msgs, prev_msg, 
-                                       decision, BVal >>
+                                       decision >>
 
 Next == (\E self \in Proposer: proposer(self))
            \/ (\E self \in SafeAcceptor: safe_acceptor(self))
@@ -562,7 +559,6 @@ SendProposal(b) ==
     /\ Send([type |-> "1a", bal |-> b, prev |-> NoMessage, refs |-> {}])
     /\ UNCHANGED << known_msgs, recent_msgs, prev_msg >>
     /\ UNCHANGED decision
-    /\ UNCHANGED BVal
 
 Process(a, m) ==
     /\ Recv(a, m)
@@ -586,7 +582,6 @@ Process(a, m) ==
               /\ recent_msgs' = [recent_msgs EXCEPT ![a] = recent_msgs[a] \cup {m}]
               /\ UNCHANGED << msgs, prev_msg >>
     /\ UNCHANGED decision
-    /\ UNCHANGED BVal
 
 ProposerAction(p) ==
     \E bal \in Ballot : SendProposal(bal)
@@ -603,20 +598,17 @@ FakeSendControlMessage(a) ==
             /\ Send(new)
     /\ UNCHANGED << known_msgs, recent_msgs, prev_msg  >>
     /\ UNCHANGED decision
-    /\ UNCHANGED BVal
 
 LearnerRecv(l, m) ==
     /\ Recv(l, m)
     /\ WellFormed(m)
     /\ UNCHANGED << msgs, recent_msgs, prev_msg >>
     /\ UNCHANGED decision
-    /\ UNCHANGED BVal
 
 LearnerDecide(l, b, v) ==
     /\ ChosenIn(l, b, v)
     /\ decision' = [decision EXCEPT ![<<l, b>>] = decision[l, b] \cup {v}]
     /\ UNCHANGED << msgs, known_msgs, recent_msgs, prev_msg >>
-    /\ UNCHANGED BVal
 
 LearnerAction(lrn) ==
     \/ \E m \in msgs :
@@ -683,5 +675,5 @@ UniqueDecision ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 00:30:24 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 01:33:58 CEST 2025 by karbyshev
 \* Created Mon Jun 19 12:24:03 CEST 2022 by karbyshev

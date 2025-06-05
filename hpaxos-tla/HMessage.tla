@@ -1,13 +1,5 @@
 ------------------------------ MODULE HMessage ------------------------------
-EXTENDS HQuorum, HLearner, Lib
-
-CONSTANT LastBallot
-ASSUME LastBallot \in Nat
-
-Ballot == Nat
-
-CONSTANT Value
-ASSUME ValueNotEmpty == Value # {}
+EXTENDS HQuorum, HLearner, HBallotValue, Lib
 
 -----------------------------------------------------------------------------
 (* Messages *)
@@ -100,5 +92,5 @@ PrevTran(m) == UNION {PrevTranBound[n][m] : n \in PrevTranDepthRange}
 
 =============================================================================
 \* Modification History
-\* Last modified Thu Jun 05 21:18:14 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 01:31:13 CEST 2025 by karbyshev
 \* Created Tue May 14 16:39:44 CEST 2024 by karbyshev

@@ -19,13 +19,11 @@ LEMMA UniqueMessageSent ==
 LEMMA Qd_monotone ==
     ASSUME NEW alpha \in Learner,
            NEW m \in Message,
-           NEW d \in Nat,
-           BVal' = BVal
+           NEW d \in Nat
     PROVE  qd(alpha, m, d) = qd(alpha, m, d)'
 
 LEMMA WellFormed_monotone ==
-    ASSUME UNCHANGED BVal
-    PROVE  \A m \in Message : WellFormed(m) <=> WellFormed(m)'
+    \A m \in Message : WellFormed(m) <=> WellFormed(m)'
 
 LEMMA KnownMsgMonotone ==
     TypeOK /\ NextTLA =>
@@ -42,7 +40,7 @@ LEMMA RecentMsgsSpec1Invariant ==
     RecentMsgsSpec1'
 
 LEMMA DecisionSpecInvariant ==
-    UNCHANGED BVal /\ MaxDepthSpec /\
+    MaxDepthSpec /\
     TypeOK /\ NextTLA /\
     KnownMsgsSpec2 /\
     DecisionSpec => DecisionSpec'
@@ -106,5 +104,5 @@ LEMMA KnownMsgsPrevTranSpecInvariant ==
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 20 23:35:11 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 01:40:08 CEST 2025 by karbyshev
 \* Created Tue May 20 23:06:45 CEST 2025 by karbyshev

@@ -88,10 +88,9 @@ LEMMA V_func ==
 PROOF BY Get1a_correct DEF V
 
 LEMMA V_def ==
-    ASSUME BVal \in [Ballot -> Value],
-           NEW m \in Message,
+    ASSUME NEW m \in Message,
            NEW b \in Ballot, B(m, b)
-    PROVE V(m, BVal[b])
+    PROVE  V(m, BVal[b])
 PROOF BY Get1a_TypeOK DEF V, B
 
 LEMMA SameBallot_B ==
@@ -109,7 +108,7 @@ LEMMA SameBallot_sym ==
            NEW y \in Message,
            SameBallot(x, y)
     PROVE  SameBallot(y, x)
-BY DEF SameBallot
+PROOF BY DEF SameBallot
 
 \* TODO remove if not used
 LEMMA SameValue_sym ==
@@ -117,17 +116,15 @@ LEMMA SameValue_sym ==
            NEW y \in Message,
            SameValue(x, y)
     PROVE  SameValue(y, x)
-BY DEF SameValue
+PROOF BY DEF SameValue
 
 LEMMA SameBallotValue ==
-    ASSUME BVal \in [Ballot -> Value],
-           NEW x \in Message,
+    ASSUME NEW x \in Message,
            NEW y \in Message,
            NEW bal \in Ballot, B(x, bal),
            SameBallot(x, y)
     PROVE  SameValue(x, y)
-PROOF
-<1> QED BY V_func, V_def DEF SameBallot, SameValue
+PROOF BY V_func, V_def, BValAssumption DEF SameBallot, SameValue
 
 LEMMA TranBallot ==
     ASSUME NEW m1 \in Message, NEW m2 \in Tran(m1),
@@ -365,8 +362,7 @@ PROOF BY LearnerGraphAssumptionClosure, EntanglementSym
 \* TODO this subsection depends on HPaxos_2_Specs
 
 LEMMA ChosenBalVal ==
-    ASSUME BVal \in [Ballot -> Value],
-           KnownMsgsSpec1,
+    ASSUME KnownMsgsSpec1,
            TypeOK,
            NEW alpha \in Learner,
            NEW bal \in Ballot,
@@ -1029,5 +1025,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 00:28:11 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 01:38:27 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

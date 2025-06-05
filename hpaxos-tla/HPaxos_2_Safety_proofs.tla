@@ -299,8 +299,7 @@ PROOF
 <1> QED OBVIOUS
 
 LEMMA YYY ==
-    ASSUME BVal \in [Ballot -> Value],
-           NEW alpha \in Learner, NEW beta \in Learner, NEW L0 \in Learner,
+    ASSUME NEW alpha \in Learner, NEW beta \in Learner, NEW L0 \in Learner,
            NEW bal \in Ballot,
            NEW val \in Value,
            <<alpha, beta>> \in Ent,
@@ -1025,8 +1024,7 @@ PROOF
 \*PROOF BY Zenon
 
 LEMMA ZZZ ==
-    ASSUME BVal \in [Ballot -> Value],
-           NEW alpha \in Learner, NEW beta \in Learner,
+    ASSUME NEW alpha \in Learner, NEW beta \in Learner,
            <<alpha, beta>> \in Ent,
            NEW bal \in Ballot,
            NEW val \in Value,
@@ -1705,8 +1703,7 @@ PROOF
 <1>6. QED BY <1>4, <1>5, V_def, V_func DEF TypeOK
 
 LEMMA ChosenSafeCaseLt ==
-    ASSUME BVal \in [Ballot -> Value],
-           NEW L1 \in Learner, NEW L2 \in Learner,
+    ASSUME NEW L1 \in Learner, NEW L2 \in Learner,
            NEW B1 \in Ballot, NEW B2 \in Ballot,
            NEW V1 \in Value, NEW V2 \in Value,
            MaxDepthSpec,
@@ -1749,8 +1746,7 @@ PROOF
 <1> QED BY ZZZ
 
 LEMMA ChosenSafe ==
-    ASSUME BVal \in [Ballot -> Value],
-           NEW L1 \in Learner, NEW L2 \in Learner,
+    ASSUME NEW L1 \in Learner, NEW L2 \in Learner,
            NEW B1 \in Ballot, NEW B2 \in Ballot,
            NEW V1 \in Value, NEW V2 \in Value,
            TypeOK,
@@ -1772,7 +1768,6 @@ PROOF
 -----------------------------------------------------------------------------
 \* TODO check if all used
 FullSafetyInvariant ==
-    /\ BVal \in [Ballot -> Value]
     /\ TypeOK
     /\ KnownMsgsSpec1
     /\ KnownMsgsSpec2
@@ -1786,7 +1781,6 @@ FullSafetyInvariant ==
     /\ Safety
 
 LEMMA SafetyStep ==
-    BVal \in [Ballot -> Value] /\
     TypeOK /\ NextTLA /\
     MaxDepthSpec /\
     KnownMsgsSpec1 /\ KnownMsgsSpec2 /\
@@ -1797,8 +1791,7 @@ LEMMA SafetyStep ==
     Safety => Safety'
 PROOF
 <1> SUFFICES
-        ASSUME BVal \in [Ballot -> Value],
-               TypeOK, NextTLA, MaxDepthSpec,
+        ASSUME TypeOK, NextTLA, MaxDepthSpec,
                KnownMsgsSpec1, KnownMsgsSpec2,
                CaughtSpec,
                KnownMsgsPrevTranSpec,
@@ -1823,7 +1816,7 @@ PROOF
   <2> PICK lrn \in Learner, bal \in Ballot, val \in Value :
         /\ ChosenIn(lrn, bal, val)
         /\ decision' = [decision EXCEPT ![<<lrn, bal>>] = decision[lrn, bal] \cup {val}]
-        /\ UNCHANGED << msgs, known_msgs, recent_msgs, BVal >>
+        /\ UNCHANGED << msgs, known_msgs, recent_msgs >>
       BY <1>7 DEF LearnerDecide
   <2> CASE V1 # V2
     <3>1. CASE val # V1 /\ val # V2
@@ -1863,10 +1856,6 @@ PROOF
 <1>9. QED BY <1>1, <1>3, <1>6, <1>7, <1>8
           DEF NextTLA, SafeAcceptorAction, LearnerAction
 
-
-LEMMA BValInit == Init => BVal \in [Ballot -> Value]
-PROOF BY DEF Init
-
 LEMMA TypeOKInit == Init => TypeOK
 PROOF BY DEF Init, TypeOK
 
@@ -1901,8 +1890,7 @@ LEMMA SafetyInit == Init => Safety
 PROOF BY DEF Init, Safety
 
 LEMMA FullSafetyInvariantInit == Init => FullSafetyInvariant
-PROOF BY BValInit,
-         TypeOKInit,
+PROOF BY TypeOKInit,
          KnownMsgsSpec1Init,
          KnownMsgsSpec2Init,
          SafeAcceptorPrevSpec1Init,
@@ -1914,10 +1902,6 @@ PROOF BY BValInit,
          DecisionSpecInit,
          SafetyInit
       DEF FullSafetyInvariant
-
-LEMMA BValStutter ==
-    BVal \in [Ballot -> Value] /\ vars = vars' => (BVal \in [Ballot -> Value])'
-PROOF BY DEF vars 
 
 LEMMA TypeOKStutter ==
     TypeOK /\ vars = vars' => TypeOK'
@@ -1969,17 +1953,6 @@ LEMMA SafetyStutter ==
     Safety /\ vars = vars' => Safety'
 PROOF BY DEF Safety, vars
 
-LEMMA BValNext == NextTLA => UNCHANGED BVal
-PROOF BY DEF NextTLA,
-             ProposerAction, SendProposal,
-             SafeAcceptorAction, Process,
-             LearnerAction, LearnerRecv, LearnerDecide,
-             FakeAcceptorAction, FakeSendControlMessage
-
-LEMMA BValInvariant ==
-    BVal \in [Ballot -> Value] /\ NextTLA => (BVal \in [Ballot -> Value])'
-PROOF BY BValNext 
-
 LEMMA FullSafetyInvariantNext ==
     MaxDepthSpec /\
     FullSafetyInvariant /\ [NextTLA]_vars => FullSafetyInvariant'
@@ -1991,8 +1964,6 @@ PROOF
     OBVIOUS
 <1>1. CASE NextTLA
       BY <1>1,
-         BValNext,
-         BValInvariant,
          TypeOKInvariant,
          KnownMsgsSpec1Invariant,
          KnownMsgsSpec2Invariant,
@@ -2007,7 +1978,6 @@ PROOF
       DEF FullSafetyInvariant
 <1>2. CASE vars = vars'
       BY <1>2,
-         BValStutter,
          TypeOKStutter,
          KnownMsgsSpec1Stutter,
          KnownMsgsSpec2Stutter,
@@ -2030,5 +2000,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 00:30:51 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 01:45:55 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev

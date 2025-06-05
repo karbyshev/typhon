@@ -69,8 +69,7 @@ LEMMA V_func ==
     PROVE  v1 = v2
 
 LEMMA V_def ==
-    ASSUME BVal \in [Ballot -> Value],
-           NEW m \in Message,
+    ASSUME NEW m \in Message,
            NEW b \in Ballot, B(m, b)
     PROVE V(m, BVal[b])
 
@@ -97,8 +96,7 @@ LEMMA SameValue_sym ==
     PROVE  SameValue(y, x)
 
 LEMMA SameBallotValue ==
-    ASSUME BVal \in [Ballot -> Value],
-           NEW x \in Message,
+    ASSUME NEW x \in Message,
            NEW y \in Message,
            NEW bal \in Ballot, B(x, bal),
            SameBallot(x, y)
@@ -200,8 +198,7 @@ LEMMA ConAllCaught ==
 \* TODO this subsection depends on HPaxos_2_Specs
 
 LEMMA ChosenBalVal ==
-    ASSUME BVal \in [Ballot -> Value],
-           KnownMsgsSpec1,
+    ASSUME KnownMsgsSpec1,
            TypeOK,
            NEW alpha \in Learner,
            NEW bal \in Ballot,
@@ -375,5 +372,5 @@ LEMMA QdProperty4 ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 00:29:26 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 01:39:30 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev

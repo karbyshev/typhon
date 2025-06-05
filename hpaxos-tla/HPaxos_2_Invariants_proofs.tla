@@ -60,8 +60,6 @@ PROOF
       BY DEF Process, TypeOK
   <2> decision' \in [Learner \X Ballot -> SUBSET Value]
       BY DEF Process, TypeOK
-  <2> BVal' \in [Ballot -> Value]
-      BY DEF Process, TypeOK
   <2> QED BY DEF TypeOK
 <1>7. CASE \E l \in Learner : LearnerAction(l)
       BY <1>7 DEF LearnerAction, LearnerRecv, LearnerDecide, Recv, TypeOK
@@ -128,14 +126,12 @@ PROOF
 LEMMA Qd_monotone ==
     ASSUME NEW alpha \in Learner,
            NEW m \in Message,
-           NEW d \in Nat,
-           BVal' = BVal
+           NEW d \in Nat
     PROVE  qd(alpha, m, d) = qd(alpha, m, d)'
 PROOF BY Isa DEF V, qd, Fresh, SameValue, V, TwoA, QRec
 
 LEMMA WellFormed_monotone ==
-    ASSUME UNCHANGED BVal
-    PROVE  \A m \in Message : WellFormed(m) <=> WellFormed(m)'
+    \A m \in Message : WellFormed(m) <=> WellFormed(m)'
 PROOF BY Qd_monotone DEF WellFormed
 
 LEMMA KnownMsgMonotone ==
@@ -250,7 +246,7 @@ PROOF
            DEF NextTLA, SafeAcceptorAction, LearnerAction
 
 LEMMA DecisionSpecInvariant ==
-    UNCHANGED BVal /\ MaxDepthSpec /\
+    MaxDepthSpec /\
     TypeOK /\ NextTLA /\
     KnownMsgsSpec2 /\
     DecisionSpec => DecisionSpec'
@@ -258,7 +254,6 @@ PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA, DecisionSpec,
                     MaxDepthSpec,
                     NEW L \in Learner, NEW BB \in Ballot, NEW VV \in Value,
-                    BVal' = BVal,
                     VV \in decision[L, BB]'
              PROVE  ChosenIn(L, BB, VV)'
     BY DEF DecisionSpec
@@ -287,7 +282,7 @@ PROOF
   <2> PICK lrn \in Learner, bal \in Ballot, val \in Value :
         /\ ChosenIn(lrn, bal, val)
         /\ decision' = [decision EXCEPT ![<<lrn, bal>>] = decision[lrn, bal] \cup {val}]
-        /\ UNCHANGED << msgs, known_msgs, recent_msgs, BVal >>
+        /\ UNCHANGED << msgs, known_msgs, recent_msgs>>
       BY <1>8 DEF LearnerDecide
   <2> QED BY Qd_monotone, Known2aMonotone DEF TypeOK
 <1>9. CASE \E a \in FakeAcceptor : FakeAcceptorAction(a)
@@ -559,8 +554,6 @@ PROOF
       BY <1>3
   <2> Recv(acc, m)
       BY DEF Process
-  <2> UNCHANGED BVal
-      BY DEF Process
   <2> WellFormed(m)
       BY DEF Process
   <2> m \in Message
@@ -590,8 +583,6 @@ PROOF
   <2> PICK lrn \in Learner, m \in msgs : LearnerRecv(lrn, m)
       BY <1>6
   <2> Recv(lrn, m)
-      BY DEF LearnerRecv
-  <2> UNCHANGED BVal
       BY DEF LearnerRecv
   <2> WellFormed(m)
       BY DEF LearnerRecv
@@ -1014,5 +1005,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 00:37:12 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 01:42:16 CEST 2025 by karbyshev
 \* Created Tue May 20 23:09:22 CEST 2025 by karbyshev
