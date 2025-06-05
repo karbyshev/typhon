@@ -1147,7 +1147,7 @@ PROOF
 <1> B(p1, bal1)
     BY B_1a
 <1> Tran(p1) = {p1}
-    BY Tran_1a
+    BY Tran_eq
 <1> PrevTran(p1) = {p1}
     BY PrevTran_1a
 <1> DEFINE p2 == [ type |-> "1a", bal |-> bal2, prev |-> NoMessage, refs |-> {} ]
@@ -1156,7 +1156,7 @@ PROOF
 <1> B(p2, bal2)
     BY B_1a
 <1> Tran(p2) = {p2}
-    BY Tran_1a
+    BY Tran_eq
 <1> PrevTran(p2) = {p2}
     BY PrevTran_1a
 
@@ -1201,7 +1201,7 @@ PROOF
     <3> QED BY DEF Get1a, Ballot
   <2> QED BY DEF B
 <1> \A m1 \in oneb_1 : Tran(m1) = {m1, p1}
-    BY Tran_eq, Tran_1a
+    BY Tran_eq
 <1> \A m1 \in oneb_1 : m1.acc \in FakeAcceptor
     OBVIOUS
 
@@ -1254,7 +1254,7 @@ PROOF
     <3> QED BY DEF Get1a, Ballot
   <2> QED BY DEF B
 <1> \A m2 \in oneb_2 : Tran(m2) = {m2, p2}
-    BY Tran_eq, Tran_1a
+    BY Tran_eq
 <1> \A m2 \in oneb_2 : m2.acc \in FakeAcceptor
     OBVIOUS
 
@@ -2051,5 +2051,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Tue May 27 14:37:59 CEST 2025 by karbyshev
+\* Last modified Thu Jun 05 21:01:58 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev

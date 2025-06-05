@@ -69,9 +69,16 @@ LEMMA B_def ==
 PROOF BY Get1a_correct, Get1a_TypeOK DEF B
 
 LEMMA B_1a ==
-    ASSUME NEW m \in Message, OneA(m)
+    ASSUME NEW m \in Message,
+           OneA(m),
+           m.refs = {}
     PROVE  B(m, m.bal)
-PROOF BY MessageSpec, Tran_1a DEF B, Get1a, OneA, Ballot
+PROOF
+<1> Tran(m) = {m}
+    BY Tran_eq
+<1> Get1a(m) = {m}
+    BY MessageSpec DEF Get1a, Ballot, OneA
+<1> QED BY DEF B
 
 LEMMA V_func ==
     ASSUME NEW m \in Message,
@@ -570,7 +577,7 @@ PROOF
 <1> B(p, bal)
     BY B_1a
 <1> Tran(p) = {p}
-    BY Tran_1a
+    BY Tran_eq
 <1> PrevTran(p) = {p}
     BY PrevTran_1a
 <1> HIDE DEF p
@@ -1022,5 +1029,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Thu May 29 00:16:54 CEST 2025 by karbyshev
+\* Last modified Thu Jun 05 12:21:41 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

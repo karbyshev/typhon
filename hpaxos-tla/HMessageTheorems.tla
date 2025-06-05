@@ -72,9 +72,6 @@ LEMMA TwoA_Message_bis ==
            /\ msg \in Message
            /\ TwoA(msg)
 
-\*LEMMA Message_1a_ref ==
-\*    \A m \in Message : OneA(m) <=> m.refs = {}
-\*
 \*LEMMA Message_ref ==
 \*    ASSUME NEW m \in Message
 \*    PROVE  m.refs \subseteq Message
@@ -96,12 +93,11 @@ LEMMA MessageSpec ==
     PROVE  \/ /\ m.type = "1a"
               /\ m.bal \in Ballot
               /\ m.prev = NoMessage
-              /\ m.refs = {}
+              /\ m.refs \in SUBSET Message
            \/ /\ \/ m.type = "1b"
                  \/ m.type = "2a"
               /\ m.acc \in Acceptor
               /\ m.prev \in Message \cup {NoMessage}
-\*              /\ m.refs # {}
               /\ m.refs \in SUBSET Message
               /\ m.lrns \in SUBSET Learner
 
@@ -132,10 +128,6 @@ LEMMA Tran_refl ==
 LEMMA Tran_eq ==
     ASSUME NEW m \in Message
     PROVE  Tran(m) = {m} \cup UNION { Tran(r) : r \in m.refs }
-
-LEMMA Tran_1a ==
-    ASSUME NEW m \in Message, OneA(m)
-    PROVE  Tran(m) = {m}
 
 LEMMA Tran_Message ==
     ASSUME NEW m1 \in Message
@@ -186,5 +178,5 @@ LEMMA Message_prev_PrevTran ==
 
 =============================================================================
 \* Modification History
-\* Last modified Wed May 21 22:55:15 CEST 2025 by karbyshev
+\* Last modified Thu Jun 05 21:03:59 CEST 2025 by karbyshev
 \* Created Mon May 19 20:59:25 CEST 2025 by karbyshev

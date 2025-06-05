@@ -57,7 +57,9 @@ LEMMA B_def ==
     PROVE  \E b \in Ballot : B(m, b)
 
 LEMMA B_1a ==
-    ASSUME NEW m \in Message, OneA(m)
+    ASSUME NEW m \in Message,
+               OneA(m),
+               m.refs = {}
     PROVE  B(m, m.bal)
 
 LEMMA V_func ==
@@ -438,5 +440,5 @@ LEMMA QdProperty4 ==
 
 =============================================================================
 \* Modification History
-\* Last modified Wed May 28 22:55:35 CEST 2025 by karbyshev
+\* Last modified Thu Jun 05 12:13:58 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev

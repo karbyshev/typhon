@@ -28,13 +28,13 @@ MessageRec0 ==
     [ type : {"1a"}, bal : Ballot, prev : {NoMessage}, refs : {{}} ]
 
 MessageRec1(M, n) ==
-    M \cup
-    [ type : {"1b", "2a"},
-      acc  : Acceptor,
-      prev : M \cup {NoMessage},
-      refs : FINSUBSET(M),
-      lrns : SUBSET Learner
-    ]
+    M
+    \cup [ type : {"1a"}, bal : Ballot, prev : {NoMessage}, refs : FINSUBSET(M) ]
+    \cup [ type : {"1b", "2a"},
+           acc  : Acceptor,
+           prev : M \cup {NoMessage},
+           refs : FINSUBSET(M),
+           lrns : SUBSET Learner ]
 
 MessageRec[n \in Nat] ==
     IF n = 0
@@ -53,6 +53,7 @@ Message == UNION { MessageRec[n] : n \in MessageDepthRange }
 -----------------------------------------------------------------------------
 (* Message types *)
 
+\* TODO clean
 Proposal(m) == m.type = "1a"
 
 OneA(m) == m.type = "1a"
@@ -99,5 +100,5 @@ PrevTran(m) == UNION {PrevTranBound[n][m] : n \in PrevTranDepthRange}
 
 =============================================================================
 \* Modification History
-\* Last modified Wed May 21 23:33:47 CEST 2025 by karbyshev
+\* Last modified Thu Jun 05 21:18:14 CEST 2025 by karbyshev
 \* Created Tue May 14 16:39:44 CEST 2024 by karbyshev

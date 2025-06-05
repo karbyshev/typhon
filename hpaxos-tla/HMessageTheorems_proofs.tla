@@ -267,25 +267,6 @@ PROOF
   <2> QED BY DEF FINSUBSET
 <1> QED BY DEF Message, MessageDepthRange
 
-\*LEMMA Message_1a_ref ==
-\*    \A m \in Message : OneA(m) <=> m.refs = {}
-\*PROOF
-\*<1> DEFINE P(j) == \A mm \in MessageRec[j] : mm.type = "1a" <=> mm.refs = {}
-\*<1> SUFFICES ASSUME NEW j \in Nat PROVE P(j)
-\*    BY DEF Message, MessageDepthRange, OneA
-\*<1>0. P(0)
-\*      BY MessageRec_eq0 DEF MessageRec0
-\*<1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
-\*  <2> m + 1 \in Nat
-\*      OBVIOUS
-\*  <2> SUFFICES ASSUME NEW mm \in MessageRec[m + 1]
-\*               PROVE  mm.type = "1a" <=> mm.refs = {}
-\*      BY DEF Message
-\*  <2>3. QED BY <1>1, MessageRec_eq1, MessageRec_nontriv, FinSubset_sub_nontriv,
-\*               RefCardinalitySpec DEF MessageRec1
-\*<1>2. HIDE DEF P
-\*<1>3. QED BY <1>0, <1>1, NatInduction, Isa
-
 LEMMA Message_ref ==
     ASSUME NEW m \in Message
     PROVE  m.refs \subseteq Message
@@ -370,12 +351,11 @@ LEMMA MessageSpec ==
     PROVE  \/ /\ m.type = "1a"
               /\ m.bal \in Ballot
               /\ m.prev = NoMessage
-              /\ m.refs = {}
+              /\ m.refs \in SUBSET Message
            \/ /\ \/ m.type = "1b"
                  \/ m.type = "2a"
               /\ m.acc \in Acceptor
               /\ m.prev \in Message \cup {NoMessage}
-\*             /\ m.refs # {}
               /\ m.refs \in SUBSET Message
               /\ m.lrns \in SUBSET Learner
 PROOF
@@ -384,12 +364,11 @@ PROOF
             \/ /\ x.type = "1a"
                /\ x.bal \in Ballot
                /\ x.prev = NoMessage
-               /\ x.refs = {}
+               /\ x.refs \in SUBSET Message
             \/ /\ \/ x.type = "1b"
                   \/ x.type = "2a"
                /\ x.acc \in Acceptor
                /\ x.prev \in Message \cup {NoMessage}
-\*               /\ x.refs # {}
                /\ x.refs \in SUBSET Message
                /\ x.lrns \in SUBSET Learner
 <1> SUFFICES \A j \in Nat : P(j)
@@ -403,25 +382,26 @@ PROOF
                PROVE  \/ /\ x.type = "1a"
                          /\ x.bal \in Ballot
                          /\ x.prev = NoMessage
-                         /\ x.refs = {}
+                         /\ x.refs \in SUBSET Message
                       \/ /\ \/ x.type = "1b"
                             \/ x.type = "2a"
                          /\ x.acc \in Acceptor
                          /\ x.prev \in Message \cup {NoMessage}
-\*                         /\ x.refs # {}
                          /\ x.refs \in SUBSET Message
                          /\ x.lrns \in SUBSET Learner
       OBVIOUS
   <2>1. CASE x \in MessageRec[k]
         BY <1>1, <2>1
   <2>3. CASE x \notin MessageRec[k]
-     <3>1. x \in [ type : {"1b", "2a"},
-                   acc : Acceptor,
-                   prev : MessageRec[k] \cup {NoMessage},
-                   refs : FINSUBSET(MessageRec[k]),
-                   lrns : SUBSET Learner ]
-           BY <2>3, MessageRec_eq1 DEF MessageRec1
-    <3> QED BY <3>1, MessageRec_spec, MessageRec_nontriv, FinSubset_sub
+    <3> x \in [ type : {"1a"}, bal : Ballot, prev : {NoMessage}, refs : FINSUBSET(MessageRec[k]) ]
+              \cup
+              [ type : {"1b", "2a"},
+                acc  : Acceptor,
+                prev : MessageRec[k] \cup {NoMessage},
+                refs : FINSUBSET(MessageRec[k]),
+                lrns : SUBSET Learner ]
+        BY <2>3, MessageRec_eq1 DEF MessageRec1
+    <3> QED BY MessageRec_spec, MessageRec_nontriv, FinSubset_sub
   <2> QED BY <2>1, <2>3
 <1>2. HIDE DEF P
 <1>3. QED BY <1>0, <1>1, NatInduction, Blast
@@ -512,11 +492,6 @@ PROOF
     <3> QED BY Tran_spec
   <2> QED BY Tran_refl
 <1> QED BY <1>1, <1>2
-
-LEMMA Tran_1a ==
-    ASSUME NEW m \in Message, OneA(m)
-    PROVE  Tran(m) = {m}
-PROOF BY Tran_eq, MessageSpec DEF OneA
 
 LEMMA TranBound_Message ==
     ASSUME NEW m1 \in Message,
@@ -986,5 +961,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1
 
 =============================================================================
 \* Modification History
-\* Last modified Thu May 29 00:25:08 CEST 2025 by karbyshev
+\* Last modified Thu Jun 05 21:03:38 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev
