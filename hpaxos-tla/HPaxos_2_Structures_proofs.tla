@@ -905,7 +905,7 @@ PROOF
 <1> QED BY DEF qd
 
 \* TODO fix name
-LEMMA Qd_monotone ==
+LEMMA Qd_trans_monotone ==
     ASSUME NEW alpha \in Learner,
            NEW x \in Message,
            NEW d \in Nat,
@@ -1002,7 +1002,7 @@ PROOF
     <3> { z.acc : z \in qd(alpha, m, n) } \in ByzQuorum
         BY Qd_spec, MessageSpec, QdProperty1 DEF ByzQuorum, TwoA, Proposal
     <3> qd(alpha, m2, n) \in SUBSET qd(alpha, m, n)
-        BY Qd_monotone
+        BY Qd_trans_monotone
     <3> { z.acc : z \in qd(alpha, m2, n) } \in SUBSET { mm.acc : mm \in qd(alpha, m, n) }
         OBVIOUS
     <3> QED BY TrustLiveClosure
