@@ -131,70 +131,6 @@ LEMMA LearnersWellFormed ==
     PROVE  m.lrns # {} <=> TwoA(m)
 
 -----------------------------------------------------------------------------
-\* Check equivalence of two well-formedness conditions
-
-LEMMA WellFormedCondition1 ==
-    ASSUME NEW m \in Message, OneB(m),
-           \A y \in Tran(m) :
-            m # y /\ SameBallot(m, y) => OneA(y)
-    PROVE  \A y \in Tran(m) :
-            m # y /\ SameBallot(m, y) => y \in Get1a(m)
-
-\* Equivalence of two well-formedness conditions
-LEMMA WellFormedConditionEquiv1 ==
-    ASSUME NEW m \in Message, OneB(m)
-    PROVE  (\A y \in Tran(m) :
-            m # y /\ SameBallot(m, y) => y \in Get1a(m))
-           <=>
-           (\A y \in Tran(m) :
-            m # y /\ SameBallot(m, y) => OneA(y))
-
-LEMMA WellFormedCondition2 ==
-    ASSUME NEW m \in Message, OneB(m),
-           \A y \in Tran(m) :
-            m # y /\ SameBallot(m, y) => OneA(y)
-    PROVE  \A y \in Tran(m) :
-            m # y /\ ~OneA(y) =>
-            \A bm, by \in Ballot :
-                B(m, bm) /\ B(y, by) => by # bm
-
-LEMMA WellFormedConditionEquiv2 ==
-    ASSUME NEW m \in Message, OneB(m)
-    PROVE (\A y \in Tran(m) :
-            m # y /\
-            (\E bm \in Ballot : B(m, bm)) /\
-            (\E by \in Ballot : B(y, by)) /\
-            SameBallot(m, y) => OneA(y))
-          <=>
-          (\A y \in Tran(m) :
-            m # y /\ ~OneA(y) =>
-            \A bm, by \in Ballot :
-                B(m, bm) /\ B(y, by) => by # bm)
-
-LEMMA WellFormedCondition3 ==
-    ASSUME NEW m \in Message, OneB(m),
-           \A y \in Tran(m) :
-            m # y /\ ~OneA(y) =>
-            \A bm, by \in Ballot :
-                B(m, bm) /\ B(y, by) => by # bm
-    PROVE  \A y \in Tran(m) :
-            m # y /\ ~OneA(y) =>
-            \A bm, by \in Ballot :
-                B(m, bm) /\ B(y, by) => by < bm
-
-LEMMA WellFormedConditionEquiv3 ==
-    ASSUME NEW m \in Message, OneB(m)
-    PROVE (\A y \in Tran(m) :
-            m # y /\ ~OneA(y) =>
-            \A bm, by \in Ballot :
-                B(m, bm) /\ B(y, by) => by # bm)
-          <=>
-          (\A y \in Tran(m) :
-            m # y /\ ~OneA(y) =>
-            \A bm, by \in Ballot :
-                B(m, bm) /\ B(y, by) => by < bm)
-
------------------------------------------------------------------------------
 \* TODO rename
 LEMMA WellFormedCondition111 ==
     ASSUME NEW m \in Message,
@@ -203,7 +139,6 @@ LEMMA WellFormedCondition111 ==
     PROVE  \A y \in Tran(m) : m # y /\ ~OneA(y) =>
             \A bm, by \in Ballot :
                 B(m, bm) /\ B(y, by) => by < bm
-
 
 -----------------------------------------------------------------------------
 \* Caught
@@ -440,5 +375,5 @@ LEMMA QdProperty4 ==
 
 =============================================================================
 \* Modification History
-\* Last modified Thu Jun 05 12:13:58 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 00:29:26 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev
