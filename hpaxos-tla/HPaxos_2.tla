@@ -97,11 +97,7 @@ CONSTANT WellFormed2a(_)
                 /\ beta \in Con(alpha, x)
                 /\ ~Buried(beta, m, x) }
 
-    \* TODO clean
     \* Fresh 1b messages
-    Fresh(alpha, x) == \* alpha : Learner, x : 1b
-        \A m \in Con2as(alpha, x) : \A v \in Value : V(x, v) <=> V(m, v)
-
     D(alpha, x, m) ==
         \* /\ TwoA(m) \* implied by the following since the intersection is non-empty
         /\ m.lrns \cap Con(alpha, x) # {}
@@ -114,8 +110,11 @@ CONSTANT WellFormed2a(_)
                 \A y \in P, by \in Ballot :
                     B(y, by) => by <= bx }
 
-    Fresh000(alpha, x) == \* alpha : Learner, x : 1b
+    Fresh(alpha, x) == \* alpha : Learner, x : 1b
         \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
+
+\*    Fresh_old(alpha, x) == \* alpha : Learner, x : 1b
+\*        \A m \in Con2as(alpha, x) : \A v \in Value : V(x, v) <=> V(m, v)
 
     QRec0 == [ LM \in Learner \X Message |-> [x \in Message |-> {}] ]
 
@@ -128,7 +127,7 @@ CONSTANT WellFormed2a(_)
                         { m \in Tran(y) :
                             /\ OneB(m)
                             /\ SameBallot(m, y)
-                            /\ Fresh000(alpha, m) } ]
+                            /\ Fresh(alpha, m) } ]
                 ELSE
                     [ y \in Tran(x) |->
                         { m \in Tran(y) :
@@ -385,10 +384,6 @@ Con2as(alpha, x) ==
             /\ ~Buried(beta, m, x) }
 
 
-
-Fresh(alpha, x) ==
-    \A m \in Con2as(alpha, x) : \A v \in Value : V(x, v) <=> V(m, v)
-
 D(alpha, x, m) ==
 
     /\ m.lrns \cap Con(alpha, x) # {}
@@ -401,8 +396,11 @@ Latest(P) ==
             \A y \in P, by \in Ballot :
                 B(y, by) => by <= bx }
 
-Fresh000(alpha, x) ==
+Fresh(alpha, x) ==
     \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
+
+
+
 
 QRec0 == [ LM \in Learner \X Message |-> [x \in Message |-> {}] ]
 
@@ -415,7 +413,7 @@ QRec1(Q, n) ==
                     { m \in Tran(y) :
                         /\ OneB(m)
                         /\ SameBallot(m, y)
-                        /\ Fresh000(alpha, m) } ]
+                        /\ Fresh(alpha, m) } ]
             ELSE
                 [ y \in Tran(x) |->
                     { m \in Tran(y) :

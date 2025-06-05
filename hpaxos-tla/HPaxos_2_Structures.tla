@@ -410,7 +410,7 @@ LEMMA Qd_eq ==
                         { m \in Tran(x) :
                             /\ SameBallot(m, x)
                             /\ OneB(m)
-                            /\ Fresh000(alpha, m) }
+                            /\ Fresh(alpha, m) }
                     ELSE
                         { m \in Tran(x) :
                             /\ SameBallot(m, x)

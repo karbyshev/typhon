@@ -490,7 +490,7 @@ PROOF
     <3> \A x \in 1..k :
             /\ OneB(seq[x].r)
             /\ B(seq[x].r, seq[x].B_m)
-            /\ Fresh000(seq[x].gamma, seq[x].r)
+            /\ Fresh(seq[x].gamma, seq[x].r)
         BY Qd_eq DEF HeterogeneousSpecCond, SameBallot
     <3> \A x \in 1..k :
             /\ seq[x].m \in Tran(M)
@@ -632,9 +632,9 @@ PROOF
     <3> PICK B_m0 \in Ballot : B(m0, B_m0)
         BY DEF WellFormed
 
-    \* By construction of m0 and definition of Fresh000, m0 and r have the same value
+    \* By construction of m0 and definition of Fresh, m0 and r have the same value
     <3> SameValue(m0, seq[k].r)
-        BY DEF Fresh000
+        BY DEF Fresh
     \* ..which is V_M
     <3> V(m0, V_M)
         BY DEF SameValue
@@ -1947,14 +1947,14 @@ PROOF BY DEF TypeOK, vars
 LEMMA KnownMsgsSpec1Stutter ==
     KnownMsgsSpec1 /\ vars = vars' => KnownMsgsSpec1'
 PROOF BY Isa DEF KnownMsgsSpec1, vars, WellFormed, WellFormed1b,
-                 qd, Fresh000, D, Con, ConByQuorum, Con2as, Buried,
+                 qd, Fresh, D, Con, ConByQuorum, Con2as, Buried,
                  V, B, Get1a, SameBallot, SameValue, ChainRef, KnownRefs,
                  Caught, CaughtMsg
 
 LEMMA KnownMsgsSpec2Stutter ==
     KnownMsgsSpec2 /\ vars = vars' => KnownMsgsSpec2'
 PROOF BY Isa DEF KnownMsgsSpec2, vars, WellFormed, WellFormed1b,
-                 qd, Fresh000, D, Con, ConByQuorum, Con2as, Buried,
+                 qd, Fresh, D, Con, ConByQuorum, Con2as, Buried,
                  V, B, Get1a, SameBallot, SameValue, ChainRef, KnownRefs,
                  Caught, CaughtMsg
 
@@ -1984,7 +1984,7 @@ PROOF BY DEF KnownMsgsPrevTranSpec, vars, SentBy
 
 LEMMA DecisionSpecStutter ==
     DecisionSpec /\ vars = vars' => DecisionSpec'
-PROOF BY Isa DEF DecisionSpec, vars, ChosenIn, Known2a, B, V, Get1a, qd, Fresh000, D, SameBallot, SameValue
+PROOF BY Isa DEF DecisionSpec, vars, ChosenIn, Known2a, B, V, Get1a, qd, Fresh, D, SameBallot, SameValue, maxDepth, ConSeq, Con, ConByQuorum
 
 LEMMA SafetyStutter ==
     Safety /\ vars = vars' => Safety'

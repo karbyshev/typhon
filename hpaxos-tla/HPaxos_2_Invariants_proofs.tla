@@ -131,7 +131,7 @@ LEMMA Qd_monotone ==
            NEW d \in Nat,
            BVal' = BVal
     PROVE  qd(alpha, m, d) = qd(alpha, m, d)'
-PROOF BY Isa DEF V, qd, Fresh000, SameValue, V
+PROOF BY Isa DEF V, qd, Fresh, SameValue, V, TwoA, QRec
 
 LEMMA WellFormed_monotone ==
     ASSUME UNCHANGED BVal

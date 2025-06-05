@@ -774,7 +774,7 @@ LEMMA QRec_eq_1 ==
             { m \in Tran(y) :
                 /\ SameBallot(m, y)
                 /\ OneB(m)
-                /\ Fresh000(alpha, m) }
+                /\ Fresh(alpha, m) }
 PROOF BY QRec_def, Tran_refl DEF QRec1
 
 LEMMA QRec_eq_2 ==
@@ -851,7 +851,7 @@ LEMMA Qd_eq ==
                         { m \in Tran(x) :
                             /\ SameBallot(m, x)
                             /\ OneB(m)
-                            /\ Fresh000(alpha, m) }
+                            /\ Fresh(alpha, m) }
                     ELSE
                         { m \in Tran(x) :
                             /\ SameBallot(m, x)
@@ -928,7 +928,7 @@ PROOF
   <2> /\ z \in Tran(y)
       /\ SameBallot(z, y)
       /\ OneB(z)
-      /\ Fresh000(alpha, z)
+      /\ Fresh(alpha, z)
       BY <1>1, Qd_eq
   <2> z \in Tran(x)
       BY Tran_trans
