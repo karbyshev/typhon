@@ -122,17 +122,9 @@ PROOF
 <1>9. QED BY <1>1, <1>3, <1>6, <1>7, <1>8
           DEF NextTLA, SafeAcceptorAction, LearnerAction
 
-\* TODO fix the proof
-LEMMA Qd_monotone ==
-    ASSUME NEW alpha \in Learner,
-           NEW m \in Message,
-           NEW d \in Nat
-    PROVE  qd(alpha, m, d) = qd(alpha, m, d)'
-PROOF BY Isa DEF V, qd, Fresh, SameValue, V, TwoA, QRec
-
 LEMMA WellFormed_monotone ==
     \A m \in Message : WellFormed(m) <=> WellFormed(m)'
-PROOF BY Qd_monotone DEF WellFormed
+PROOF BY DEF WellFormed
 
 LEMMA KnownMsgMonotone ==
     TypeOK /\ NextTLA =>
@@ -268,15 +260,15 @@ PROOF
       BY <1>1 DEF ProposerAction
   <2> UNCHANGED decision
       BY DEF SendProposal
-  <2> QED BY Qd_monotone, Known2aMonotone
+  <2> QED BY Known2aMonotone
 <1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
   <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
       BY <1>3
   <2> UNCHANGED decision
       BY DEF Process
-  <2> QED BY Qd_monotone, Known2aMonotone
+  <2> QED BY Known2aMonotone
 <1>7. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
-      BY <1>7, Qd_monotone, Known2aMonotone DEF LearnerRecv
+      BY <1>7, Known2aMonotone DEF LearnerRecv
 <1>8. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
             LearnerDecide(lrn, bal, val)
   <2> PICK lrn \in Learner, bal \in Ballot, val \in Value :
@@ -284,9 +276,9 @@ PROOF
         /\ decision' = [decision EXCEPT ![<<lrn, bal>>] = decision[lrn, bal] \cup {val}]
         /\ UNCHANGED << msgs, known_msgs, recent_msgs>>
       BY <1>8 DEF LearnerDecide
-  <2> QED BY Qd_monotone, Known2aMonotone DEF TypeOK
+  <2> QED BY Known2aMonotone DEF TypeOK
 <1>9. CASE \E a \in FakeAcceptor : FakeAcceptorAction(a)
-      BY <1>9, Qd_monotone, Known2aMonotone
+      BY <1>9, Known2aMonotone
       DEF FakeAcceptorAction, FakeSendControlMessage
 <1>10. QED BY <1>1, <1>3, <1>7, <1>8, <1>9
            DEF NextTLA, SafeAcceptorAction, LearnerAction
@@ -1005,5 +997,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 01:42:16 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 22:57:32 CEST 2025 by karbyshev
 \* Created Tue May 20 23:09:22 CEST 2025 by karbyshev

@@ -16,12 +16,6 @@ LEMMA UniqueMessageSent ==
     TypeOK /\ NextTLA =>
     \A m1, m2 \in msgs' \ msgs : m1 = m2
 
-LEMMA Qd_monotone ==
-    ASSUME NEW alpha \in Learner,
-           NEW m \in Message,
-           NEW d \in Nat
-    PROVE  qd(alpha, m, d) = qd(alpha, m, d)'
-
 LEMMA WellFormed_monotone ==
     \A m \in Message : WellFormed(m) <=> WellFormed(m)'
 
@@ -104,5 +98,5 @@ LEMMA KnownMsgsPrevTranSpecInvariant ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 01:40:08 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 22:57:27 CEST 2025 by karbyshev
 \* Created Tue May 20 23:06:45 CEST 2025 by karbyshev
