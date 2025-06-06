@@ -4,18 +4,6 @@ EXTENDS HMessage
 LOCAL INSTANCE FiniteSets
 
 -----------------------------------------------------------------------------
-
-\* TODO clean, not used
-LEMMA RefCardinalitySpec ==
-    /\ RefCardinality \in SUBSET Nat
-    /\ RefCardinality # {}
-
-LEMMA FinSubset_sub ==
-    ASSUME NEW S,
-           NEW F \in FINSUBSET(S)
-    PROVE  F \subseteq S
-
------------------------------------------------------------------------------
 (* Messages *)
 
 LEMMA OneA_Message ==
@@ -165,5 +153,5 @@ LEMMA Message_prev_PrevTran ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 15:18:38 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 16:05:09 CEST 2025 by karbyshev
 \* Created Mon May 19 20:59:25 CEST 2025 by karbyshev

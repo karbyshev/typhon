@@ -169,7 +169,6 @@ CONSTANT WellFormed2a(_)
         /\ m \in Message
         /\ \E b \in Ballot : B(m, b) \* TODO prove it
         /\ ChainRef(m)
-\*        /\ m.lrns = { l \in Learner : depth(l, m) > 0 } \* notice that it implies that m.lrns = {} for 1b messages
         /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
         /\ OneA(m) => B(m, m.bal)
         /\ OneB(m) => WellFormed1b(m)
@@ -675,5 +674,5 @@ UniqueDecision ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 01:33:58 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 15:58:12 CEST 2025 by karbyshev
 \* Created Mon Jun 19 12:24:03 CEST 2022 by karbyshev

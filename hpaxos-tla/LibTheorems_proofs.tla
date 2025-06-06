@@ -101,7 +101,13 @@ PROOF
 <1> HIDE DEF Q
 <1> QED BY <1>0, <1>1, NatInduction, Isa
 
+LEMMA FinSubset_sub ==
+    ASSUME NEW S,
+           NEW F \in FINSUBSET(S)
+    PROVE  F \subseteq S
+PROOF BY DEF Range, FINSUBSET
+
 =============================================================================
 \* Modification History
-\* Last modified Thu May 29 22:41:37 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 16:05:53 CEST 2025 by karbyshev
 \* Created Tue May 20 00:05:14 CEST 2025 by karbyshev

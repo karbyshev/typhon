@@ -44,7 +44,12 @@ LEMMA INDUCTION_SCHEME ==
            \A k \in Nat : k > 0 /\ P(k - 1) => P(k)
     PROVE  \A n \in Nat : P(n)
 
+LEMMA FinSubset_sub ==
+    ASSUME NEW S,
+           NEW F \in FINSUBSET(S)
+    PROVE  F \subseteq S
+
 =============================================================================
 \* Modification History
-\* Last modified Wed May 21 23:35:28 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 16:05:34 CEST 2025 by karbyshev
 \* Created Mon May 19 20:15:40 CEST 2025 by karbyshev

@@ -2,17 +2,7 @@
 EXTENDS HQuorum, HLearner, HBallotValue, Lib
 
 -----------------------------------------------------------------------------
-(* Messages *)
 
-CONSTANT MaxRefCardinality
-ASSUME MaxRefCardinalityAssumption ==
-    /\ MaxRefCardinality \in Nat
-    /\ MaxRefCardinality >= 1
-
-\*RefCardinality == Nat
-RefCardinality == 1..MaxRefCardinality
-
------------------------------------------------------------------------------
 (* Non-message value *)
 NoMessage == [ type |-> "null" ]
 
@@ -33,14 +23,7 @@ MessageRec[n \in Nat] ==
     THEN MessageRec0
     ELSE MessageRec1(MessageRec[n-1], n)
 
-\* TODO clean
-CONSTANT MaxMessageDepth
-ASSUME MaxMessageDepth \in Nat
-
-\* TODO clean
-MessageDepthRange == Nat
-
-Message == UNION { MessageRec[n] : n \in MessageDepthRange }
+Message == UNION { MessageRec[n] : n \in Nat }
 
 -----------------------------------------------------------------------------
 (* Message types *)
@@ -67,10 +50,7 @@ TranBound[n \in Nat] ==
     THEN TranBound0
     ELSE TranBound1(TranBound[n-1], n)
 
-\* Countable transitive references
-TranDepthRange == MessageDepthRange
-
-Tran(m) == UNION {TranBound[n][m] : n \in TranDepthRange}
+Tran(m) == UNION {TranBound[n][m] : n \in Nat}
 
 -----------------------------------------------------------------------------
 (* Transitive references of prev *)
@@ -85,12 +65,9 @@ PrevTranBound[n \in Nat] ==
     THEN PrevTranBound0
     ELSE PrevTranBound1(PrevTranBound[n-1], n)
 
-\* Countable transitive references of prev
-PrevTranDepthRange == MessageDepthRange
-
-PrevTran(m) == UNION {PrevTranBound[n][m] : n \in PrevTranDepthRange}
+PrevTran(m) == UNION {PrevTranBound[n][m] : n \in Nat}
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 01:31:13 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 16:17:34 CEST 2025 by karbyshev
 \* Created Tue May 14 16:39:44 CEST 2024 by karbyshev

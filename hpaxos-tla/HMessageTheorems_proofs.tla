@@ -10,20 +10,6 @@ LOCAL INSTANCE FiniteSetTheorems
 LOCAL INSTANCE WellFoundedInduction
 
 -----------------------------------------------------------------------------
-
-\* TODO clean, not used
-LEMMA RefCardinalitySpec ==
-    /\ RefCardinality \in SUBSET Nat
-    /\ RefCardinality # {}
-PROOF BY MaxRefCardinalityAssumption DEF RefCardinality
-
-LEMMA FinSubset_sub ==
-    ASSUME NEW S,
-           NEW F \in FINSUBSET(S)
-    PROVE  F \subseteq S
-PROOF BY DEF Range, FINSUBSET
-
------------------------------------------------------------------------------
 (* Messages *)
 
 LEMMA MessageRec_def ==
@@ -39,7 +25,7 @@ PROOF BY NatInductiveDef, Isa
 LEMMA MessageRec_spec ==
     /\ \A n \in Nat : MessageRec[n] \subseteq Message
     /\ \A m \in Message : \E n \in Nat : m \in MessageRec[n]
-PROOF BY DEF Message, MessageDepthRange
+PROOF BY DEF Message
 
 LEMMA MessageRec_eq0 == MessageRec[0] = MessageRec0
 PROOF BY MessageRec_def
@@ -106,20 +92,15 @@ PROOF
       OBVIOUS
   <2> m + 1 \in Nat OBVIOUS
   <2>1. CASE m = 0
-    <3> QED
-        BY <2>1, MessageRec_eq1, MessageRec_ref0, FinSubset_sub,
-           MaxRefCardinalityAssumption
-           DEF MessageRec1, RefCardinality
+    <3> QED BY <2>1, MessageRec_eq1, MessageRec_ref0, FinSubset_sub DEF MessageRec1
   <2>2. CASE m # 0
-        BY <1>1, <2>2, MessageRec_eq1, MessageRec_monotone, FinSubset_sub,
-           MaxRefCardinalityAssumption
-           DEF MessageRec1, RefCardinality
+        BY <1>1, <2>2, MessageRec_eq1, MessageRec_monotone, FinSubset_sub DEF MessageRec1
   <2>3. QED BY <2>1, <2>2
 <1>2. HIDE DEF P
 <1>3. QED BY <1>0, <1>1, NatInduction, Blast
 
 LEMMA Message_nontriv == Message # {}
-PROOF BY MessageRec_nontriv DEF Message, MessageDepthRange
+PROOF BY MessageRec_nontriv DEF Message
 
 LEMMA OneA_Message ==
     ASSUME NEW bal \in Ballot
@@ -132,7 +113,7 @@ PROOF
     BY DEF OneA
 <1> msg \in MessageRec[0]
     BY MessageRec_def DEF MessageRec0
-<1> QED BY DEF Message, MessageDepthRange
+<1> QED BY DEF Message
 
 \* TODO needs IsFinite(P)
 LEMMA OneB_Message ==
@@ -180,10 +161,10 @@ PROOF
 <1> OneB(msg)
     BY DEF OneB
 <1>0. \A m \in R : \E n \in Nat : m \in MessageRec[n]
-    BY DEF Message, MessageDepthRange
+    BY DEF Message
 <1> DEFINE f == [ m \in R |-> CHOOSE n \in Nat : m \in MessageRec[n] ]
 <1> f \in [ R -> Nat ]
-    BY DEF Message, MessageDepthRange
+    BY DEF Message
 <1> DEFINE I == Range(f)
 <1> I \in SUBSET Nat
     BY DEF Range
@@ -209,7 +190,7 @@ PROOF
   <2> R = Range(seq)
       BY DEF Range
   <2> QED BY DEF FINSUBSET
-<1> QED BY DEF Message, MessageDepthRange
+<1> QED BY DEF Message
 
 LEMMA TwoA_Message_bis ==
     ASSUME NEW A \in Acceptor,
@@ -228,10 +209,10 @@ PROOF
 <1> TwoA(msg)
     BY DEF TwoA
 <1>0. \A m \in R : \E n \in Nat : m \in MessageRec[n]
-    BY DEF Message, MessageDepthRange
+    BY DEF Message
 <1> DEFINE f == [ m \in R |-> CHOOSE n \in Nat : m \in MessageRec[n] ]
 <1> f \in [ R -> Nat ]
-    BY DEF Message, MessageDepthRange
+    BY DEF Message
 <1> DEFINE I == Range(f)
 <1> I \in SUBSET Nat
     BY DEF Range
@@ -257,12 +238,12 @@ PROOF
   <2> R = Range(seq)
       BY DEF Range
   <2> QED BY DEF FINSUBSET
-<1> QED BY DEF Message, MessageDepthRange
+<1> QED BY DEF Message
 
 LEMMA Message_ref ==
     ASSUME NEW m \in Message
     PROVE  m.refs \subseteq Message
-PROOF BY MessageRec_ref0, MessageRec_ref1, MessageRec_spec DEF MessageDepthRange
+PROOF BY MessageRec_ref0, MessageRec_ref1, MessageRec_spec
 
 LEMMA Message_prev ==
     ASSUME NEW m \in Message
@@ -270,7 +251,7 @@ LEMMA Message_prev ==
 PROOF
 <1> DEFINE P(j) ==  \A mm \in MessageRec[j] : mm.prev \in Message \cup {NoMessage}
 <1> SUFFICES \A j \in Nat : P(j)
-    BY RefCardinalitySpec DEF Message, MessageDepthRange
+    BY DEF Message
 <1>0. P(0)
       BY MessageRec_eq0 DEF MessageRec0
 <1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
@@ -285,7 +266,7 @@ PROOF
   <2> CASE mm \notin MessageRec[k]
      <3> mm.prev \in MessageRec[k] \cup {NoMessage}
          BY MessageRec_eq1 DEF MessageRec1
-     <3> QED BY RefCardinalitySpec DEF MessageDepthRange, Message
+     <3> QED BY DEF Message
   <2> QED BY MessageRec_eq1 DEF MessageRec1
 <1>2. HIDE DEF P 
 <1>3. QED BY <1>0, <1>1, NatInduction, Blast
@@ -317,8 +298,7 @@ PROOF
       BY <1>0, <1>1, MessageRec_eq0 DEF MessageRec0
 <1>2. CASE n # 0 /\ m \in m.refs
   <2>1. m.refs \in SUBSET MessageRec[n - 1]
-        BY <1>0, <1>2, MessageRec_eq1, MessageRec_ref1, FinSubset_sub, MaxRefCardinalityAssumption
-        DEF MessageRec1, RefCardinality
+        BY <1>0, <1>2, MessageRec_eq1, MessageRec_ref1, FinSubset_sub DEF MessageRec1
   <2>10. QED BY <2>1, <1>0, <1>2
 <1>10. QED BY <1>1, <1>2
 
@@ -328,7 +308,7 @@ LEMMA NoMessageIsNotAMessage ==
 PROOF
 <1> DEFINE P(n) == NoMessage \notin MessageRec[n]
 <1> SUFFICES \A n \in Nat : P(n)
-    BY DEF Message, MessageDepthRange
+    BY DEF Message
 <1>0. P(0)
       BY MessageRec_eq0 DEF MessageRec0, NoMessage
 <1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
@@ -426,7 +406,7 @@ LEMMA Tran_spec ==
     ASSUME NEW m \in Message
     PROVE  /\ \A n \in Nat : TranBound[n][m] \subseteq Tran(m)
            /\ \A r \in Tran(m) : \E n \in Nat : r \in TranBound[n][m]
-PROOF BY DEF Tran, TranDepthRange, MessageDepthRange
+PROOF BY DEF Tran
 
 LEMMA TranBound_eq0 ==
     TranBound[0] = [m \in Message |-> {m}]
@@ -440,7 +420,7 @@ PROOF BY TranBound_def, Zenon DEF TranBound1
 
 LEMMA Tran_refl ==
     ASSUME NEW m \in Message PROVE m \in Tran(m)
-PROOF BY TranBound_eq0 DEF Tran, TranDepthRange, MessageDepthRange
+PROOF BY TranBound_eq0 DEF Tran
 
 LEMMA Tran_eq ==
     ASSUME NEW m \in Message
@@ -604,15 +584,14 @@ PROOF
 LEMMA Message_ref_Tran ==
     ASSUME NEW m \in Message
     PROVE  m.refs \subseteq Tran(m)
-PROOF BY Message_ref_TranBound1, Zenon
-      DEF Tran, TranDepthRange, MessageDepthRange
+PROOF BY Message_ref_TranBound1, Zenon DEF Tran
 
 LEMMA MessageRec0_Tran ==
     ASSUME NEW m1 \in MessageRec[0], NEW m2 \in Tran(m1)
     PROVE  m1 = m2
 PROOF
 <1> m1 \in Message
-    BY MessageRec_spec DEF MessageDepthRange
+    BY MessageRec_spec
 <1> PICK k \in Nat : m2 \in TranBound[k][m1]
     BY Tran_spec
 <1> m2 \in Message
@@ -634,7 +613,7 @@ PROOF
                    \A y \in TranBound[l][x] :
                         y \in MessageRec[k]
 <1> SUFFICES \A j \in Nat : P(j)
-    BY Tran_spec, MessageRec_spec DEF MessageDepthRange
+    BY Tran_spec, MessageRec_spec
 <1>0. P(0) BY TranBound_eq0, MessageRec_spec
 <1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
   <2> m + 1 \in Nat
@@ -645,7 +624,7 @@ PROOF
                PROVE  y \in MessageRec[k]
       OBVIOUS
   <2> y \in Tran(x)
-      BY DEF Tran, TranDepthRange, MessageDepthRange
+      BY DEF Tran
   <2> SUFFICES ASSUME k # 0 PROVE y \in MessageRec[k]
       BY MessageRec0_Tran
   <2> k - 1 \in Nat
@@ -672,7 +651,7 @@ PROOF
                     NEW x \in Message,
                     NEW y \in x.refs, x \in Tran(y)
              PROVE  x \in MessageRec[n] => FALSE
-    BY DEF Message, MessageDepthRange
+    BY DEF Message
 <1>0. PICK k \in Nat : /\ x \in MessageRec[k]
                        /\ \A k1 \in 0 .. k - 1 : x \notin MessageRec[k1]
       BY MessageRec_min
@@ -714,7 +693,7 @@ LEMMA PrevTran_spec ==
     ASSUME NEW m \in Message
     PROVE  /\ \A n \in Nat : PrevTranBound[n][m] \subseteq PrevTran(m)
            /\ \A r \in PrevTran(m) : \E n \in Nat : r \in PrevTranBound[n][m]
-PROOF BY DEF PrevTran, PrevTranDepthRange, MessageDepthRange
+PROOF BY DEF PrevTran
 
 LEMMA PrevTranBound_eq0 ==
     PrevTranBound[0] = [m \in Message |-> {m}]
@@ -744,7 +723,7 @@ LEMMA PrevTranBound_refl ==
 
 LEMMA PrevTran_refl ==
     ASSUME NEW m \in Message PROVE m \in PrevTran(m)
-PROOF BY PrevTranBound_eq0 DEF PrevTran, PrevTranDepthRange, MessageDepthRange
+PROOF BY PrevTranBound_eq0 DEF PrevTran
 
 LEMMA PrevTran_eq ==
     ASSUME NEW m \in Message
@@ -922,15 +901,14 @@ PROOF
 LEMMA Message_prev_PrevTran ==
     ASSUME NEW m \in Message, m.prev # NoMessage
     PROVE  m.prev \in PrevTran(m)
-PROOF BY Zenon, Message_prev_PrevTranBound1
-      DEF PrevTran, PrevTranDepthRange, MessageDepthRange
+PROOF BY Zenon, Message_prev_PrevTranBound1 DEF PrevTran
 
 \*LEMMA MessageRec0_PrevTran ==
 \*    ASSUME NEW m1 \in MessageRec[0], NEW m2 \in PrevTran(m1)
 \*    PROVE  m1 = m2
 \*PROOF
 \*<1> m1 \in Message
-\*    BY MessageRec_spec DEF MessageDepthRange
+\*    BY MessageRec_spec
 \*<1> PICK k \in Nat : m2 \in PrevTranBound[k][m1]
 \*    BY PrevTran_spec
 \*<1> m2 \in Message
@@ -946,5 +924,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 15:19:38 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 16:19:30 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev
