@@ -162,15 +162,6 @@ PROOF
 <1> QED OBVIOUS
 
 -----------------------------------------------------------------------------
-\* TODO
-LEMMA LearnersWellFormed ==
-    ASSUME NEW m \in Message,
-           WellFormed(m)
-    PROVE  m.lrns # {} <=> TwoA(m)
-PROOF
-<1> QED
-
------------------------------------------------------------------------------
 \* Check equivalence of two well-formedness conditions for 1b messages
 
 \*LEMMA WellFormedCondition1 ==
@@ -998,6 +989,22 @@ PROOF
 <1> HIDE DEF P
 <1> QED BY <1>0, <1>1, NatInduction, Isa
 
+-----------------------------------------------------------------------------
+
+LEMMA WellFormedTwoALearners ==
+    ASSUME NEW m \in Message,
+           WellFormed(m),
+           m.lrns # {}
+    PROVE  TwoA(m)
+PROOF
+<1> PICK alpha \in m.lrns :
+            /\ alpha \in Learner
+            /\ [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive
+    BY DEF WellFormed
+<1> qd(alpha, m, 1) # {}
+    BY TrustLiveNonEmpty
+<1> QED BY Qd_eq
+
 \****************************************
 \* BUG REPRODUCER
 \****************************************
@@ -1017,5 +1024,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 01:38:27 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 15:43:36 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

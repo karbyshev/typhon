@@ -114,13 +114,6 @@ LEMMA LatestNonEmpty ==
     PROVE  Latest(P) # {}
 
 -----------------------------------------------------------------------------
-\* TODO
-LEMMA LearnersWellFormed ==
-    ASSUME NEW m \in Message,
-           WellFormed(m)
-    PROVE  m.lrns # {} <=> TwoA(m)
-
------------------------------------------------------------------------------
 \* TODO rename
 LEMMA WellFormedCondition111 ==
     ASSUME NEW m \in Message,
@@ -362,7 +355,15 @@ LEMMA QdProperty4 ==
     PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d1) }] \in TrustLive =>
            [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d) }] \in TrustLive
 
+-----------------------------------------------------------------------------
+
+LEMMA WellFormedTwoALearners ==
+    ASSUME NEW m \in Message,
+           WellFormed(m),
+           m.lrns # {}
+    PROVE  TwoA(m)
+
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 01:39:30 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 15:41:04 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev

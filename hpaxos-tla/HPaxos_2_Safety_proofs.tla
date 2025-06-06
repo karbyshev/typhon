@@ -600,7 +600,7 @@ PROOF
     <3> m0.lrns \cap Con(seq[k].gamma, seq[k].r) # {}
         BY LatestSubset DEF D, KnownMsgsSpec2, TypeOK
     <3> TwoA(m0)
-        BY LearnersWellFormed
+        BY WellFormedTwoALearners
     <3> m0 # seq[k].r
         BY MessageTypeSpec
     <3> ~Proposal(m0)
@@ -2000,5 +2000,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 01:45:55 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 15:41:27 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev
