@@ -115,21 +115,6 @@ PROOF
     BY MessageRec_def DEF MessageRec0
 <1> QED BY DEF Message
 
-\* TODO needs IsFinite(P)
-LEMMA TwoA_Message ==
-    ASSUME NEW A \in Acceptor,
-           NEW P \in Message \cup {NoMessage},
-           NEW R \in SUBSET Message,
-           R # {}
-    PROVE  LET msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
-           /\ msg \in Message
-           /\ TwoA(msg)
-PROOF
-<1> DEFINE msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ]
-<1> TwoA(msg)
-    BY DEF TwoA
-<1> QED
-
 LEMMA OneB_Message ==
     ASSUME NEW A \in Acceptor,
            NEW P \in Message \cup {NoMessage},
@@ -177,7 +162,7 @@ PROOF
   <2> QED BY DEF FINSUBSET
 <1> QED BY DEF Message
 
-LEMMA TwoA_Message_bis ==
+LEMMA TwoA_Message ==
     ASSUME NEW A \in Acceptor,
            NEW P \in Message \cup {NoMessage},
            NEW R \in SUBSET Message,

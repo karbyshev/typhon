@@ -1243,7 +1243,7 @@ PROOF
   <2> IsFiniteSet({M} \cup oneb_1 \cup oneb_2)
       BY FS_Union, FS_Singleton
   <2> HIDE DEF oneb_1, oneb_2
-  <2> QED BY Zenon, TwoA_Message_bis
+  <2> QED BY Zenon, TwoA_Message
 <1> M \in Tran(M0)
     BY Message_ref_Tran
 <1> DEFINE SingletonM == {M}

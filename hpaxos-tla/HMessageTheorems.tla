@@ -12,16 +12,6 @@ LEMMA OneA_Message ==
            /\ msg \in Message
            /\ OneA(msg)
 
-\* TODO needs IsFinite(P)
-LEMMA TwoA_Message ==
-    ASSUME NEW A \in Acceptor,
-           NEW P \in Message \cup {NoMessage},
-           NEW R \in SUBSET Message,
-           R # {}
-    PROVE  LET msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
-           /\ msg \in Message
-           /\ TwoA(msg)
-
 LEMMA OneB_Message ==
     ASSUME NEW A \in Acceptor,
            NEW P \in Message \cup {NoMessage},
@@ -32,7 +22,7 @@ LEMMA OneB_Message ==
            /\ msg \in Message
            /\ OneB(msg)
 
-LEMMA TwoA_Message_bis ==
+LEMMA TwoA_Message ==
     ASSUME NEW A \in Acceptor,
            NEW P \in Message \cup {NoMessage},
            NEW R \in SUBSET Message,
@@ -143,5 +133,5 @@ LEMMA Message_prev_PrevTran ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 21:46:04 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 21:50:09 CEST 2025 by karbyshev
 \* Created Mon May 19 20:59:25 CEST 2025 by karbyshev
