@@ -25,20 +25,12 @@ LEMMA BallotMaxUnique ==
 PROOF BY MaxUnique DEF Ballot
 
 -----------------------------------------------------------------------------
+
 LEMMA CaughtMsgSpec ==
     ASSUME NEW M \in Message
     PROVE  /\ CaughtMsg(M) \in SUBSET Message
            /\ \A X \in CaughtMsg(M) : ~Proposal(X)
 BY Tran_Message DEF CaughtMsg, Proposal
-
------------------------------------------------------------------------------
-\* TODO clean
-\*LEMMA ReplyTypeSpec ==
-\*    ASSUME NEW m \in Message,
-\*           NEW t \in {"1b", "2a", "2b"},
-\*           ReplyType(m, t)
-\*    PROVE  ~TwoB(m)
-\*PROOF BY MessageTypeSpec DEF ReplyType, TwoB
 
 -----------------------------------------------------------------------------
 (* Facts about Get1a, B and V relations *)

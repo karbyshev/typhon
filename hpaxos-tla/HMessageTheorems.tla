@@ -15,13 +15,6 @@ LEMMA FinSubset_sub ==
            NEW F \in FINSUBSET(S)
     PROVE  F \subseteq S
 
-\* TODO remove, not valid
-\*LEMMA FinSubset_sub_nontriv ==
-\*    ASSUME NEW S,
-\*           S # {},
-\*           NEW F \in FINSUBSET(S)
-\*    PROVE  F # {}
-
 -----------------------------------------------------------------------------
 (* Messages *)
 
@@ -113,12 +106,6 @@ LEMMA MessageTypeSpec ==
               /\ ~OneB(m)
               /\  TwoA(m)
 
-\*LEMMA MessageNonProposalSpec ==
-\*    ASSUME NEW m \in Message,
-\*           ~Proposal(m)
-\*    PROVE  \/ OneB(m)
-\*           \/ TwoA(m)
-
 -----------------------------------------------------------------------------
 (* Transitive references *)
 
@@ -178,5 +165,5 @@ LEMMA Message_prev_PrevTran ==
 
 =============================================================================
 \* Modification History
-\* Last modified Thu Jun 05 21:03:59 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 15:18:38 CEST 2025 by karbyshev
 \* Created Mon May 19 20:59:25 CEST 2025 by karbyshev

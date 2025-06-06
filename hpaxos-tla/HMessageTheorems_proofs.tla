@@ -23,14 +23,6 @@ LEMMA FinSubset_sub ==
     PROVE  F \subseteq S
 PROOF BY DEF Range, FINSUBSET
 
-\* TODO remove, not valid
-\*LEMMA FinSubset_sub_nontriv ==
-\*    ASSUME NEW S,
-\*           S # {},
-\*           NEW F \in FINSUBSET(S)
-\*    PROVE  F # {}
-\*PROOF BY SeqDef DEF Range, FINSUBSET
-
 -----------------------------------------------------------------------------
 (* Messages *)
 
@@ -418,13 +410,6 @@ LEMMA MessageTypeSpec ==
              /\ ~OneB(m)
              /\  TwoA(m)
 PROOF BY MessageSpec DEF OneA, OneB, TwoA
-
-LEMMA MessageNonProposalSpec ==
-    ASSUME NEW m \in Message,
-           ~Proposal(m)
-    PROVE  \/ OneB(m)
-           \/ TwoA(m)
-PROOF BY MessageTypeSpec DEF Proposal, OneA
 
 -----------------------------------------------------------------------------
 (* Transitive references *)
@@ -961,5 +946,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1
 
 =============================================================================
 \* Modification History
-\* Last modified Thu Jun 05 21:03:38 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 15:19:38 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev
