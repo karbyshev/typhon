@@ -39,17 +39,6 @@ KnownMsgsSpec2 ==
             /\ Tran(M) \in SUBSET known_msgs[AL]
             /\ \E b \in Ballot : B(M, b)
 
-\* TODO rename
-KnownMsgsSpec ==
-    \A AL \in SafeAcceptor \cup Learner :
-        /\ known_msgs[AL] \in SUBSET msgs
-        /\ IsFiniteSet(known_msgs[AL])
-        /\ \A M \in known_msgs[AL] :
-            /\ KnownRefs(AL, M)
-            /\ WellFormed(M)
-            /\ Tran(M) \in SUBSET known_msgs[AL]
-            /\ \E b \in Ballot : B(M, b)
-
 CaughtSpec ==
     \A AL \in SafeAcceptor \cup Learner :
         \A M \in known_msgs[AL] :
@@ -109,5 +98,5 @@ MaxDepthSpec ==
 
 =============================================================================
 \* Modification History
-\* Last modified Wed May 21 22:55:48 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 23:02:04 CEST 2025 by karbyshev
 \* Created Tue May 20 23:34:17 CEST 2025 by karbyshev
