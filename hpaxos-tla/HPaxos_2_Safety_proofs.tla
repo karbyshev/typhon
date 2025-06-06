@@ -1011,7 +1011,7 @@ PROOF
   <2> WITNESS seq0 \in [1..k + 1 -> Whatever]
   <2> QED OBVIOUS
 <1> HIDE DEF P
-<1>3. QED BY <1>0, <1>1, INDUCTION_SCHEME, Blast
+<1>3. QED BY <1>0, <1>1, NatInductionShifted, Blast
 
 -----------------------------------------------------------------------------
 
@@ -1995,5 +1995,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 21:50:44 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 22:53:46 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev

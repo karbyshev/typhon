@@ -84,8 +84,7 @@ PROOF
 <1> HIDE DEF A
 <1> QED BY <1>1, SmallestNatural, Blast
 
-\* TODO rename
-LEMMA INDUCTION_SCHEME ==
+LEMMA NatInductionShifted ==
     ASSUME NEW P(_),
            P(0),
            \A k \in Nat : k > 0 /\ P(k - 1) => P(k)
@@ -109,5 +108,5 @@ PROOF BY DEF Range, FINSUBSET
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 16:05:53 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 22:53:37 CEST 2025 by karbyshev
 \* Created Tue May 20 00:05:14 CEST 2025 by karbyshev

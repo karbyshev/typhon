@@ -37,8 +37,7 @@ LEMMA SmallestIndexExists ==
            P(seq[n0])
     PROVE  \E i \in 1..n : SmallestIndex(seq, P, i)
 
-\* TODO rename
-LEMMA INDUCTION_SCHEME ==
+LEMMA NatInductionShifted ==
     ASSUME NEW P(_),
            P(0),
            \A k \in Nat : k > 0 /\ P(k - 1) => P(k)
@@ -51,5 +50,5 @@ LEMMA FinSubset_sub ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 16:05:34 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 22:53:26 CEST 2025 by karbyshev
 \* Created Mon May 19 20:15:40 CEST 2025 by karbyshev
