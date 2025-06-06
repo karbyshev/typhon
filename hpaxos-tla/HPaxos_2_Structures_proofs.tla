@@ -505,9 +505,11 @@ BY TrustLiveAssumption, LearnerGraphAssumptionValidity DEF Ent
 
 -----------------------------------------------------------------------------
 
-\* TODO fix the proof
 LEMMA MsgsSafeAcceptorSpecImpliesCaughtSpec ==
-    ASSUME TypeOK, KnownMsgsSpec2, MsgsSafeAcceptorPrevTranLinearSpec
+    ASSUME TypeOK,
+           KnownMsgsSpec1,
+           KnownMsgsSpec2,
+           MsgsSafeAcceptorPrevTranLinearSpec
     PROVE  CaughtSpec
 PROOF
 <1> SUFFICES ASSUME NEW AL \in SafeAcceptor \cup Learner,
@@ -530,8 +532,15 @@ PROOF
             /\ msg \notin PrevTran(msg1)
             /\ msg1 \notin PrevTran(msg)
     BY DEF CaughtMsg
-<1> QED BY MessageSpec
-        DEF MsgsSafeAcceptorPrevTranLinearSpec, KnownMsgsSpec2, SentBy, Proposal, OneA
+<1> msg \in SentBy(acc)
+  <2> msg \in known_msgs[AL]
+      BY DEF KnownMsgsSpec2
+  <2> QED BY DEF SentBy, KnownMsgsSpec1, OneA, Proposal
+<1> msg1 \in SentBy(acc)
+  <2> msg1 \in known_msgs[AL]
+      BY DEF KnownMsgsSpec2
+  <2> QED BY DEF SentBy, KnownMsgsSpec1, OneA, Proposal
+<1> QED BY DEF MsgsSafeAcceptorPrevTranLinearSpec
 
 -----------------------------------------------------------------------------
 
@@ -1008,5 +1017,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 21:46:57 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 23:40:33 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

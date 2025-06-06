@@ -287,9 +287,11 @@ LEMMA EntQuorumIntersection ==
 
 -----------------------------------------------------------------------------
 
-\* TODO fix the proof
 LEMMA MsgsSafeAcceptorSpecImpliesCaughtSpec ==
-    ASSUME TypeOK, KnownMsgsSpec2, MsgsSafeAcceptorPrevTranLinearSpec
+    ASSUME TypeOK,
+           KnownMsgsSpec1,
+           KnownMsgsSpec2,
+           MsgsSafeAcceptorPrevTranLinearSpec
     PROVE  CaughtSpec
 
 -----------------------------------------------------------------------------
@@ -365,5 +367,5 @@ LEMMA WellFormedTwoALearners ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 15:41:04 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 23:40:24 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev
