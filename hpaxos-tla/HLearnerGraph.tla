@@ -6,7 +6,6 @@ CONSTANT TrustLive
 ASSUME TrustLiveAssumption ==
     TrustLive \in SUBSET [lr : Learner, q : ByzQuorum]
 
-\* TODO check if can be removed
 ASSUME TrustLiveNonEmpty ==
     \A L \in TrustLive : L.q # {}
 
@@ -48,5 +47,5 @@ Accurate(alpha) == <<alpha, alpha>> \in Ent
 
 =============================================================================
 \* Modification History
-\* Last modified Thu May 29 00:14:13 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 22:00:47 CEST 2025 by karbyshev
 \* Created Tue May 14 17:03:34 CEST 2024 by karbyshev

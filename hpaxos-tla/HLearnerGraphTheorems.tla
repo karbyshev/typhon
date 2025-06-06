@@ -18,7 +18,6 @@ LEMMA EntanglementSelf ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner, <<L1, L2>> \in Ent
     PROVE  <<L1, L1>> \in Ent
 
-\* TODO remove if not used
 LEMMA EntangledAccurate ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner, <<L1, L2>> \in Ent
     PROVE  Accurate(L1)
@@ -40,5 +39,5 @@ LEMMA EntaglementTrustLiveNonEmpty ==
 
 =============================================================================
 \* Modification History
-\* Last modified Wed May 28 21:05:50 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 21:59:41 CEST 2025 by karbyshev
 \* Created Mon May 19 20:42:04 CEST 2025 by karbyshev

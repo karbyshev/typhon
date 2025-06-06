@@ -885,7 +885,6 @@ PROOF
   <2> QED BY <2>0, <2>1, <2>2
 <1> QED BY DEF qd
 
-\* TODO fix name
 LEMMA Qd_trans_monotone ==
     ASSUME NEW alpha \in Learner,
            NEW x \in Message,
@@ -1007,24 +1006,7 @@ PROOF
     BY TrustLiveNonEmpty
 <1> QED BY Qd_eq
 
-\****************************************
-\* BUG REPRODUCER
-\****************************************
-\*LEMMA WTF0 == FALSE
-\*PROOF
-\*<1> DEFINE seq == [x \in 1..1 |-> 42]
-\*<1> seq \in Seq(Nat) BY SeqDef
-\*<1> QED OBVIOUS
-\*
-\*LEMMA WTF ==
-\*    ASSUME NEW N \in Nat,
-\*           NEW seq \in [1..N -> Nat]
-\*    PROVE  FALSE
-\*PROOF
-\*<1> seq \in Seq(Nat) BY SeqDef
-\*<1> QED OBVIOUS
-
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 15:43:36 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 21:46:57 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev
