@@ -116,21 +116,6 @@ PROOF
 <1> QED BY DEF Message
 
 \* TODO needs IsFinite(P)
-LEMMA OneB_Message ==
-    ASSUME NEW A \in Acceptor,
-           NEW P \in Message \cup {NoMessage},
-           NEW R \in SUBSET Message,
-           R # {}
-    PROVE  LET msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
-           /\ msg \in Message
-           /\ OneB(msg)
-PROOF
-<1> DEFINE msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ]
-<1> OneB(msg)
-    BY DEF OneB
-<1> QED
-
-\* TODO needs IsFinite(P)
 LEMMA TwoA_Message ==
     ASSUME NEW A \in Acceptor,
            NEW P \in Message \cup {NoMessage},
@@ -145,7 +130,7 @@ PROOF
     BY DEF TwoA
 <1> QED
 
-LEMMA OneB_Message_bis ==
+LEMMA OneB_Message ==
     ASSUME NEW A \in Acceptor,
            NEW P \in Message \cup {NoMessage},
            NEW R \in SUBSET Message,
@@ -924,5 +909,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1 DEF PrevTran
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 16:19:30 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 21:46:18 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev

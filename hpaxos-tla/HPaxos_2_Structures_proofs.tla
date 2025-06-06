@@ -568,7 +568,9 @@ PROOF
 
 <1> oneb == [ type |-> "1b", acc |-> safe, prev |-> p, refs |-> {p}, lrns |-> {} ]
 <1> oneb \in Message /\ OneB(oneb)
-    BY OneB_Message
+  <2> IsFiniteSet({p})
+      BY FS_Singleton
+  <2> QED BY Zenon, OneB_Message
 <1> ~Proposal(oneb)
     BY DEF OneB, Proposal
 <1> Tran(oneb) = {oneb, p}

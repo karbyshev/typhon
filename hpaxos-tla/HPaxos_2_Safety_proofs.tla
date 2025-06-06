@@ -1146,7 +1146,7 @@ PROOF
 <1> oneb_1 \in SUBSET { mm \in Message : OneB(mm) }
   <2> IsFiniteSet({p1})
       BY FS_Singleton
-  <2> QED BY Isa, OneB_Message_bis DEF Acceptor
+  <2> QED BY Isa, OneB_Message DEF Acceptor
 <1> IsFiniteSet(oneb_1)
   <2> PICK fseq \in Seq(FakeAcceptor) :
         \A f \in FakeAcceptor : \E n \in 1..Len(fseq) : fseq[n] = f
@@ -1200,7 +1200,7 @@ PROOF
 <1> oneb_2 \in SUBSET { mm \in Message : OneB(mm) }
   <2> IsFiniteSet({p2})
       BY FS_Singleton
-  <2> QED BY Isa, OneB_Message_bis DEF Acceptor
+  <2> QED BY Isa, OneB_Message DEF Acceptor
 <1> IsFiniteSet(oneb_2)
   <2> PICK fseq \in Seq(FakeAcceptor) :
         \A f \in FakeAcceptor : \E n \in 1..Len(fseq) : fseq[n] = f
