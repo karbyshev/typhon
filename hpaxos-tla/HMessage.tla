@@ -2,6 +2,7 @@
 EXTENDS HQuorum, HLearner, HBallotValue, Lib
 
 -----------------------------------------------------------------------------
+(* Messages *)
 
 (* Non-message value *)
 NoMessage == [ type |-> "null" ]
@@ -69,5 +70,5 @@ PrevTran(m) == UNION {PrevTranBound[n][m] : n \in Nat}
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 16:17:34 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 22:30:29 CEST 2025 by karbyshev
 \* Created Tue May 14 16:39:44 CEST 2024 by karbyshev

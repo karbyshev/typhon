@@ -1071,13 +1071,18 @@ PROOF
 <1> HeterogeneousSpecCond(alpha, bal, M, V_M, seq, maxDepth(alpha) + 1)
     OBVIOUS
 
+\*    ConSeq(alpha) ==
+\*        { seq \in Seq(Message) :
+\*            /\ \A i, j \in 1..Len(seq) : i < j =>
+\*                /\ seq[j] \in Tran(seq[i])
+\*                /\ Con(alpha, seq[j]) # Con(alpha, seq[i])
+\*            /\ seq # << >> => alpha \in Con(alpha, Head(seq))
+\*        }
+\*
 \*    maxDepth(alpha) ==
-\*        LET I == { n \in 1..N_L :
-\*                    \E f \in [1..n -> Message] :
-\*                        \A i, j \in 1..n : i < j =>
-\*                               /\ f[i] \in Tran(f[j])
-\*                               /\ Con(alpha, f[i]) # Con(alpha, f[j])}
+\*        LET I == { n \in Nat : \E seq \in ConSeq(alpha) : n = Len(seq) }
 \*        IN Max(I)
+\*
 \* mseq :
 \* mseq[1] = ...
 \* mseq[2] = seq[maxdep(alpha) + 1].m
@@ -1089,8 +1094,6 @@ PROOF
 \*        LET seq1 == [seq EXCEPT ![x] = z] IN
 \*        HeterogeneousSpecCond(alpha, bal, M, V_M, seq1, x) =>
 \*        seq[x].B_m =< seq1[x].B_m
-
-
 
 \*************** PROOF SKETCH
 \*<1> DEFINE mseq == Reverse([x \in 1..maxDepth(alpha) + 1 |-> seq[x].m])
@@ -1387,14 +1390,6 @@ PROOF
     OBVIOUS
 
 \* We show now that mseq \in ConSeq(Message)
-
-\*    ConSeq(alpha) ==
-\*        { seq \in Seq(Message) :
-\*            /\ \A i, j \in 1..Len(seq) : i < j =>
-\*                /\ seq[j] \in Tran(seq[i])
-\*                /\ Con(alpha, seq[j]) # Con(alpha, seq[i])
-\*            /\ seq # << >> => alpha \in Con(alpha, Head(seq))
-\*        }
 
 <1>seq0. alpha \in Con(alpha, M0)
   <2> Accurate(alpha)
@@ -2000,5 +1995,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 15:41:27 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 21:50:44 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev
