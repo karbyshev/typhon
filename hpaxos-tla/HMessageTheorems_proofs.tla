@@ -834,9 +834,11 @@ PROOF
 <1>3. ASSUME NEW n \in Nat, P(n) PROVE P(n + 1)
   <2> n + 1 \in Nat
       OBVIOUS
-  <2> SUFFICES ASSUME NEW k \in Nat, NEW x \in Message,
-                            NEW y \in PrevTranBound[n + 1][x], NEW z \in PrevTranBound[k][y]
-                 PROVE  z \in PrevTranBound[n + 1 + k][x]
+  <2> SUFFICES ASSUME NEW k \in Nat,
+                      NEW x \in Message,
+                      NEW y \in PrevTranBound[n + 1][x],
+                      NEW z \in PrevTranBound[k][y]
+               PROVE  z \in PrevTranBound[n + 1 + k][x]
       OBVIOUS
   <2> (n + 1) + k \in Nat
       OBVIOUS
@@ -894,5 +896,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1 DEF PrevTran
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 21:46:18 CEST 2025 by karbyshev
+\* Last modified Fri Jun 06 21:50:30 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev
