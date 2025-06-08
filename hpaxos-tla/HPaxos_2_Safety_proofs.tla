@@ -624,7 +624,7 @@ PROOF
       <4> SUFFICES ASSUME bal = B_m0 PROVE FALSE
           BY DEF Ballot
       \* now we use the facts that m0 is of value V_M and s has value val, which are not equal by the lemma assumption 
-      <4> QED BY SameBallotValue, V_def, V_func DEF SameBallot, SameValue
+      <4> QED BY SameBallotValue, V_def, V_func, BValAssumption DEF SameBallot, SameValue
 
     <3> B_m0 < seq[k].B_m \* Property (2)
         BY WellFormedCondition111 DEF OneA, Proposal
@@ -1116,10 +1116,10 @@ PROOF
     BY DEF Ballot
 <1> DEFINE v1 == BVal[bal1]
 <1> v1 \in Value
-    OBVIOUS
+    BY BValAssumption
 <1> DEFINE v2 == BVal[bal2]
 <1> v2 \in Value
-    OBVIOUS
+    BY BValAssumption
 
 <1> DEFINE p1 == [ type |-> "1a", bal |-> bal1, prev |-> NoMessage, refs |-> {} ]
 <1> p1 \in Message /\ OneA(p1) /\ p1.bal = bal1
@@ -1695,7 +1695,7 @@ PROOF
         /\ B(m2, BB)
         /\ V(m2, V2)
       BY DEF ChosenIn, Known2a
-<1>6. QED BY <1>4, <1>5, V_def, V_func DEF TypeOK
+<1>6. QED BY <1>4, <1>5, V_def, V_func, BValAssumption DEF TypeOK
 
 LEMMA ChosenSafeCaseLt ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner,

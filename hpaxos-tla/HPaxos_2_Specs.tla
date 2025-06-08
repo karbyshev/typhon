@@ -10,7 +10,6 @@ TypeOK ==
     /\ recent_msgs \in [Acceptor -> SUBSET Message]
     /\ prev_msg \in [Acceptor -> Message \cup {NoMessage}]
     /\ decision \in [Learner \X Ballot -> SUBSET Value]
-    /\ BVal \in [Ballot -> Value]
 
 -----------------------------------------------------------------------------
 SentBy(acc) == { mm \in msgs : ~OneA(mm) /\ mm.acc = acc }
@@ -98,5 +97,5 @@ MaxDepthSpec ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 23:02:04 CEST 2025 by karbyshev
+\* Last modified Sun Jun 08 19:24:48 CEST 2025 by karbyshev
 \* Created Tue May 20 23:34:17 CEST 2025 by karbyshev
