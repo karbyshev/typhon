@@ -906,7 +906,10 @@ PROOF
             <7>12. k_star + 1 =< maxDepth(alpha) =>
                     [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq_star[k_star + 1].s, maxDepth(alpha) - (k_star + 1) + 1) }] \in TrustLive
                    \* By definition of s_star, s_star \in Q1_star, with Q1_star == qd(alpha, seq[k_star].s, (maxDepth(alpha) - k_star + 1))
-                   BY Qd_eq \* QdProperty3 \* TODO clean
+              <8>1. SUFFICES ASSUME k_star + 1 =< maxDepth(alpha)
+                             PROVE  [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, s_star, maxDepth(alpha) - k_star) }] \in TrustLive
+                    OBVIOUS
+              <8>2. QED BY Qd_eq
             <7>13. B(seq_star[k_star + 1].s, bal)
                    OBVIOUS
             <7>14. V(seq_star[k_star + 1].m, V_M)
@@ -1904,17 +1907,11 @@ PROOF BY DEF TypeOK, vars
 
 LEMMA KnownMsgsSpec1Stutter ==
     KnownMsgsSpec1 /\ vars = vars' => KnownMsgsSpec1'
-PROOF BY Isa DEF KnownMsgsSpec1, vars, WellFormed, WellFormed1b,
-                 qd, Fresh, D, Con, ConByQuorum, Con2as, Buried,
-                 V, B, Get1a, SameBallot, SameValue, ChainRef, KnownRefs,
-                 Caught, CaughtMsg
+PROOF BY Isa DEF KnownMsgsSpec1, vars
 
 LEMMA KnownMsgsSpec2Stutter ==
     KnownMsgsSpec2 /\ vars = vars' => KnownMsgsSpec2'
-PROOF BY Isa DEF KnownMsgsSpec2, vars, WellFormed, WellFormed1b,
-                 qd, Fresh, D, Con, ConByQuorum, Con2as, Buried,
-                 V, B, Get1a, SameBallot, SameValue, ChainRef, KnownRefs,
-                 Caught, CaughtMsg
+PROOF BY Isa DEF KnownMsgsSpec2, vars, KnownRefs
 
 LEMMA SafeAcceptorPrevSpec1Stutter ==
     SafeAcceptorPrevSpec1 /\ vars = vars' => SafeAcceptorPrevSpec1'
@@ -1942,7 +1939,7 @@ PROOF BY DEF KnownMsgsPrevTranSpec, vars, SentBy
 
 LEMMA DecisionSpecStutter ==
     DecisionSpec /\ vars = vars' => DecisionSpec'
-PROOF BY Isa DEF DecisionSpec, vars, ChosenIn, Known2a, B, V, Get1a, qd, Fresh, D, SameBallot, SameValue, maxDepth, ConSeq, Con, ConByQuorum
+PROOF BY Isa DEF DecisionSpec, vars, ChosenIn, Known2a
 
 LEMMA SafetyStutter ==
     Safety /\ vars = vars' => Safety'
@@ -1995,5 +1992,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDept
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 22:53:46 CEST 2025 by karbyshev
+\* Last modified Sun Jun 08 19:10:04 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev

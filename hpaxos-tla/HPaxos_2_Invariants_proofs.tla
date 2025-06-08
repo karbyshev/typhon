@@ -30,7 +30,7 @@ PROOF
       BY DEF Process, Recv, TypeOK
   <2> recent_msgs' \in [Acceptor -> SUBSET Message]
     <4> PICK ll \in SUBSET Learner,
-             t \in {"1b", "2a", "2b"} :
+             t \in {"1b", "2a"} :
         LET new == [type |-> t,
                     acc  |-> acc,
                     prev |-> prev_msg[acc],
@@ -208,7 +208,7 @@ PROOF
       BY <1>3
   <2> m \in Message BY DEF TypeOK
   <2> PICK ll \in SUBSET Learner,
-           t \in {"1b", "2a", "2b"} :
+           t \in {"1b", "2a"} :
       LET new == [type |-> t,
                   acc  |-> acc,
                   prev |-> prev_msg[acc],
@@ -307,7 +307,7 @@ PROOF
       BY <1>3
   <2> m \in Message BY DEF TypeOK
   <2> PICK ll \in SUBSET Learner,
-           t \in {"1b", "2a", "2b"} :
+           t \in {"1b", "2a"} :
         LET new == [type |-> t,
                     acc |-> acc,
                     prev |-> prev_msg[acc],
@@ -385,7 +385,7 @@ PROOF
   <2> PICK acc \in SafeAcceptor, m \in msgs : Process(acc, m)
       BY <1>3
   <2> PICK ll \in SUBSET Learner,
-           t \in {"1b", "2a", "2b"} :
+           t \in {"1b", "2a"} :
       LET new == [type |-> t,
                   acc  |-> acc,
                   prev |-> prev_msg[acc],
@@ -668,7 +668,7 @@ PROOF
   <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
       BY <1>3
   <2> PICK ll \in SUBSET Learner,
-           t \in {"1b", "2a", "2b"} :
+           t \in {"1b", "2a"} :
       LET new2a == [type |-> t,
                     acc  |-> acc,
                     prev |-> prev_msg[acc],
@@ -739,7 +739,7 @@ PROOF
   <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
       BY <1>3
   <2> PICK ll \in SUBSET Learner,
-           t \in {"1b", "2a", "2b"} :
+           t \in {"1b", "2a"} :
       LET new == [type |-> t,
                   acc  |-> acc,
                   prev |-> prev_msg[acc],
@@ -808,7 +808,7 @@ PROOF
   <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
       BY <1>3
   <2> PICK ll \in SUBSET Learner,
-           t \in {"1b", "2a", "2b"} :
+           t \in {"1b", "2a"} :
       LET new == [type |-> t,
                   acc  |-> acc,
                   prev |-> prev_msg[acc],
@@ -868,7 +868,7 @@ PROOF
             Process(acc, msg)
       BY <1>3
   <2> PICK ll \in SUBSET Learner,
-           t \in {"1b", "2a", "2b"} :
+           t \in {"1b", "2a"} :
       LET new == [type |-> t,
                   acc  |-> acc,
                   prev |-> prev_msg[acc],
@@ -997,5 +997,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 22:57:32 CEST 2025 by karbyshev
+\* Last modified Sat Jun 07 00:52:50 CEST 2025 by karbyshev
 \* Created Tue May 20 23:09:22 CEST 2025 by karbyshev
