@@ -90,8 +90,8 @@ LEMMA LatestNonEmpty ==
     PROVE  Latest(P) # {}
 
 -----------------------------------------------------------------------------
-\* TODO rename
-LEMMA WellFormedCondition111 ==
+
+LEMMA WellFormedOneBProperty ==
     ASSUME NEW m \in Message,
            WellFormed(m),
            OneB(m)

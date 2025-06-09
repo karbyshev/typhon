@@ -94,7 +94,6 @@ LEMMA SameBallot_B ==
     PROVE  SameBallot(x, y)
 PROOF BY B_func DEF SameBallot
 
-\* TODO remove if not used
 LEMMA SameBallot_sym ==
     ASSUME NEW x \in Message,
            NEW y \in Message,
@@ -102,7 +101,6 @@ LEMMA SameBallot_sym ==
     PROVE  SameBallot(y, x)
 PROOF BY DEF SameBallot
 
-\* TODO remove if not used
 LEMMA SameValue_sym ==
     ASSUME NEW x \in Message,
            NEW y \in Message,
@@ -245,9 +243,7 @@ PROOF BY TranBallot DEF Ballot
 \*                B(m, bm) /\ B(y, by) => by < bm)
 \*PROOF BY TranBallot DEF Ballot
 
------------------------------------------------------------------------------
-\* TODO rename
-LEMMA WellFormedCondition111 ==
+LEMMA WellFormedOneBProperty ==
     ASSUME NEW m \in Message,
            WellFormed(m),
            OneB(m)
