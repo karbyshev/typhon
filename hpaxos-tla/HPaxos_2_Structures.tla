@@ -190,14 +190,6 @@ LEMMA NotCaughtXXX ==
 -----------------------------------------------------------------------------
 \* TODO this subsection depends on HPaxos_2_Specs
 
-LEMMA EntConnectedByQuorum ==
-    ASSUME CaughtSpec,
-           NEW alpha \in Learner, NEW beta \in Learner,
-           <<alpha, beta>> \in Ent,
-           NEW AL \in SafeAcceptor \cup Learner,
-           NEW m \in known_msgs[AL]
-    PROVE  ConByQuorum(alpha, beta, m, SafeAcceptor)
-
 LEMMA EntConnected ==
     ASSUME CaughtSpec,
            NEW alpha \in Learner, NEW beta \in Learner,
@@ -208,56 +200,30 @@ LEMMA EntConnected ==
 
 -----------------------------------------------------------------------------
 
-\* TODO check and clean
-LEMMA LiveQuorumConIntersection ==
-    ASSUME NEW alpha \in Learner, NEW beta \in Learner,
-           NEW M \in Message,
-           NEW Qalpha \in SUBSET Message, NEW Qbeta \in SUBSET Message,
-           NEW S \in ByzQuorum,
-           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
-           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
-           ConByQuorum(alpha, beta, M, S)
-    PROVE  \E p \in S, ma \in Qalpha, mb \in Qbeta :
-            /\ p \notin Caught(M)
-            /\ ma.acc = p
-            /\ mb.acc = p
-
-\* TODO rename Ent -> ""
-\* TODO remove -- implies by LiveQuorumConIntersectionBis
-LEMMA EntLiveQuorumConIntersection ==
-    ASSUME NEW alpha \in Learner, NEW beta \in Learner,
-           NEW M \in Message,
-           NEW Qalpha \in SUBSET Tran(M), NEW Qbeta \in SUBSET Tran(M),
-           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
-           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
-           beta \in Con(alpha, M)
-    PROVE  \E p \in Acceptor, ma \in Qalpha, mb \in Qbeta :
-            /\ p \notin Caught(M)
-            /\ ma.acc = p
-            /\ mb.acc = p
-
-LEMMA LiveQuorumConIntersectionBis ==
-    ASSUME TypeOK,
-           NEW alpha \in Learner, NEW beta \in Learner,
-           NEW M \in Message,
-           NEW Qalpha \in SUBSET Message, NEW Qbeta \in SUBSET Message,
-           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
-           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
-           beta \in Con(alpha, M)
-    PROVE  \E p \in Acceptor, ma \in Qalpha, mb \in Qbeta :
-            /\ p \notin Caught(M)
-            /\ ma.acc = p
-            /\ mb.acc = p
-
-\* TODO rename Quorum -> LiveQuorum
-\* TODO check if implies by the lemmas above
-LEMMA EntQuorumIntersection ==
-    ASSUME NEW alpha \in Learner, NEW beta \in Learner,
+LEMMA LiveQuorumEntIntersection ==
+    ASSUME NEW alpha \in Learner,
+           NEW beta \in Learner,
            <<alpha, beta>> \in Ent,
-           NEW Qalpha \in SUBSET Message, NEW Qbeta \in SUBSET Message,
+           NEW Qalpha \in SUBSET Message,
+           NEW Qbeta \in SUBSET Message,
            [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
            [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive
     PROVE  \E p \in SafeAcceptor, ma \in Qalpha, mb \in Qbeta :
+            /\ ma.acc = p
+            /\ mb.acc = p
+
+LEMMA LiveQuorumConIntersection ==
+    ASSUME TypeOK,
+           NEW alpha \in Learner,
+           NEW beta \in Learner,
+           NEW Qalpha \in SUBSET Message,
+           NEW Qbeta \in SUBSET Message,
+           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
+           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
+           NEW M \in Message,
+           beta \in Con(alpha, M)
+    PROVE  \E p \in Acceptor, ma \in Qalpha, mb \in Qbeta :
+            /\ p \notin Caught(M)
             /\ ma.acc = p
             /\ mb.acc = p
 
@@ -346,5 +312,5 @@ LEMMA WellFormedTwoALearners ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 23:40:24 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 13:43:22 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev

@@ -413,91 +413,48 @@ PROOF BY EntConnectedByQuorum, ByzQuorumProperties DEF Con
 
 -----------------------------------------------------------------------------
 
-\* TODO check and clean
-LEMMA LiveQuorumConIntersection ==
-    ASSUME NEW alpha \in Learner, NEW beta \in Learner,
-           NEW M \in Message,
-           NEW Qalpha \in SUBSET Message, NEW Qbeta \in SUBSET Message,
-           NEW S \in ByzQuorum,
-           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
-           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
-           ConByQuorum(alpha, beta, M, S)
-    PROVE  \E p \in S, ma \in Qalpha, mb \in Qbeta :
-            /\ p \notin Caught(M)
-            /\ ma.acc = p
-            /\ mb.acc = p
-PROOF
-<1> /\ [from |-> alpha, to |-> beta, q |-> S] \in TrustSafe
-    /\ S \cap Caught(M) = {}
-    BY DEF ConByQuorum
-<1> PICK acc \in S : /\ acc \in { mm.acc : mm \in Qalpha }
-                     /\ acc \in { mm.acc : mm \in Qbeta }
-    BY TrustLiveAssumption, LearnerGraphAssumptionValidity
-<1> QED BY ByzQuorumProperties
-
-\* TODO rename Ent -> ""
-\* TODO remove -- implies by LiveQuorumConIntersectionBis
-LEMMA EntLiveQuorumConIntersection ==
-    ASSUME NEW alpha \in Learner, NEW beta \in Learner,
-           NEW M \in Message,
-           NEW Qalpha \in SUBSET Tran(M), NEW Qbeta \in SUBSET Tran(M),
-           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
-           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
-           beta \in Con(alpha, M)
-    PROVE  \E p \in Acceptor, ma \in Qalpha, mb \in Qbeta :
-            /\ p \notin Caught(M)
-            /\ ma.acc = p
-            /\ mb.acc = p
-PROOF
-<1> PICK S \in ByzQuorum : ConByQuorum(alpha, beta, M, S)
-    BY DEF Con
-<1> Qalpha \in SUBSET Message
-    BY Tran_Message
-<1> Qbeta \in SUBSET Message
-    BY Tran_Message
-<1> PICK p \in S, ma \in Qalpha, mb \in Qbeta :
-            /\ p \notin Caught(M)
-            /\ ma.acc = p
-            /\ mb.acc = p
-    BY LiveQuorumConIntersection
-<1> QED BY ByzQuorumProperties
-
-LEMMA LiveQuorumConIntersectionBis ==
-    ASSUME TypeOK,
-           NEW alpha \in Learner, NEW beta \in Learner,
-           NEW M \in Message,
-           NEW Qalpha \in SUBSET Message, NEW Qbeta \in SUBSET Message,
-           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
-           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
-           beta \in Con(alpha, M)
-    PROVE  \E p \in Acceptor, ma \in Qalpha, mb \in Qbeta :
-            /\ p \notin Caught(M)
-            /\ ma.acc = p
-            /\ mb.acc = p
-PROOF
-<1> PICK S \in ByzQuorum : ConByQuorum(alpha, beta, M, S)
-    BY DEF Con
-<1> /\ [from |-> alpha, to |-> beta, q |-> S] \in TrustSafe
-    /\ S \cap Caught(M) = {}
-    BY DEF ConByQuorum
-<1> PICK acc \in S : /\ acc \in { mm.acc : mm \in Qalpha }
-                     /\ acc \in { mm.acc : mm \in Qbeta }
-    BY TrustLiveAssumption, LearnerGraphAssumptionValidity
-<1> QED BY ByzQuorumProperties
-
-\* TODO rename Quorum -> LiveQuorum
-\* TODO check if implies by the lemmas above
-\* TODO see HLearnerGraphTheorems
-LEMMA EntQuorumIntersection ==
-    ASSUME NEW alpha \in Learner, NEW beta \in Learner,
+LEMMA LiveQuorumEntIntersection ==
+    ASSUME NEW alpha \in Learner,
+           NEW beta \in Learner,
            <<alpha, beta>> \in Ent,
-           NEW Qalpha \in SUBSET Message, NEW Qbeta \in SUBSET Message,
+           NEW Qalpha \in SUBSET Message,
+           NEW Qbeta \in SUBSET Message,
            [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
            [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive
     PROVE  \E p \in SafeAcceptor, ma \in Qalpha, mb \in Qbeta :
             /\ ma.acc = p
             /\ mb.acc = p
-BY TrustLiveAssumption, LearnerGraphAssumptionValidity DEF Ent
+PROOF
+<1> { mm.acc : mm \in Qalpha } \in ByzQuorum
+    BY TrustLiveAssumption
+<1> { mm.acc : mm \in Qbeta } \in ByzQuorum
+    BY TrustLiveAssumption
+<1> QED BY EntanglementTrustLive
+
+LEMMA LiveQuorumConIntersection ==
+    ASSUME TypeOK,
+           NEW alpha \in Learner,
+           NEW beta \in Learner,
+           NEW Qalpha \in SUBSET Message,
+           NEW Qbeta \in SUBSET Message,
+           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
+           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
+           NEW M \in Message,
+           beta \in Con(alpha, M)
+    PROVE  \E p \in Acceptor, ma \in Qalpha, mb \in Qbeta :
+            /\ p \notin Caught(M)
+            /\ ma.acc = p
+            /\ mb.acc = p
+PROOF
+<1> PICK S \in ByzQuorum : ConByQuorum(alpha, beta, M, S)
+    BY DEF Con
+<1> /\ [from |-> alpha, to |-> beta, q |-> S] \in TrustSafe
+    /\ S \cap Caught(M) = {}
+    BY DEF ConByQuorum
+<1> PICK acc \in S : /\ acc \in { mm.acc : mm \in Qalpha }
+                     /\ acc \in { mm.acc : mm \in Qbeta }
+    BY TrustLiveAssumption, LearnerGraphAssumptionValidity
+<1> QED BY ByzQuorumProperties
 
 -----------------------------------------------------------------------------
 
@@ -1055,5 +1012,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 10:56:12 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 13:40:03 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

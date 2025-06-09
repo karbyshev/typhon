@@ -336,7 +336,7 @@ PROOF
             /\ ma.acc = p
             /\ mb.acc = p
       <4> HIDE DEF Q2
-      <4> QED BY EntQuorumIntersection
+      <4> QED BY LiveQuorumEntIntersection
     <3> B(ma, bal)
         BY DEF Known2a
     <3> B(mb, B_M)
@@ -660,13 +660,16 @@ PROOF
     \* Therefore..
     <3> Q1 \in SUBSET Tran(seq[k].r)
         BY Tran_trans DEF HeterogeneousSpecCond \* cond 9
+    \* ..and
+    <3> Q1 \in SUBSET Message
+        BY Tran_Message
 
     <3> PICK p \in Acceptor, s0 \in Q1, r0 \in Q2 :
             /\ p \notin Caught(seq[k].r)
             /\ s0.acc = p
             /\ r0.acc = p
       <4> HIDE DEF Q2, Q1
-      <4> QED BY EntLiveQuorumConIntersection
+      <4> QED BY LiveQuorumConIntersection
     <3> r0 \in Message /\ s0 \in Message
         BY DEF KnownMsgsSpec2, TypeOK
     <3> ~Proposal(s0)
@@ -775,19 +778,23 @@ PROOF
           \* ..from which we conclude
           <6> Q1_star \in SUBSET Tran(seq[k_star].r)
               BY Tran_trans DEF HeterogeneousSpecCond
+          <6> Q1_star \in SUBSET Message
+              BY Tran_Message
           <6> gamma0 \in Con(alpha, seq[k_star].r)
               BY DEF SmallestIndex
           \* We DEFINE Q2 == qd(gamma0, m0, 1)
           \* and <3>cond4 \A i \in 1..k : m0 \in Tran(seq[i].r)
           <6> Q2 \in SUBSET Tran(seq[k_star].r)
               BY QdProperty1, <3>cond4, Tran_trans
+          <6> Q2 \in SUBSET Message
+              BY Tran_Message
 
           <6> PICK p_star \in Acceptor, s_star \in Q1_star, r_star \in Q2 :
                 /\ p_star \notin Caught(seq[k_star].r)
                 /\ s_star.acc = p_star
                 /\ r_star.acc = p_star
             <7> HIDE DEF Q2, Q1_star
-            <7> QED BY EntLiveQuorumConIntersection
+            <7> QED BY LiveQuorumConIntersection
           <6> s_star \in Message
               BY Tran_Message
           <6> r_star \in Message
@@ -1524,7 +1531,7 @@ PROOF
                 /\ s0.acc = p
                 /\ r0.acc = p
           <6> HIDE DEF Q2
-          <6> QED BY EntQuorumIntersection
+          <6> QED BY LiveQuorumEntIntersection
 
         <5> DEFINE w0 == [m |-> seq[2].m, B_m |-> seq[2].B_m, r |-> r0, s |-> s0, gamma |-> seq[2].gamma]
         <5> w0 \in TraceElement
@@ -1615,6 +1622,7 @@ LEMMA ChosenSafeCaseEq ==
            NEW BB \in Ballot,
            NEW V1 \in Value, NEW V2 \in Value,
            TypeOK,
+           KnownMsgsSpec1,
            <<L1, L2>> \in Ent,
            ChosenIn(L1, BB, V1), ChosenIn(L2, BB, V2)
     PROVE  V1 = V2
@@ -1622,25 +1630,25 @@ PROOF
 <1> PICK S1 \in SUBSET Known2a(L1, BB, V1) :
         [lr |-> L1, q |-> { m.acc : m \in S1 }] \in TrustLive
     BY DEF ChosenIn, Zenon
+<1> S1 \in SUBSET Message
+    BY DEF Known2a, KnownMsgsSpec1, TypeOK
 <1> DEFINE Q1 == { m.acc : m \in S1 }
-<1> Q1 \in ByzQuorum
-    BY TrustLiveAssumption
 <1> PICK S2 \in SUBSET Known2a(L2, BB, V2) :
         [lr |-> L2, q |-> { m.acc : m \in S2 }] \in TrustLive
     BY DEF ChosenIn
+<1> S2 \in SUBSET Message
+    BY DEF Known2a, KnownMsgsSpec1, TypeOK
 <1> DEFINE Q2 == { m.acc : m \in S2 }
-<1> Q2 \in ByzQuorum
-    BY TrustLiveAssumption
-<1> PICK A \in SafeAcceptor : A \in Q1 /\ A \in Q2
-    BY EntanglementTrustLive
-<1>4. PICK m1 \in known_msgs[L1] :
-        /\ B(m1, BB)
-        /\ V(m1, V1)
-      BY DEF ChosenIn, Known2a
-<1>5. PICK m2 \in known_msgs[L2] :
-        /\ B(m2, BB)
-        /\ V(m2, V2)
-      BY DEF ChosenIn, Known2a
+<1> PICK A \in SafeAcceptor, m1 \in S1, m2 \in S2 : TRUE
+    BY LiveQuorumEntIntersection
+<1>4. /\ m1 \in known_msgs[L1]
+      /\ B(m1, BB)
+      /\ V(m1, V1)
+      BY DEF Known2a
+<1>5. /\ m2 \in known_msgs[L2]
+      /\ B(m2, BB)
+      /\ V(m2, V2)
+      BY DEF Known2a
 <1>6. QED BY <1>4, <1>5, V_def, V_func, BValAssumption DEF TypeOK
 
 LEMMA ChosenSafeCaseLt ==
@@ -1928,5 +1936,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 10:52:09 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 13:38:45 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev
