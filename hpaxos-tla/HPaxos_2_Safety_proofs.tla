@@ -32,72 +32,47 @@ PROOF
 
 -----------------------------------------------------------------------------
 
-\*LEMMA XXX ==
-\*    ASSUME NEW alpha \in Learner, NEW beta \in Learner, NEW L0 \in Learner,
-\*           NEW bal \in Ballot,
-\*           NEW val \in Value
-\*    PROVE HeterogeneousSpecBase(alpha, beta, L0, bal, bal)
-\*PROOF
-\*<1> QED
+TraceElement == [m : Message, B_m : Ballot, r : Message, s : Message, gamma : Learner]
 
-\*HeterogeneousSpecBase(alpha, beta, L0, bal, val) ==
-\*        <<alpha, beta>> \in Ent /\
-\*        ChosenIn(alpha, bal, val) =>
-\*        \A M \in known_msgs[L0], B_M \in Ballot, V_M \in Value :
-\*            B(M, B_M) /\
-\*            bal < B_M /\
-\*            V(M, V_M) =>
-\*            \E m_0 \in Tran(M) :
-\*            \E B_m_0 \in Ballot:
-\*            \E r_0, s_0 \in Tran(M) :
-\*            \E gamma_0 \in Learner :
-\*                /\ HeterogeneousSpecCond(0, alpha, gamma_0, {}, bal, V_M, m_0, B_m_0, r_0, s_0, {}, {}, {})
-\*                /\ \A m1 \in Tran(M), B_m1 \in Ballot, r1 \in Tran(M), s1 \in Tran(M), gamma1 \in Learner:
-\*                    B(m1, B_m1) /\ HeterogeneousSpecCond(0, alpha, gamma1, {}, bal, V_M, m1, B_m1, r1, s1, {}, {}, {}) =>
-\*                    B_m_0 =< B_m1
-
-\* TODO RENAME
-Whatever == [m : Message, B_m : Ballot, r : Message, s : Message, gamma : Learner]
-
-LEMMA WhateverSpec ==
-    ASSUME NEW w \in Whatever
+LEMMA TraceElementSpec ==
+    ASSUME NEW w \in TraceElement
     PROVE  /\ w.m \in Message
            /\ w.B_m \in Ballot
            /\ w.r \in Message
            /\ w.s \in Message
            /\ w.gamma \in Learner
-PROOF BY DEF Whatever
+PROOF BY DEF TraceElement
 
-WhateverOrder == { ww \in Whatever \X Whatever : ww[1].B_m < ww[2].B_m }
+TraceElementOrder == { ww \in TraceElement \X TraceElement : ww[1].B_m < ww[2].B_m }
 
-LEMMA WhateverOrderWellFounded ==
-    IsWellFoundedOn(WhateverOrder, Whatever)
+LEMMA TraceElementOrderWellFounded ==
+    IsWellFoundedOn(TraceElementOrder, TraceElement)
 PROOF
-<1> SUFFICES ASSUME NEW f \in [Nat -> Whatever],
-                    \A n \in Nat : <<f[n + 1], f[n]>> \in WhateverOrder
+<1> SUFFICES ASSUME NEW f \in [Nat -> TraceElement],
+                    \A n \in Nat : <<f[n + 1], f[n]>> \in TraceElementOrder
              PROVE FALSE
     BY DEF IsWellFoundedOn
 <1> DEFINE g[n \in Nat] == f[n].B_m
 <1> ASSUME NEW n \in Nat PROVE g[n] \in Nat
-    BY DEF Whatever, Ballot
+    BY DEF TraceElement, Ballot
 <1> g \in [Nat -> Nat] OBVIOUS
 <1> ASSUME NEW n \in Nat
     PROVE  <<g[n + 1], g[n]>> \in OpToRel(<, Nat)
-    BY DEF WhateverOrder, OpToRel
+    BY DEF TraceElementOrder, OpToRel
 <1> QED BY NatLessThanWellFounded, Blast DEF IsWellFoundedOn
 
-LEMMA WhateverMin ==
-    ASSUME NEW T \in SUBSET Whatever, T # {}
+LEMMA TraceElementMin ==
+    ASSUME NEW T \in SUBSET TraceElement, T # {}
     PROVE  \E w \in T : \A z \in T : w.B_m =< z.B_m
 PROOF
-<1> ASSUME NEW x \in T, NEW y \in T PROVE x.B_m < y.B_m <=> <<x, y>> \in WhateverOrder
-    BY DEF WhateverOrder
+<1> ASSUME NEW x \in T, NEW y \in T PROVE x.B_m < y.B_m <=> <<x, y>> \in TraceElementOrder
+    BY DEF TraceElementOrder
 <1> PICK w0 \in T : \A z \in T : ~(z.B_m < w0.B_m)
-    BY WFMin, WhateverOrderWellFounded
+    BY WFMin, TraceElementOrderWellFounded
 <1> WITNESS w0 \in T
-<1> QED BY WhateverSpec DEF Ballot
+<1> QED BY TraceElementSpec DEF Ballot
 
-\* seq \in Seq(Whatever)
+\* seq \in Seq(TraceElement)
 HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x) ==
     LET m == seq[x].m
         B_m == seq[x].B_m
@@ -115,7 +90,6 @@ HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x) ==
         /\ x > 1 => \A i \in 1..(x - 1) : B_m < seq[i].B_m
         \* cond 4:
         /\ \A i \in 1..(x - 1) : m \in Tran(seq[i].r)
-\*        /\ x > 1 => m \in Tran(seq[x - 1].r)
         \* cond 5:
         /\ x > 1 => gamma \in Con(alpha, seq[x - 1].r)
         \* cond 6:
@@ -124,7 +98,6 @@ HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x) ==
         /\ gamma \in m.lrns
         \* cond 8:
         /\ r \in qd(gamma, m, 1)
-\*        /\ r \in q(gamma, m)
         \* cond 9:
         /\ s \in Tran(r)
         \* cond 10:
@@ -132,7 +105,6 @@ HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x) ==
         \* cond 11:
         /\ r.acc = s.acc
         \* cond 12:
-\*        /\ depth(alpha, s) = maxDepth(alpha) - x
         /\ x =< maxDepth(alpha) =>
             [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, s, maxDepth(alpha) - x + 1) }] \in TrustLive
         \* cond 13:
@@ -144,7 +116,7 @@ HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x) ==
 
 HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x) ==
     /\ HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x)
-    /\ \A z \in Whatever:
+    /\ \A z \in TraceElement:
         LET seq1 == [seq EXCEPT ![x] = z] IN
         HeterogeneousSpecCond(alpha, bal, M, V_M, seq1, x) =>
         seq[x].B_m =< seq1[x].B_m
@@ -155,8 +127,8 @@ LEMMA HeterogeneousSpecCondCongr ==
            NEW val \in Value,
            NEW m \in Message,
            NEW k \in Nat,
-           NEW seq1 \in Seq(Whatever),
-           NEW seq2 \in Seq(Whatever),
+           NEW seq1 \in Seq(TraceElement),
+           NEW seq2 \in Seq(TraceElement),
            \A i \in 1..k : seq1[i] = seq2[i]
     PROVE  \A j \in 1..k :
             HeterogeneousSpecCond(alpha, bal, m, val, seq1, j) =>
@@ -181,8 +153,8 @@ LEMMA HeterogeneousSpecCondMinCongr ==
            NEW m \in Message,
            NEW val \in Value,
            NEW k \in Nat,
-           NEW seq1 \in Seq(Whatever),
-           NEW seq2 \in Seq(Whatever),
+           NEW seq1 \in Seq(TraceElement),
+           NEW seq2 \in Seq(TraceElement),
            k =< Len(seq1),
            k =< Len(seq2),
            \A i \in 1..k : seq1[i] = seq2[i]
@@ -196,45 +168,27 @@ PROOF
     OBVIOUS
 <1> HeterogeneousSpecCond(alpha, bal, m, val, seq2, j)
     BY HeterogeneousSpecCondCongr DEF HeterogeneousSpecCondMin
-<1> SUFFICES ASSUME NEW z \in Whatever,
+<1> SUFFICES ASSUME NEW z \in TraceElement,
                         HeterogeneousSpecCond(alpha, bal, m, val, [seq2 EXCEPT ![j] = z], j)
              PROVE  seq2[j].B_m =< [seq2 EXCEPT ![j] = z][j].B_m
     BY DEF HeterogeneousSpecCondMin
 <1> DEFINE seq2_1 == [seq2 EXCEPT ![j] = z]
-<1> seq2_1 \in Seq(Whatever)
+<1> seq2_1 \in Seq(TraceElement)
     OBVIOUS
 <1> DEFINE seq1_1 == [seq1 EXCEPT ![j] = z]
-<1> seq1_1 \in Seq(Whatever)
+<1> seq1_1 \in Seq(TraceElement)
     OBVIOUS
 <1> \A i \in 1..k : seq1_1[i] = seq2_1[i]
     OBVIOUS
 <1> QED BY HeterogeneousSpecCondCongr DEF HeterogeneousSpecCondMin
 
-\* TODO rename
-\*LEMMA PPP ==
-\*    ASSUME NEW alpha \in Learner,
-\*           NEW m \in Message
-\*    PROVE LET S == {0} \cup depthIdx(alpha, m) IN \E d \in S : IsMax(d, S)
-\*PROOF
-\*<1> depthIdx(alpha, m) \in SUBSET Nat
-\*    BY DEF depthIdx
-\*<1> depthIdx(alpha, m) \in SUBSET 0..N_L
-\*    BY DEF depthIdx
-\*<1> IsFiniteSet(0..N_L)
-\*    BY FS_Interval, LearnerGraphSize
-\*<1> IsFiniteSet(depthIdx(alpha, m))
-\*    BY FS_Subset
-\*<1> IsFiniteSet({0} \cup depthIdx(alpha, m))
-\*    BY FS_AddElement
-\*<1> QED BY NatFiniteSetMaxExists
 
-\* TODO move up
 LEMMA HeterogeneousSpecCondProperties ==
     ASSUME NEW alpha \in Learner,
            NEW bal \in Ballot,
            NEW M \in Message,
            NEW V_M \in Value,
-           NEW seq \in Seq(Whatever),
+           NEW seq \in Seq(TraceElement),
            NEW K \in Nat,
            K =< Len(seq),
            \A i \in 1..K : HeterogeneousSpecCond(alpha, bal, M, V_M, seq, i)
@@ -256,7 +210,7 @@ PROOF
   \* from cond 8
   <2>2. \A i \in 1..K :
             seq[i].r \in Tran(seq[i].m)
-        BY WhateverSpec, QdProperty1 DEF HeterogeneousSpecCond
+        BY TraceElementSpec, QdProperty1 DEF HeterogeneousSpecCond
   \* from cond 4
   <2>3. \A i \in 2..K :
             seq[i].m \in Tran(seq[1].r)
@@ -271,10 +225,10 @@ PROOF
                         i < j
                  PROVE seq[j].r \in Tran(seq[i].r)
         OBVIOUS
-    <3> QED BY Tran_trans, WhateverSpec, QdProperty1 DEF HeterogeneousSpecCond
+    <3> QED BY Tran_trans, TraceElementSpec, QdProperty1 DEF HeterogeneousSpecCond
   <2>6. \A i, j \in 1..K : i < j =>
             Con(alpha, seq[i].r) \in SUBSET Con(alpha, seq[j].r)
-        BY <2>5, WhateverSpec, ConTran
+        BY <2>5, TraceElementSpec, ConTran
   <2>7. \A i, j \in 1..K : i < j /\ j < K =>
             Con(alpha, seq[i].r) # Con(alpha, seq[j].r)
     <3> SUFFICES ASSUME NEW i \in 1..K,
@@ -298,7 +252,7 @@ PROOF
   <2> QED BY <2>1, <2>2, <2>3, <2>4, <2>5, <2>6, <2>7, Tran_trans
 <1> QED OBVIOUS
 
-LEMMA YYY ==
+LEMMA HeterogeneousTraceExistence ==
     ASSUME NEW alpha \in Learner, NEW beta \in Learner, NEW L0 \in Learner,
            NEW bal \in Ballot,
            NEW val \in Value,
@@ -319,7 +273,7 @@ LEMMA YYY ==
            CaughtSpec, \* used by EntConnected
            TypeOK
     PROVE  \A i \in 0..maxDepth(alpha) :
-            \E seq \in [1 .. i + 1 -> Whatever] :
+            \E seq \in [1 .. i + 1 -> TraceElement] :
                 \A x \in 1 .. i + 1 :
                     HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x)
 PROOF
@@ -327,7 +281,7 @@ PROOF
     BY EntangledAccurate
 <1> DEFINE P(n) ==
             n \in 0 .. maxDepth(alpha) =>
-            \E seq \in [1 .. n + 1 -> Whatever] :
+            \E seq \in [1 .. n + 1 -> TraceElement] :
                 \A x \in 1 .. n + 1:
                     HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x)
 <1> SUFFICES ASSUME NEW n \in Nat PROVE P(n)
@@ -344,7 +298,7 @@ PROOF
   <2> 0 \in 0..maxDepth(alpha)
       OBVIOUS
   <2> DEFINE S ==
-        { w \in Whatever :
+        { w \in TraceElement :
             HeterogeneousSpecCond(alpha, bal, M, V_M, [x \in 1..1 |-> w], 1) }
   <2> S # {}
 \*    ChosenIn(alpha, b, v) ==
@@ -404,21 +358,21 @@ PROOF
           BY DEF MsgsSafeAcceptorPrevTranLinearSpec, KnownMsgsPrevTranSpec, SentBy
       <4> QED BY TranBallot DEF Ballot
     <3> DEFINE w0 == [m |-> M, B_m |-> B_M, r |-> mb, s |-> ma, gamma |-> beta]
-    <3> w0 \in Whatever
-        BY DEF Whatever
+    <3> w0 \in TraceElement
+        BY DEF TraceElement
     <3> w0.B_m \in Ballot
         OBVIOUS
     <3> SUFFICES HeterogeneousSpecCond(alpha, bal, M, V_M, [x \in 1..1 |-> w0], 1)
         OBVIOUS
     <3> QED BY Tran_refl, MaxDepthProperties DEF HeterogeneousSpecCond
   <2> PICK w0 \in S : \A z \in S : w0.B_m =< z.B_m
-      BY WhateverMin
+      BY TraceElementMin
   <2> HeterogeneousSpecCondMin(alpha, bal, M, V_M, [x \in 1..1 |-> w0], 1)
-      BY WhateverSpec DEF HeterogeneousSpecCondMin
-  <2> SUFFICES \E seq \in [1..1 -> Whatever] :
+      BY TraceElementSpec DEF HeterogeneousSpecCondMin
+  <2> SUFFICES \E seq \in [1..1 -> TraceElement] :
                 \A x \in 1..1 : HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x)
       OBVIOUS
-  <2> WITNESS [x \in 1..1 |-> w0] \in [1..1 -> Whatever]
+  <2> WITNESS [x \in 1..1 |-> w0] \in [1..1 -> TraceElement]
   <2> QED OBVIOUS
 
 \***** INDUCTION STEP
@@ -435,22 +389,22 @@ PROOF
       OBVIOUS
   <2> k \in 1..k
       OBVIOUS
-  <2> PICK seq \in [1 .. k -> Whatever]:
+  <2> PICK seq \in [1 .. k -> TraceElement]:
             \A x \in 1 .. k:
                 HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x)
       OBVIOUS
-  <2> seq \in Seq(Whatever)
+  <2> seq \in Seq(TraceElement)
       BY SeqDef
   <2> k =< Len(seq)
       OBVIOUS
   <2> DEFINE S ==
-        { w \in Whatever : HeterogeneousSpecCond(alpha, bal, M, V_M, Append(seq, w), k + 1) }
+        { w \in TraceElement : HeterogeneousSpecCond(alpha, bal, M, V_M, Append(seq, w), k + 1) }
   <2> S # {}
     <3> \A x \in 1 .. k : HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x)
         BY DEF HeterogeneousSpecCondMin
     <3> HeterogeneousSpecCond(alpha, bal, M, V_M, seq, k)
         OBVIOUS
-    <3> seq[k] \in Whatever
+    <3> seq[k] \in TraceElement
         OBVIOUS
     <3> \A x \in 1..k :
          /\ seq[x].m \in Message
@@ -458,7 +412,7 @@ PROOF
          /\ seq[x].r \in Message
          /\ seq[x].s \in Message
          /\ seq[x].gamma \in Learner
-        BY WhateverSpec
+        BY TraceElementSpec
 
     <3> \A x \in 1..k : B(seq[x].m, seq[x].B_m)
         BY DEF HeterogeneousSpecCond
@@ -537,7 +491,7 @@ PROOF
         <5> QED BY ConnectedSym, EntConnected
       <4> CASE k > 1
         <5> seq[k - 1].r \in Message
-             BY WhateverSpec
+             BY TraceElementSpec
          \* We have: m_k \in Tran(r_{k-1}) and r_k \in Tran(m_k) from QuorumProperties and (8)
          \* Hence: r_k \in Tran(r_{k-1})
          \* Therefore: Con(alpha, r_{k-1}) \in SUBSET Con(alpha, r_k) BY ConTran
@@ -625,7 +579,7 @@ PROOF
       <4> QED BY SameBallotValue, V_def, V_func, BValAssumption DEF SameBallot, SameValue
 
     <3> B_m0 < seq[k].B_m \* Property (2)
-        BY WellFormedCondition111 DEF OneA, Proposal
+        BY WellFormedOneBProperty DEF OneA, Proposal
 
     \* Auxiliary clause that proves <4>4 below.
     <3>cond4. \A i \in 1..k : m0 \in Tran(seq[i].r)
@@ -642,7 +596,7 @@ PROOF
           BY LatestSubset, Tran_trans, <3>12
       \* which by transitivity of Tran and the fact that all are soundly typed
       <4> \A i \in 1..k - 1 : seq[i].r \in Message
-          BY WhateverSpec
+          BY TraceElementSpec
       \* gives
       <4> QED BY Tran_trans
 
@@ -692,7 +646,7 @@ PROOF
       <4> \A i \in 1..k : m0 # seq[i].r
           BY MessageTypeSpec
       \* Therefore,
-      <4> QED BY WellFormedCondition111 DEF OneA, Proposal
+      <4> QED BY WellFormedOneBProperty DEF OneA, Proposal
 
     \* Using, Q2 defined above, we now define s0 and r0
     \* Define Q1 as a quorum of s[k] depth (maxDepth(alpha) - k + 1)
@@ -728,8 +682,8 @@ PROOF
         \* From bal < B_m0 (Property 1), we conclude
         BY NotCaughtXXX, TranBallot DEF Ballot \* TODO avoid unfolding Ballot here and elsewhere by formulating that the order is total
     <3> DEFINE w0 == [m |-> m0, B_m |-> B_m0, r |-> r0, s |-> s0, gamma |-> gamma0]
-    <3> w0 \in Whatever
-        BY DEF Whatever
+    <3> w0 \in TraceElement
+        BY DEF TraceElement
     <3> w0.B_m \in Ballot
         OBVIOUS
     <3> DEFINE seq0 == Append(seq, w0)
@@ -802,7 +756,7 @@ PROOF
           <6> 1..k_star \in SUBSET 1..k 
               OBVIOUS
           <6> seq[k_star].r \in Message
-              BY DEF WhateverSpec
+              BY DEF TraceElementSpec
           <6> B(seq[k_star].s, bal)
               BY DEF HeterogeneousSpecCond
 \*          <6> HeterogeneousSpecCond(alpha, bal, M, V_M, seq, k_star + 1)
@@ -850,12 +804,12 @@ PROOF
           <6> seq[k_star].r \in known_msgs[L0]
               BY DEF KnownMsgsSpec2
           <6> DEFINE w_star == [m |-> m0, B_m |-> B_m0, r |-> r_star, s |-> s_star, gamma |-> gamma0]
-          <6> w_star \in Whatever
-              BY DEF Whatever
+          <6> w_star \in TraceElement
+              BY DEF TraceElement
           \* Sufficient to build a sequence of 1..k*+1
           <6> DEFINE seq_sub == SubSeq(seq, 1, k_star)
           <6> DEFINE seq_star == Append(seq_sub, w_star)
-          <6> seq_star \in Seq(Whatever)
+          <6> seq_star \in Seq(TraceElement)
               BY SubSeqProperties
           <6> seq_star[k_star + 1] = w_star
               BY AppendProperties
@@ -876,8 +830,7 @@ PROOF
                   OBVIOUS
             <7>2. bal < seq_star[k_star + 1].B_m
                   OBVIOUS
-                    \* cond 3:
-\*        /\ x > 1 => \A i \in 1..(x - 1) : B_m < seq[i].B_m
+            \* cond 3:
             <7>3. \A i \in 1..(k_star + 1) - 1 : seq_star[k_star + 1].B_m < seq_star[i].B_m
                   BY <3>cond3
             <7>4. \A i \in 1..(k_star + 1) - 1 : seq_star[k_star + 1].m \in Tran(seq_star[i].r)
@@ -943,7 +896,7 @@ PROOF
                 BY <6>1, <6>2
           <6> HIDE DEF w_star
           <6> DEFINE seq1 == [seq EXCEPT ![k_star + 1] = w_star]
-          <6> seq1 \in Seq(Whatever)
+          <6> seq1 \in Seq(TraceElement)
               OBVIOUS
           <6> \A i \in 1..k_star + 1 : seq1[i] = seq_star[i]
               OBVIOUS
@@ -959,7 +912,7 @@ PROOF
                 OBVIOUS
           <6> HIDE DEF seq1
           <6> HIDE DEF seq_star
-          <6> QED BY <6>8, <6>7, <6>3, WhateverSpec DEF Ballot
+          <6> QED BY <6>8, <6>7, <6>3, TraceElementSpec DEF Ballot
         <5> QED BY <5>1, <5>2
 
       <4>7. seq0[k + 1].gamma \in seq0[k + 1].m.lrns
@@ -974,7 +927,7 @@ PROOF
              OBVIOUS
       <4>12. k + 1 =< maxDepth(alpha) =>
                 [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq0[k + 1].s, maxDepth(alpha) - (k + 1) + 1) }] \in TrustLive
-             BY Qd_eq \* QdProperty3 \* TODO clean
+             BY Qd_eq
       <4>13. B(seq0[k + 1].s, bal)
              OBVIOUS
       <4>14. V(seq0[k + 1].m, V_M)
@@ -984,19 +937,19 @@ PROOF
     <3> QED BY <3>100
 
   <2> PICK w0 \in S : \A z \in S : w0.B_m =< z.B_m
-      BY WhateverMin
+      BY TraceElementMin
   <2> DEFINE seq0 == Append(seq, w0)
   <2> seq0[k + 1] = w0
       OBVIOUS
-  <2> seq0 \in [1..k + 1 -> Whatever]
+  <2> seq0 \in [1..k + 1 -> TraceElement]
       BY AppendProperties 
   <2> Len(seq0) = k + 1
       BY AppendProperties
   <2> ASSUME NEW x \in 0..k PROVE seq0[k] = seq[k]
       BY AppendProperties
-  <2> \A z \in Whatever : [seq0 EXCEPT ![k + 1] = z] = Append(seq, z)
+  <2> \A z \in TraceElement : [seq0 EXCEPT ![k + 1] = z] = Append(seq, z)
       BY Isa, AppendProperties
-  <2> \A z \in Whatever : [seq0 EXCEPT ![k + 1] = z][k + 1] = z
+  <2> \A z \in TraceElement : [seq0 EXCEPT ![k + 1] = z][k + 1] = z
       OBVIOUS
   <2> HeterogeneousSpecCond(alpha, bal, M, V_M, seq0, k + 1)
       OBVIOUS
@@ -1005,26 +958,18 @@ PROOF
   <2> \A i \in 1..k : HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq0, i)
       BY HeterogeneousSpecCondMinCongr
   <2> SUFFICES
-        \E seq_1 \in [1..k + 1 -> Whatever] :
+        \E seq_1 \in [1..k + 1 -> TraceElement] :
               \A x \in 1..k + 1 :
                      HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq_1, x)
       OBVIOUS
-  <2> WITNESS seq0 \in [1..k + 1 -> Whatever]
+  <2> WITNESS seq0 \in [1..k + 1 -> TraceElement]
   <2> QED OBVIOUS
 <1> HIDE DEF P
 <1>3. QED BY <1>0, <1>1, NatInductionShifted, Blast
 
 -----------------------------------------------------------------------------
 
-\*LEMMA Union_cup ==
-\*    ASSUME NEW F(_),
-\*           NEW X,
-\*           NEW Y,
-\*           NEW Z
-\*    PROVE  UNION {F(x) : x \in X \cup Y \cup Z} = (UNION {F(x) : x \in X}) \cup (UNION {F(y) : y \in Y}) \cup (UNION {F(z) : z \in Z})
-\*PROOF BY Zenon
-
-LEMMA ZZZ ==
+LEMMA HeterogeneousTraceContradiction ==
     ASSUME NEW alpha \in Learner, NEW beta \in Learner,
            <<alpha, beta>> \in Ent,
            NEW bal \in Ballot,
@@ -1034,7 +979,7 @@ LEMMA ZZZ ==
            NEW M \in known_msgs[L0],
            TwoA(M),
            NEW V_M \in Value,
-           NEW seq \in [1 .. maxDepth(alpha) + 1 -> Whatever],
+           NEW seq \in [1 .. maxDepth(alpha) + 1 -> TraceElement],
            \A x \in 1 .. maxDepth(alpha) + 1 :
             HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x),
            KnownMsgsSpec1,
@@ -1059,7 +1004,7 @@ PROOF
     OBVIOUS
 <1> maxDepth(alpha) + 1 \in 1..maxDepth(alpha) + 1
     OBVIOUS
-<1> seq \in Seq(Whatever)
+<1> seq \in Seq(TraceElement)
     BY SeqDef
 <1> 2 =< Len(seq)
     BY MaxDepthProperties
@@ -1092,7 +1037,7 @@ PROOF
 
 \*HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x) ==
 \*    /\ HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x)
-\*    /\ \A z \in Whatever:
+\*    /\ \A z \in TraceElement:
 \*        LET seq1 == [seq EXCEPT ![x] = z] IN
 \*        HeterogeneousSpecCond(alpha, bal, M, V_M, seq1, x) =>
 \*        seq[x].B_m =< seq1[x].B_m
@@ -1385,7 +1330,7 @@ PROOF
 <1> mseq[1] = M0
     OBVIOUS
 <1> mseq \in [1..maxDepth(alpha) + 1 -> Message]
-    BY WhateverSpec
+    BY TraceElementSpec
 <1> mseq \in Seq(Message)
     BY SeqDef
 <1>0. Len(mseq) = maxDepth(alpha) + 1
@@ -1506,12 +1451,12 @@ PROOF
       <4> QED OBVIOUS
     <3> seq[2].gamma \notin Con(alpha, M0)
       <4> seq[2].gamma \in Learner
-          BY WhateverSpec
+          BY TraceElementSpec
 
       <4> <<alpha, seq[2].gamma>> \notin Ent
         <5> SUFFICES ASSUME <<alpha, seq[2].gamma>> \in Ent PROVE FALSE
             OBVIOUS
-        \* Sketch: 1) assuming that alpha and seq[2].gamma are entangled, we construct w0 \in Whatever as
+        \* Sketch: 1) assuming that alpha and seq[2].gamma are entangled, we construct w0 \in TraceElement as
         \* w0 == [m |-> m0, B_m |-> B_m0, r |-> r0, s |-> s0, gamma |-> gamma0]
         \* such that it satisfies HeterogeneousSpecCond(alpha, bal, M, V_M, [1 |-> w0], 1)
         \* Then we compare the sequence with seq1 = [1 |-> seq[1]]
@@ -1556,7 +1501,7 @@ PROOF
         <5>2. seq[2].m.lrns = { l \in Learner : [lr |-> l, q |-> { mm.acc : mm \in qd(l, seq[2].m, 1) }] \in TrustLive }
               BY DEF WellFormed
         <5> seq[2].B_m \in Ballot
-            BY WhateverSpec
+            BY TraceElementSpec
         <5> B(seq[2].m, seq[2].B_m)
             BY DEF HeterogeneousSpecCond
 
@@ -1582,11 +1527,11 @@ PROOF
           <6> QED BY EntQuorumIntersection
 
         <5> DEFINE w0 == [m |-> seq[2].m, B_m |-> seq[2].B_m, r |-> r0, s |-> s0, gamma |-> seq[2].gamma]
-        <5> w0 \in Whatever
-            BY DEF Whatever
+        <5> w0 \in TraceElement
+            BY DEF TraceElement
 
         <5> DEFINE seq0 == [ seq EXCEPT ![1] = w0 ]
-        <5> seq0 \in Seq(Whatever)
+        <5> seq0 \in Seq(TraceElement)
             BY SeqDef
         <5>3. HeterogeneousSpecCond(alpha, bal, M, V_M, seq0, 1)
           <6> seq0[1] = w0
@@ -1630,11 +1575,11 @@ PROOF
         <5>6. seq[1].B_m =< seq0[1].B_m
               BY <5>3, <5>5 DEF HeterogeneousSpecCondMin
         \* contradiction with minimality of seq[1]
-        <5> QED BY <5>4, <5>6, WhateverSpec DEF Ballot
+        <5> QED BY <5>4, <5>6, TraceElementSpec DEF Ballot
 
       \* we prove that gamma in not entangled with alpha
       \* everything else is caught
-      <4> QED BY <1>caught_fake, WhateverSpec, ConAllCaught
+      <4> QED BY <1>caught_fake, TraceElementSpec, ConAllCaught
     <3> QED OBVIOUS
   <2> QED BY <2>1, <2>2
 
@@ -1642,27 +1587,26 @@ PROOF
          BY <1>seq0, <1>seq1, <1>seq2 DEF ConSeq 
 
 <1>seq4. Len(mseq) =< maxDepth(alpha)
-         BY <1>seq3, ConSeqMaxDepth
+         BY <1>seq3, MaxDepthProperties
 <1> QED BY <1>0, <1>seq4
 
 -----------------------------------------------------------------------------
 
-\* TODO not used; remove it and remove MsgsSafeAcceptorPrevTranSpec
-\* TODO check if can be reused, in particular ZZZ, <1>caught_safe
-LEMMA SafeAcceptorSentBallotTran ==
-    ASSUME MsgsSafeAcceptorPrevTranLinearSpec,
-           MsgsSafeAcceptorPrevTranSpec,
-           TypeOK,
-           NEW A \in SafeAcceptor,
-           NEW X \in SentBy(A),
-           NEW Y \in SentBy(A),
-           NEW bx \in Ballot,
-           NEW by \in Ballot,
-           B(X, bx), B(Y, by),
-           bx < by
-    PROVE  X \in Tran(Y)
-PROOF BY TranBallot, MessageTypeSpec
-      DEF MsgsSafeAcceptorPrevTranSpec, MsgsSafeAcceptorPrevTranLinearSpec, SentBy, Ballot, TypeOK
+\* TODO not used -- check if can be reused
+\*LEMMA SafeAcceptorSentBallotTran ==
+\*    ASSUME MsgsSafeAcceptorPrevTranLinearSpec,
+\*           MsgsSafeAcceptorPrevTranSpec,
+\*           TypeOK,
+\*           NEW A \in SafeAcceptor,
+\*           NEW X \in SentBy(A),
+\*           NEW Y \in SentBy(A),
+\*           NEW bx \in Ballot,
+\*           NEW by \in Ballot,
+\*           B(X, bx), B(Y, by),
+\*           bx < by
+\*    PROVE  X \in Tran(Y)
+\*PROOF BY TranBallot, MessageTypeSpec
+\*      DEF MsgsSafeAcceptorPrevTranSpec, MsgsSafeAcceptorPrevTranLinearSpec, SentBy, Ballot, TypeOK
 
 -----------------------------------------------------------------------------
 
@@ -1984,5 +1928,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef
 
 =============================================================================
 \* Modification History
-\* Last modified Sun Jun 08 19:10:04 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 10:52:09 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev
