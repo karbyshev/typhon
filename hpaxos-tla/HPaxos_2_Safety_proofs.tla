@@ -1212,10 +1212,6 @@ PROOF
     OBVIOUS
 
 <1>M0_tran. Tran(M0) \subseteq { M0, p1, p2 } \cup Tran(M) \cup oneb_1 \cup oneb_2
-\*  <2> (UNION { Tran(r) : r \in M0.refs }) =
-\*        (UNION { Tran(r) : r \in SingletonM }) \cup (UNION { Tran(x) : x \in oneb_1 }) \cup (UNION { Tran(y) : y \in oneb_2 })
-\*    <3> HIDE DEF M0, oneb_1, oneb_2, SingletonM
-\*    <3> QED OBVIOUS \*BY Union_cup \* TODO clean
   <2> HIDE DEF M0
   <2> Tran(M0) = {M0} \cup Tran(M) \cup (UNION { Tran(x) : x \in oneb_1 }) \cup (UNION { Tran(y) : y \in oneb_2 })
     <3> HIDE DEF oneb_1, oneb_2
