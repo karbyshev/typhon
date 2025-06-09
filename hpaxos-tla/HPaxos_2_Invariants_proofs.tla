@@ -238,13 +238,11 @@ PROOF
            DEF NextTLA, SafeAcceptorAction, LearnerAction
 
 LEMMA DecisionSpecInvariant ==
-    MaxDepthSpec /\
     TypeOK /\ NextTLA /\
     KnownMsgsSpec2 /\
     DecisionSpec => DecisionSpec'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA, DecisionSpec,
-                    MaxDepthSpec,
                     NEW L \in Learner, NEW BB \in Ballot, NEW VV \in Value,
                     VV \in decision[L, BB]'
              PROVE  ChosenIn(L, BB, VV)'
@@ -254,7 +252,6 @@ PROOF
     BY DEF Known2a, KnownMsgsSpec2, TypeOK
 <1> USE DEF DecisionSpec
 <1> USE DEF ChosenIn
-<1> USE DEF MaxDepthSpec
 <1>1. CASE \E p \in Proposer : ProposerAction(p)
   <2> PICK bal \in Ballot : SendProposal(bal)
       BY <1>1 DEF ProposerAction
@@ -997,5 +994,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Sat Jun 07 00:52:50 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 10:53:29 CEST 2025 by karbyshev
 \* Created Tue May 20 23:09:22 CEST 2025 by karbyshev

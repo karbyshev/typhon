@@ -34,7 +34,6 @@ LEMMA RecentMsgsSpec1Invariant ==
     RecentMsgsSpec1'
 
 LEMMA DecisionSpecInvariant ==
-    MaxDepthSpec /\
     TypeOK /\ NextTLA /\
     KnownMsgsSpec2 /\
     DecisionSpec => DecisionSpec'

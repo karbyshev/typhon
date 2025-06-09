@@ -312,8 +312,6 @@ LEMMA YYY ==
            B(M, B_M),
            V(M, V_M),
            beta \in M.lrns,
-           \* TODO
-           MaxDepthSpec,
            MsgsSafeAcceptorPrevTranLinearSpec,
            KnownMsgsPrevTranSpec,
            KnownMsgsSpec1,
@@ -339,7 +337,7 @@ PROOF
 <1> WellFormed(M)
     BY DEF KnownMsgsSpec2
 <1> maxDepth(alpha) \in Nat
-    BY DEF MaxDepthSpec
+    BY MaxDepthProperties
 
 \***** BASE CASE
 <1>0. P(0)
@@ -412,7 +410,7 @@ PROOF
         OBVIOUS
     <3> SUFFICES HeterogeneousSpecCond(alpha, bal, M, V_M, [x \in 1..1 |-> w0], 1)
         OBVIOUS
-    <3> QED BY Tran_refl DEF HeterogeneousSpecCond, MaxDepthSpec
+    <3> QED BY Tran_refl, MaxDepthProperties DEF HeterogeneousSpecCond
   <2> PICK w0 \in S : \A z \in S : w0.B_m =< z.B_m
       BY WhateverMin
   <2> HeterogeneousSpecCondMin(alpha, bal, M, V_M, [x \in 1..1 |-> w0], 1)
@@ -1041,13 +1039,14 @@ LEMMA ZZZ ==
             HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, x),
            KnownMsgsSpec1,
            KnownMsgsSpec2,
-           MaxDepthSpec,
            MsgsSafeAcceptorPrevTranLinearSpec,
            KnownMsgsPrevTranSpec,
            CaughtSpec,
            TypeOK
     PROVE  FALSE
 PROOF
+<1> Accurate(alpha)
+    BY EntangledAccurate
 <1> M \in Message
     BY DEF KnownMsgsSpec2, TypeOK
 <1> WellFormed(M)
@@ -1055,15 +1054,15 @@ PROOF
 <1> ~OneA(M)
     BY MessageTypeSpec
 <1> maxDepth(alpha) \in Nat
-    BY DEF MaxDepthSpec
+    BY MaxDepthProperties
 <1> maxDepth(alpha) + 1 > maxDepth(alpha)
     OBVIOUS
 <1> maxDepth(alpha) + 1 \in 1..maxDepth(alpha) + 1
     OBVIOUS
 <1> seq \in Seq(Whatever)
     BY SeqDef
-<1> Len(seq) >= 2
-    BY DEF MaxDepthSpec
+<1> 2 =< Len(seq)
+    BY MaxDepthProperties
 <1> Len(seq) = maxDepth(alpha) + 1
     OBVIOUS
 <1> Len(seq) \in Nat
@@ -1623,7 +1622,7 @@ PROOF
           <6>15. w0.m \in Tran(M)
                  BY HeterogeneousSpecCondProperties
           <6> QED BY <6>0, <6>2, <6>7, <6>8, <6>9, <6>11, <6>12, <6>13, <6>14, <6>15
-                  DEF HeterogeneousSpecCond, MaxDepthSpec
+                  DEF HeterogeneousSpecCond, MaxDepthProperties
         <5>4. seq0[1].B_m < seq[1].B_m
               BY DEF HeterogeneousSpecCond
         <5>5. HeterogeneousSpecCondMin(alpha, bal, M, V_M, seq, 1)
@@ -1704,7 +1703,6 @@ LEMMA ChosenSafeCaseLt ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner,
            NEW B1 \in Ballot, NEW B2 \in Ballot,
            NEW V1 \in Value, NEW V2 \in Value,
-           MaxDepthSpec,
            KnownMsgsSpec1,
            KnownMsgsSpec2,
            CaughtSpec,
@@ -1736,19 +1734,18 @@ PROOF
         /\ V(M, V2)
     BY <1>non_empty DEF Known2a
 <1> maxDepth(L1) \in 0 .. maxDepth(L1)
-    BY DEF MaxDepthSpec
-<1> PICK seq \in [1 .. maxDepth(L1) + 1 -> Whatever] :
+    BY MaxDepthProperties
+<1> PICK seq \in [1 .. maxDepth(L1) + 1 -> TraceElement] :
             \A x \in 1 .. maxDepth(L1) + 1 :
                 HeterogeneousSpecCondMin(L1, B1, M, V2, seq, x)
-    BY YYY
-<1> QED BY ZZZ
+    BY HeterogeneousTraceExistence
+<1> QED BY HeterogeneousTraceContradiction
 
 LEMMA ChosenSafe ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner,
            NEW B1 \in Ballot, NEW B2 \in Ballot,
            NEW V1 \in Value, NEW V2 \in Value,
            TypeOK,
-           MaxDepthSpec,
            KnownMsgsSpec1,
            KnownMsgsSpec2,
            CaughtSpec,
@@ -1780,7 +1777,6 @@ FullSafetyInvariant ==
 
 LEMMA SafetyStep ==
     TypeOK /\ NextTLA /\
-    MaxDepthSpec /\
     KnownMsgsSpec1 /\ KnownMsgsSpec2 /\
     CaughtSpec /\
     MsgsSafeAcceptorPrevTranLinearSpec /\
@@ -1789,7 +1785,7 @@ LEMMA SafetyStep ==
     Safety => Safety'
 PROOF
 <1> SUFFICES
-        ASSUME TypeOK, NextTLA, MaxDepthSpec,
+        ASSUME TypeOK, NextTLA,
                KnownMsgsSpec1, KnownMsgsSpec2,
                CaughtSpec,
                KnownMsgsPrevTranSpec,
@@ -1946,11 +1942,9 @@ LEMMA SafetyStutter ==
 PROOF BY DEF Safety, vars
 
 LEMMA FullSafetyInvariantNext ==
-    MaxDepthSpec /\
     FullSafetyInvariant /\ [NextTLA]_vars => FullSafetyInvariant'
 PROOF
-<1> SUFFICES ASSUME MaxDepthSpec,
-                    FullSafetyInvariant,
+<1> SUFFICES ASSUME FullSafetyInvariant,
                     [NextTLA]_vars
              PROVE  FullSafetyInvariant'
     OBVIOUS
@@ -1983,10 +1977,8 @@ PROOF
       DEF FullSafetyInvariant
 <1>3. QED BY <1>1, <1>2
 
-LEMMA MaxDepthSpecLemma == MaxDepthSpec
-
 THEOREM SafetyResult == Spec => []Safety
-PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef, MaxDepthSpecLemma
+PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef
       DEF Spec, FullSafetyInvariant
 
 

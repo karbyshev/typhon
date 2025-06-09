@@ -89,13 +89,7 @@ MsgsSafeAcceptorPrevTranLinearSpec ==
         \A m1, m2 \in SentBy(A) :
             m1 \in PrevTran(m2) \/ m2 \in PrevTran(m1)
 
------------------------------------------------------------------------------
-\* TODO convert to a lemma
-MaxDepthSpec ==
-    \A alpha \in Learner: maxDepth(alpha) \in Nat /\ maxDepth(alpha) >= 1
-
-
 =============================================================================
 \* Modification History
-\* Last modified Sun Jun 08 19:24:48 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 10:58:18 CEST 2025 by karbyshev
 \* Created Tue May 20 23:34:17 CEST 2025 by karbyshev

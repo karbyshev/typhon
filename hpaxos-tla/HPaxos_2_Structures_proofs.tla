@@ -701,6 +701,50 @@ PROOF
   <2> QED BY FS_Subset
 <1> QED BY Zenon, MaxProperties, NatFiniteSetMaxExists DEF maxDepth
 
+LEMMA MaxDepthProperties ==
+    ASSUME NEW alpha \in Learner
+    PROVE  /\ maxDepth(alpha) \in Nat
+           /\ Accurate(alpha) => 1 =< maxDepth(alpha)
+           /\ maxDepth(alpha) =< N_L
+           /\ \A seq \in ConSeq(alpha) :
+                Len(seq) =< maxDepth(alpha)
+PROOF
+<1> DEFINE I == {n \in Nat : \E seq \in ConSeq(alpha) : n = Len(seq) }
+<1> 0 \in I
+    BY ConSeqContainsEmpty
+<1> I \in SUBSET 0..N_L
+    BY ConSeqBound
+<1> IsFiniteSet(I)
+  <2> IsFiniteSet(0..N_L)
+      BY InitialSegmentIsFinite, LearnerGraphSize
+  <2> QED BY FS_Subset
+<1> \E max \in I : IsMax(max, I)
+    BY Zenon, NatFiniteSetMaxExists
+<1>0. Max(I) \in I
+  <2> HIDE DEF I
+  <2> QED BY MaxProperties
+<1>1. ASSUME Accurate(alpha) PROVE 1 =< Max(I)
+  <2> PICK seq0 \in ConSeq(alpha) : seq0 # << >>
+      BY <1>1, ConSeqNonTrivial
+  <2> seq0 \in Seq(Message)
+      BY DEF ConSeq
+  <2> Len(seq0) \in I
+      BY LenProperties
+  <2> 1 =< Len(seq0)
+      BY EmptySeq
+  <2> HIDE DEF I
+  <2> QED BY <1>0, MaxProperties
+<1>2. Max(I) =< N_L
+  <2> HIDE DEF I
+  <2> QED BY <1>0, MaxProperties
+<1>3. ASSUME NEW seq \in ConSeq(alpha) PROVE Len(seq) =< maxDepth(alpha)
+  <2> seq \in Seq(Message)
+      BY DEF ConSeq
+  <2> Len(seq) \in I
+      BY LenProperties
+  <2> QED BY Zenon, MaxProperties DEF maxDepth
+<1> QED BY Zenon, <1>0, <1>1, <1>2, <1>3 DEF maxDepth
+
 -----------------------------------------------------------------------------
 
 LEMMA QRec_def ==
@@ -1015,5 +1059,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 23:40:33 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 10:56:12 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

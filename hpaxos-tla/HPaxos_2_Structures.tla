@@ -310,10 +310,13 @@ LEMMA ConSeqBound ==
            NEW seq \in ConSeq(alpha)
     PROVE  Len(seq) =< N_L
 
-LEMMA ConSeqMaxDepth ==
-    ASSUME NEW alpha \in Learner,
-           NEW seq \in ConSeq(alpha)
-    PROVE  Len(seq) =< maxDepth(alpha)
+LEMMA MaxDepthProperties ==
+    ASSUME NEW alpha \in Learner
+    PROVE  /\ maxDepth(alpha) \in Nat
+           /\ Accurate(alpha) => 1 =< maxDepth(alpha)
+           /\ maxDepth(alpha) =< N_L
+           /\ \A seq \in ConSeq(alpha) :
+                Len(seq) =< maxDepth(alpha)
 
 -----------------------------------------------------------------------------
 
