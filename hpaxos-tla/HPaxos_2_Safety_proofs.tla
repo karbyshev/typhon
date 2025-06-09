@@ -32,6 +32,30 @@ PROOF
 
 -----------------------------------------------------------------------------
 
+LEMMA NotCaughtKnownSenderLinearTran ==
+    ASSUME KnownMsgsPrevTranSpec,
+           KnownMsgsSpec1,
+           KnownMsgsSpec2,
+           TypeOK,
+           NEW AL \in SafeAcceptor \cup Learner,
+           NEW a \in Acceptor,
+           NEW M \in known_msgs[AL],
+           NEW x \in Tran(M), NEW y \in Tran(M),
+           x.acc = a,
+           y.acc = a,
+           ~Proposal(x),
+           ~Proposal(y),
+           a \notin Caught(M)
+    PROVE  x \in Tran(y) \/ y \in Tran(x)
+PROOF
+<1> SUFFICES ASSUME x # y PROVE x \in Tran(y) \/ y \in Tran(x)
+    BY Tran_refl DEF KnownMsgsSpec1, KnownMsgsSpec2, TypeOK
+<1> x \in known_msgs[AL] /\ y \in known_msgs[AL]
+    BY DEF KnownMsgsSpec2
+<1> QED BY DEF KnownMsgsPrevTranSpec, Caught, CaughtMsg
+
+-----------------------------------------------------------------------------
+
 TraceElement == [m : Message, B_m : Ballot, r : Message, s : Message, gamma : Learner]
 
 LEMMA TraceElementSpec ==
@@ -682,8 +706,10 @@ PROOF
         BY QdProperty1 DEF SameBallot
 
     <3> s0 \in Tran(r0)
-        \* From bal < B_m0 (Property 1), we conclude
-        BY NotCaughtXXX, TranBallot DEF Ballot \* TODO avoid unfolding Ballot here and elsewhere by formulating that the order is total
+      <4> s0 \in Tran(r0) \/ r0 \in Tran(s0)
+          BY NotCaughtKnownSenderLinearTran
+      \* From bal < B_m0 (Property 1), we conclude
+      <4> QED BY TranBallot DEF Ballot \* TODO avoid unfolding Ballot here and elsewhere by formulating that the order is total
     <3> DEFINE w0 == [m |-> m0, B_m |-> B_m0, r |-> r0, s |-> s0, gamma |-> gamma0]
     <3> w0 \in TraceElement
         BY DEF TraceElement
@@ -856,7 +882,10 @@ PROOF
             <7>8. seq_star[k_star + 1].r \in qd(seq_star[k_star + 1].gamma, seq_star[k_star + 1].m, 1)
                   OBVIOUS
             <7>9. seq_star[k_star + 1].s \in Tran(seq_star[k_star + 1].r)
-                  BY NotCaughtXXX, TranBallot DEF Ballot
+              <8> \/ seq_star[k_star + 1].s \in Tran(seq_star[k_star + 1].r)
+                  \/ seq_star[k_star + 1].r \in Tran(seq_star[k_star + 1].s)
+                  BY NotCaughtKnownSenderLinearTran
+              <8> QED BY TranBallot DEF Ballot
             <7>10. seq_star[k_star + 1].s \in Tran(seq_star[k_star].s)
                    OBVIOUS
             <7>11. seq_star[k_star + 1].r.acc = seq_star[k_star + 1].s.acc
@@ -1932,5 +1961,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 14:04:53 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 16:36:50 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev

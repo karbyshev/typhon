@@ -367,32 +367,6 @@ PROOF
 -----------------------------------------------------------------------------
 \* TODO this subsection depends on HPaxos_2_Specs
 
-\* TODO rename
-LEMMA NotCaughtXXX ==
-    ASSUME KnownMsgsPrevTranSpec,
-           KnownMsgsSpec1,
-           KnownMsgsSpec2,
-           TypeOK,
-           NEW AL \in SafeAcceptor \cup Learner,
-           NEW a \in Acceptor,
-           NEW M \in known_msgs[AL],
-           NEW x \in Tran(M), NEW y \in Tran(M),
-           x.acc = a,
-           y.acc = a,
-           ~Proposal(x),
-           ~Proposal(y),
-           a \notin Caught(M)
-    PROVE  x \in Tran(y) \/ y \in Tran(x)
-PROOF
-<1> SUFFICES ASSUME x # y PROVE x \in Tran(y) \/ y \in Tran(x)
-    BY Tran_refl DEF KnownMsgsSpec1, KnownMsgsSpec2, TypeOK
-<1> x \in known_msgs[AL] /\ y \in known_msgs[AL]
-    BY DEF KnownMsgsSpec2
-<1> QED BY DEF KnownMsgsPrevTranSpec, Caught, CaughtMsg
-
------------------------------------------------------------------------------
-\* TODO this subsection depends on HPaxos_2_Specs
-
 LEMMA EntConnectedByQuorum ==
     ASSUME CaughtSpec,
            NEW alpha \in Learner, NEW beta \in Learner,
@@ -1012,5 +986,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 14:04:35 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 16:37:35 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

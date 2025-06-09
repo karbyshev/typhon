@@ -170,26 +170,6 @@ LEMMA ChosenBalVal ==
 -----------------------------------------------------------------------------
 \* TODO this subsection depends on HPaxos_2_Specs
 
-\* TODO rename
-LEMMA NotCaughtXXX ==
-    ASSUME KnownMsgsPrevTranSpec,
-           KnownMsgsSpec1,
-           KnownMsgsSpec2,
-           TypeOK,
-           NEW AL \in SafeAcceptor \cup Learner,
-           NEW a \in Acceptor,
-           NEW M \in known_msgs[AL],
-           NEW x \in Tran(M), NEW y \in Tran(M),
-           x.acc = a,
-           y.acc = a,
-           ~Proposal(x),
-           ~Proposal(y),
-           a \notin Caught(M)
-    PROVE  x \in Tran(y) \/ y \in Tran(x)
-
------------------------------------------------------------------------------
-\* TODO this subsection depends on HPaxos_2_Specs
-
 LEMMA EntConnected ==
     ASSUME CaughtSpec,
            NEW alpha \in Learner, NEW beta \in Learner,
@@ -312,5 +292,5 @@ LEMMA WellFormedTwoALearners ==
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 14:05:01 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 16:37:30 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev
