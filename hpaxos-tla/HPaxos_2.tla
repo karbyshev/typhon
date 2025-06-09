@@ -35,12 +35,6 @@ CONSTANT WellFormed2a(_)
     SameValue(x, y) ==
         \A v \in Value : V(x, v) <=> V(y, v)
 
-\*    \* Maximal ballot number of any messages known to acceptor a
-\*    MaxBal(a, mbal) ==
-\*        /\ \E m \in known_msgs[a] : B(m, mbal)
-\*        /\ \A x \in known_msgs[a] :
-\*            \A b \in Ballot : B(x, b) => b =< mbal
-
     KnownRefs(a, m) == \A r \in m.refs : r \in known_msgs[a]
 
     \* The acceptor is _caught_ in a message x if the transitive references of x
@@ -70,32 +64,6 @@ CONSTANT WellFormed2a(_)
         { beta \in Learner :
             \E S \in ByzQuorum : ConByQuorum(alpha, beta, x, S) }
 
-    \* TODO rename
-    C(alpha, z) == \* alpha : Learner, z : 2a
-        \* previously: alpha \in z.lrns
-        z.lrns \cap Con(alpha, z) # {}
-
-    \* 2a-message is _buried_ if there exists another 2a-messages with
-    \* a higher ballot number, a different value, and related to the
-    \* given learner value.
-    Buried(alpha, x, y) == \* x : 2a, y : 1b
-        \E z \in Tran(y) :
-            /\ TwoA(z)
-            /\ C(alpha, z)
-            /\ \A bx, bz \in Ballot :
-                B(x, bx) /\ B(z, bz) => bx < bz
-            /\ \A vx, vz \in Value :
-                V(x, vx) /\ V(z, vz) => vx # vz
-
-    \* Connected 2a messages and learners
-    Con2as(alpha, x) == \* alpha : Learner, x : 1b
-        { m \in Tran(x) :
-            /\ TwoA(m)
-            /\ m.acc = x.acc
-            /\ \E beta \in m.lrns :
-                /\ beta \in Con(alpha, x)
-                /\ ~Buried(beta, m, x) }
-
     \* Fresh 1b messages
     D(alpha, x, m) ==
         \* /\ TwoA(m) \* implied by the following since the intersection is non-empty
@@ -111,9 +79,6 @@ CONSTANT WellFormed2a(_)
 
     Fresh(alpha, x) == \* alpha : Learner, x : 1b
         \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
-
-\*    Fresh_old(alpha, x) == \* alpha : Learner, x : 1b
-\*        \A m \in Con2as(alpha, x) : \A v \in Value : V(x, v) <=> V(m, v)
 
     QRec0 == [ LM \in Learner \X Message |-> [x \in Message |-> {}] ]
 
@@ -143,7 +108,6 @@ CONSTANT WellFormed2a(_)
     qd(alpha, x, d) ==
         IF TwoA(x) THEN QRec[d][<<alpha, x>>][x] ELSE {}
 
-    \* TODO better name?
     ConSeq(alpha) ==
         { seq \in Seq(Message) :
             /\ \A i, j \in 1..Len(seq) : i < j =>
@@ -291,7 +255,7 @@ CONSTANT WellFormed2a(_)
 }
 
 ****************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "90a83cad" /\ chksum(tla) = "a5f11ad0")
+\* BEGIN TRANSLATION (chksum(pcal) = "79ad88a3" /\ chksum(tla) = "e8aaadbe")
 VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision
 
 (* define statement *)
@@ -310,12 +274,6 @@ SameBallot(x, y) ==
 
 SameValue(x, y) ==
     \A v \in Value : V(x, v) <=> V(y, v)
-
-
-
-
-
-
 
 KnownRefs(a, m) == \A r \in m.refs : r \in known_msgs[a]
 
@@ -347,32 +305,6 @@ Con(alpha, x) ==
         \E S \in ByzQuorum : ConByQuorum(alpha, beta, x, S) }
 
 
-C(alpha, z) ==
-
-    z.lrns \cap Con(alpha, z) # {}
-
-
-
-
-Buried(alpha, x, y) ==
-    \E z \in Tran(y) :
-        /\ TwoA(z)
-        /\ C(alpha, z)
-        /\ \A bx, bz \in Ballot :
-            B(x, bx) /\ B(z, bz) => bx < bz
-        /\ \A vx, vz \in Value :
-            V(x, vx) /\ V(z, vz) => vx # vz
-
-
-Con2as(alpha, x) ==
-    { m \in Tran(x) :
-        /\ TwoA(m)
-        /\ m.acc = x.acc
-        /\ \E beta \in m.lrns :
-            /\ beta \in Con(alpha, x)
-            /\ ~Buried(beta, m, x) }
-
-
 D(alpha, x, m) ==
 
     /\ m.lrns \cap Con(alpha, x) # {}
@@ -387,9 +319,6 @@ Latest(P) ==
 
 Fresh(alpha, x) ==
     \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
-
-
-
 
 QRec0 == [ LM \in Learner \X Message |-> [x \in Message |-> {}] ]
 
@@ -419,7 +348,6 @@ QRec[n \in Nat] ==
 qd(alpha, x, d) ==
     IF TwoA(x) THEN QRec[d][<<alpha, x>>][x] ELSE {}
 
-
 ConSeq(alpha) ==
     { seq \in Seq(Message) :
         /\ \A i, j \in 1..Len(seq) : i < j =>
@@ -445,7 +373,6 @@ WellFormed(m) ==
     /\ m \in Message
     /\ \E b \in Ballot : B(m, b)
     /\ ChainRef(m)
-
     /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
     /\ OneA(m) => B(m, m.bal)
     /\ OneB(m) => WellFormed1b(m)
@@ -502,7 +429,7 @@ safe_acceptor(self) == /\ \E m \in msgs:
                                                refs |-> recent_msgs[self] \cup {m},
                                                lrns |-> LL] IN
                                      /\ Assert(new \in Message, 
-                                               "Failure of assertion at line 223, column 7 of macro called at line 275, column 9.")
+                                               "Failure of assertion at line 186, column 7 of macro called at line 238, column 9.")
                                      /\ \/ /\ ReplyType(m, T)
                                            /\ WellFormed(new)
                                            /\ prev_msg' = [prev_msg EXCEPT ![self] = new]
@@ -674,5 +601,5 @@ UniqueDecision ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 15:58:12 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 11:11:06 CEST 2025 by karbyshev
 \* Created Mon Jun 19 12:24:03 CEST 2022 by karbyshev
