@@ -15,11 +15,11 @@ PROOF
 LEMMA EmptySetMax == IsMax(0, {})
 PROOF BY DEF IsMax
 
-LEMMA MaxIsMax ==
+LEMMA MaxProperties ==
     ASSUME NEW S,
-           NEW s \in S,
            \E max \in S : IsMax(max, S)
-    PROVE  s =< Max(S)
+    PROVE  /\ Max(S) \in S
+           /\ \A s \in S : s =< Max(S)
 PROOF BY DEF Max, IsMax
 
 LEMMA MaxUnique ==
@@ -108,5 +108,5 @@ PROOF BY DEF Range, FINSUBSET
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 22:53:37 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 01:29:12 CEST 2025 by karbyshev
 \* Created Tue May 20 00:05:14 CEST 2025 by karbyshev

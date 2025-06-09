@@ -9,11 +9,11 @@ LEMMA InitialSegmentIsFinite ==
 
 LEMMA EmptySetMax == IsMax(0, {})
 
-LEMMA MaxIsMax ==
+LEMMA MaxProperties ==
     ASSUME NEW S,
-           NEW s \in S,
            \E max \in S : IsMax(max, S)
-    PROVE  s =< Max(S)
+    PROVE  /\ Max(S) \in S
+           /\ \A s \in S : s =< Max(S)
 
 LEMMA MaxUnique ==
     ASSUME NEW S,
@@ -50,5 +50,5 @@ LEMMA FinSubset_sub ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 22:53:26 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 01:29:53 CEST 2025 by karbyshev
 \* Created Mon May 19 20:15:40 CEST 2025 by karbyshev

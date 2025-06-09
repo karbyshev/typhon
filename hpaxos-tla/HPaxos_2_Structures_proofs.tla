@@ -693,15 +693,13 @@ PROOF
 <1> DEFINE I == { n \in Nat : \E s \in ConSeq(alpha) : n = Len(s) }
 <1> Len(seq) \in I
     BY LenProperties
-<1> I # {}
-    BY ConSeqContainsEmpty
 <1> IsFiniteSet(I)
   <2> I \in SUBSET 0..N_L
       BY ConSeqBound
   <2> IsFiniteSet(0..N_L)
       BY InitialSegmentIsFinite, LearnerGraphSize
   <2> QED BY FS_Subset
-<1> QED BY Zenon, MaxIsMax, NatFiniteSetMaxExists DEF maxDepth
+<1> QED BY Zenon, MaxProperties, NatFiniteSetMaxExists DEF maxDepth
 
 -----------------------------------------------------------------------------
 
