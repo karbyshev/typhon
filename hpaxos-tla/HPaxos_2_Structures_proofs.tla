@@ -316,7 +316,7 @@ LEMMA ConFinite ==
            /\ Cardinality(Con(alpha, x)) =< N_L
 PROOF BY ConnectedLearner, LearnerGraphCard, FS_Subset
 
-LEMMA ConnectedXXX ==
+LEMMA CaughtCon ==
     ASSUME NEW alpha \in Learner, NEW beta \in Learner,
            <<alpha, beta>> \in Ent,
            NEW m \in Message,
@@ -1012,5 +1012,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 13:40:03 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 14:04:35 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

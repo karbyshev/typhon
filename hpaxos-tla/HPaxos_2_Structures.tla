@@ -140,7 +140,7 @@ LEMMA ConFinite ==
     PROVE  /\ IsFiniteSet(Con(alpha, x))
            /\ Cardinality(Con(alpha, x)) =< N_L
 
-LEMMA ConnectedXXX ==
+LEMMA CaughtCon ==
     ASSUME NEW alpha \in Learner, NEW beta \in Learner,
            <<alpha, beta>> \in Ent,
            NEW m \in Message,
@@ -312,5 +312,5 @@ LEMMA WellFormedTwoALearners ==
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 13:43:22 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 14:05:01 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev

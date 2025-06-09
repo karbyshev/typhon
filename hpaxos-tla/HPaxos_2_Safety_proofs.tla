@@ -1344,7 +1344,7 @@ PROOF
 <1>seq0. alpha \in Con(alpha, M0)
   <2> Accurate(alpha)
       BY EntangledAccurate
-  <2> QED BY <1>caught_safe, ConnectedXXX DEF Accurate
+  <2> QED BY <1>caught_safe, CaughtCon DEF Accurate
 
 \* We need to show that mseq \in I (see Def of maxDepth)
 \* Since Length(mseq) = maxDepth(alpha) + 1, we get a contradiction with the definition of maxDepth.
@@ -1932,5 +1932,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 13:38:45 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 14:04:53 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev
