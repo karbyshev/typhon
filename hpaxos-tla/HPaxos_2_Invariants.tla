@@ -9,13 +9,6 @@ LEMMA WellFormedMessage ==
 LEMMA TypeOKInvariant ==
     TypeOK /\ NextTLA => TypeOK'
 
-LEMMA Sent_monotone ==
-    TypeOK /\ NextTLA => msgs \in SUBSET msgs'
-
-LEMMA UniqueMessageSent ==
-    TypeOK /\ NextTLA =>
-    \A m1, m2 \in msgs' \ msgs : m1 = m2
-
 LEMMA WellFormed_monotone ==
     \A m \in Message : WellFormed(m) <=> WellFormed(m)'
 
@@ -97,5 +90,5 @@ LEMMA KnownMsgsPrevTranSpecInvariant ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 22:57:27 CEST 2025 by karbyshev
+\* Last modified Mon Jun 09 10:53:01 CEST 2025 by karbyshev
 \* Created Tue May 20 23:06:45 CEST 2025 by karbyshev

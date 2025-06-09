@@ -27,16 +27,6 @@ LEMMA CaughtMsgSpec ==
 -----------------------------------------------------------------------------
 (* Facts about Get1a, B and V relations *)
 
-LEMMA Get1a_TypeOK ==
-    ASSUME NEW m \in Message
-    PROVE  /\ Get1a(m) \subseteq Message
-           /\ \A x \in Get1a(m) : x.bal \in Ballot
-
-LEMMA Get1a_correct ==
-    ASSUME NEW m \in Message,
-           NEW x \in Get1a(m), NEW y \in Get1a(m)
-    PROVE  x.bal = y.bal
-
 LEMMA B_func ==
     ASSUME NEW m \in Message,
            NEW b1 \in Ballot, B(m, b1),
@@ -72,20 +62,6 @@ LEMMA SameBallot_B ==
            B(x, bal),
            B(y, bal)
     PROVE  SameBallot(x, y)
-
-\* TODO remove if not used
-LEMMA SameBallot_sym ==
-    ASSUME NEW x \in Message,
-           NEW y \in Message,
-           SameBallot(x, y)
-    PROVE  SameBallot(y, x)
-
-\* TODO remove if not used
-LEMMA SameValue_sym ==
-    ASSUME NEW x \in Message,
-           NEW y \in Message,
-           SameValue(x, y)
-    PROVE  SameValue(y, x)
 
 LEMMA SameBallotValue ==
     ASSUME NEW x \in Message,
