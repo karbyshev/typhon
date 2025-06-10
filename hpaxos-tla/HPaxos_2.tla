@@ -192,8 +192,8 @@ CONSTANT WellFormed2a(_)
         Send(new)
       }
       or {
-        \* TODO fix BUG: this branch is triggered when LL is picked to be non-wellformed;
-        \* TODO replace picking by defining it
+        \* TODO fix liveness: this branch might triggered when LL is picked to be non-wellformed
+        \* TODO replace non-determinism by picking the correct set
         when ReplyType(m, T);
         when ~WellFormed(new) ;
         when ~OneA(m) ;
@@ -601,5 +601,5 @@ UniqueDecision ==
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 11:11:06 CEST 2025 by karbyshev
+\* Last modified Tue Jun 10 22:43:16 CEST 2025 by karbyshev
 \* Created Mon Jun 19 12:24:03 CEST 2022 by karbyshev

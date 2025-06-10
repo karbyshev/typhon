@@ -1624,24 +1624,6 @@ PROOF
 
 -----------------------------------------------------------------------------
 
-\* TODO not used -- check if can be reused
-\*LEMMA SafeAcceptorSentBallotTran ==
-\*    ASSUME MsgsSafeAcceptorPrevTranLinearSpec,
-\*           MsgsSafeAcceptorPrevTranSpec,
-\*           TypeOK,
-\*           NEW A \in SafeAcceptor,
-\*           NEW X \in SentBy(A),
-\*           NEW Y \in SentBy(A),
-\*           NEW bx \in Ballot,
-\*           NEW by \in Ballot,
-\*           B(X, bx), B(Y, by),
-\*           bx < by
-\*    PROVE  X \in Tran(Y)
-\*PROOF BY TranBallot, MessageTypeSpec
-\*      DEF MsgsSafeAcceptorPrevTranSpec, MsgsSafeAcceptorPrevTranLinearSpec, SentBy, Ballot, TypeOK
-
------------------------------------------------------------------------------
-
 LEMMA ChosenSafeCaseEq ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner,
            NEW BB \in Ballot,
@@ -1961,5 +1943,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 16:36:50 CEST 2025 by karbyshev
+\* Last modified Tue Jun 10 22:38:16 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev
