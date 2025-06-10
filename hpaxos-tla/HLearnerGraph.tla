@@ -2,10 +2,20 @@
 EXTENDS HQuorum, HLearner
 
 CONSTANT TrustLive
+
 ASSUME TrustLiveAssumption ==
     TrustLive \in SUBSET [lr : Learner, q : ByzQuorum]
 
+ASSUME TrustLiveNonEmpty ==
+    \A L \in TrustLive : L.q # {}
+
+ASSUME TrustLiveClosure ==
+    \A L \in TrustLive : \A Q \in ByzQuorum :
+        L.q \in SUBSET Q =>
+        [lr |-> L.lr, q |-> Q] \in TrustLive
+
 CONSTANT TrustSafe
+
 ASSUME TrustSafeAssumption ==
     TrustSafe \in SUBSET [from : Learner, to : Learner, q : ByzQuorum]
 
@@ -20,7 +30,7 @@ ASSUME LearnerGraphAssumptionTransitivity ==
 
 ASSUME LearnerGraphAssumptionClosure ==
     \A E \in TrustSafe : \A Q \in ByzQuorum :
-        E.q \subseteq Q =>
+        E.q \in SUBSET Q =>
         [from |-> E.from, to |-> E.to, q |-> Q] \in TrustSafe
 
 ASSUME LearnerGraphAssumptionValidity ==
@@ -33,7 +43,9 @@ ASSUME LearnerGraphAssumptionValidity ==
 Ent == { LL \in Learner \X Learner :
          [from |-> LL[1], to |-> LL[2], q |-> SafeAcceptor] \in TrustSafe }
 
+Accurate(alpha) == <<alpha, alpha>> \in Ent
+
 =============================================================================
 \* Modification History
-\* Last modified Tue May 14 17:03:58 CEST 2024 by karbyshev
+\* Last modified Fri Jun 06 22:00:47 CEST 2025 by karbyshev
 \* Created Tue May 14 17:03:34 CEST 2024 by karbyshev

@@ -1,21 +1,32 @@
------------------------- MODULE HLearnerGraph_proof ------------------------
-EXTENDS HQuorum, HLearner, HLearnerGraph, TLAPS
+-------------------- MODULE HLearnerGraphTheorems_proofs --------------------
+EXTENDS HLearnerGraph
 
 LEMMA TrustSafeSelfAgreement ==
     ASSUME NEW E \in TrustSafe
     PROVE  [from |-> E.from, to |-> E.from, q |-> E.q] \in TrustSafe
-BY LearnerGraphAssumptionSymmetry, LearnerGraphAssumptionTransitivity, Zenon
+BY LearnerGraphAssumptionSymmetry, LearnerGraphAssumptionTransitivity
 
 LEMMA EntanglementSym ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner, <<L1, L2>> \in Ent
     PROVE  <<L2, L1>> \in Ent
 PROOF BY LearnerGraphAssumptionSymmetry DEF Ent
 
+LEMMA EntanglementTransitive ==
+    ASSUME NEW L1 \in Learner, NEW L2 \in Learner, NEW L3 \in Learner,
+           <<L1, L2>> \in Ent, <<L2, L3>> \in Ent
+    PROVE  <<L1, L3>> \in Ent
+PROOF BY LearnerGraphAssumptionTransitivity DEF Ent
+
 LEMMA EntanglementSelf ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner, <<L1, L2>> \in Ent
     PROVE  <<L1, L1>> \in Ent
 PROOF BY LearnerGraphAssumptionSymmetry,
-         LearnerGraphAssumptionTransitivity, Zenon DEF Ent
+         LearnerGraphAssumptionTransitivity DEF Ent
+
+LEMMA EntangledAccurate ==
+    ASSUME NEW L1 \in Learner, NEW L2 \in Learner, <<L1, L2>> \in Ent
+    PROVE  Accurate(L1)
+PROOF BY EntanglementSelf DEF Accurate
 
 LEMMA EntanglementTrustLive ==
     ASSUME NEW L1 \in Learner, NEW L2 \in Learner,
@@ -32,15 +43,9 @@ LEMMA EntaglementTrustLiveNonEmpty ==
            <<L1, L2>> \in Ent,
            [lr |-> L1, q |-> Q] \in TrustLive
     PROVE  \E N \in SafeAcceptor : N \in Q
-PROOF BY EntanglementTrustLive, EntanglementSelf, Zenon
-
-LEMMA EntanglementTransitive ==
-    ASSUME NEW L1 \in Learner, NEW L2 \in Learner, NEW L3 \in Learner,
-           <<L1, L2>> \in Ent, <<L2, L3>> \in Ent
-    PROVE  <<L1, L3>> \in Ent
-PROOF BY LearnerGraphAssumptionTransitivity DEF Ent
+PROOF BY EntanglementTrustLive, EntanglementSelf
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Dec 09 16:23:34 CET 2024 by karbyshev
-\* Created Mon Dec 09 16:07:57 CET 2024 by karbyshev
+\* Last modified Wed May 28 20:27:16 CEST 2025 by karbyshev
+\* Created Mon May 19 20:43:23 CEST 2025 by karbyshev
