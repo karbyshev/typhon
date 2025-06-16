@@ -4,6 +4,12 @@ EXTENDS HPaxos_2, HPaxos_2_Specs
 LOCAL INSTANCE FiniteSets
 
 -----------------------------------------------------------------------------
+(* Upper ballot bound *)
+
+Bound(M, bal) ==
+    \A m \in M : \A mb \in Ballot : B(m, mb) => mb =< bal
+
+-----------------------------------------------------------------------------
 
 LEMMA BallotFiniteSetMaxExists ==
     ASSUME NEW A \in SUBSET Ballot,
