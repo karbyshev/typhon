@@ -60,7 +60,7 @@ CONSTANT WellFormed2a(_)
         /\ [from |-> alpha, to |-> beta, q |-> S] \in TrustSafe
         /\ S \cap Caught(x) = {}
 
-    Con(alpha, x) == \* alpha : Learner, x : 1b
+    Con(alpha, x) == \* alpha : Learner, x : 1b \* originally, x was supposed to be 1b; used with 1a in ValueExistence lemma
         { beta \in Learner :
             \E S \in ByzQuorum : ConByQuorum(alpha, beta, x, S) }
 
@@ -601,5 +601,5 @@ UniqueDecision ==
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jun 10 22:43:16 CEST 2025 by karbyshev
+\* Last modified Thu Jun 12 20:32:14 CEST 2025 by karbyshev
 \* Created Mon Jun 19 12:24:03 CEST 2022 by karbyshev
