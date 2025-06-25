@@ -50,6 +50,14 @@ LEMMA B_1a ==
                m.refs = {}
     PROVE  B(m, m.bal)
 
+\* TODO rename and prove
+LEMMA B_1a_bis ==
+    ASSUME NEW m \in Message,
+               OneA(m),
+               \A r \in m.refs :
+                \A bal \in Ballot : B(r, bal) => bal =< m.bal
+    PROVE  B(m, m.bal)
+
 LEMMA V_func ==
     ASSUME NEW m \in Message,
            NEW v1 \in Value, V(m, v1),
@@ -81,6 +89,13 @@ LEMMA TranBallot ==
            NEW b1 \in Ballot, NEW b2 \in Ballot,
            B(m1, b1), B(m2, b2)
     PROVE  b2 =< b1
+
+\* TODO prove it
+LEMMA BallotOfSet ==
+    ASSUME NEW M \in SUBSET { m \in Message : WellFormed(m) },
+           IsFiniteSet(M)
+    PROVE  \E bal \in Ballot :
+            \A m \in M : \A b \in Ballot : B(m, b) => b =< bal
 
 -----------------------------------------------------------------------------
 \* Facts about Latest
@@ -298,5 +313,5 @@ LEMMA WellFormedTwoALearners ==
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 16:37:30 CEST 2025 by karbyshev
+\* Last modified Wed Jun 25 11:49:43 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev

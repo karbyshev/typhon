@@ -6,9 +6,19 @@ LOCAL INSTANCE FiniteSets
 -----------------------------------------------------------------------------
 (* Messages *)
 
+\* TODO subsumed by OneA_Message_bis
 LEMMA OneA_Message ==
     ASSUME NEW bal \in Ballot
     PROVE  LET msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {} ] IN
+           /\ msg \in Message
+           /\ OneA(msg)
+
+\* TODO prove it
+LEMMA OneA_Message_bis ==
+    ASSUME NEW bal \in Ballot,
+           NEW R \in SUBSET Message,
+           IsFiniteSet(R)
+    PROVE  LET msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> R ] IN
            /\ msg \in Message
            /\ OneA(msg)
 
@@ -133,5 +143,5 @@ LEMMA Message_prev_PrevTran ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 21:50:09 CEST 2025 by karbyshev
+\* Last modified Tue Jun 24 21:24:14 CEST 2025 by karbyshev
 \* Created Mon May 19 20:59:25 CEST 2025 by karbyshev
