@@ -137,15 +137,15 @@ LEMMA LatestNonEmpty ==
            IsFiniteSet(P)
     PROVE  Latest(P) # {}
 PROOF
-<1> DEFINE f_bis == [ m \in P |-> CHOOSE bal \in Ballot : B(m, bal) ]
-<1> f_bis \in [ P -> Ballot ]
+<1> DEFINE f == [ m \in P |-> CHOOSE bal \in Ballot : B(m, bal) ]
+<1> f \in [ P -> Ballot ]
     BY DEF WellFormed
-<1> DEFINE Q == Range(f_bis)
+<1> DEFINE Q == Range(f)
 <1> Q \in SUBSET Ballot
-    BY DEF WellFormed, Range
+    BY DEF Range
 <1> Q # {}
-    BY B_func DEF WellFormed, Range
-<1> f_bis \in Surjection(P, Q)
+    BY B_func DEF Range
+<1> f \in Surjection(P, Q)
     BY Fun_RangeProperties
 <1> IsFiniteSet(Q)
     BY Zenon, FS_Surjection
@@ -153,10 +153,10 @@ PROOF
     BY BallotFiniteSetMaxExists
 <1> bal1 \in Ballot
     BY DEF Range
-<1> PICK m1 \in P : f_bis[m1] = bal1
+<1> PICK m1 \in P : f[m1] = bal1
     BY DEF Surjection
 <1> m1 \in Latest(P)
-    BY B_func DEF Latest, WellFormed, IsMax, Range
+    BY B_func DEF Latest, IsMax, Range
 <1> QED OBVIOUS
 
 -----------------------------------------------------------------------------
@@ -986,5 +986,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 16:37:35 CEST 2025 by karbyshev
+\* Last modified Wed Jun 25 01:55:02 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev
