@@ -17,7 +17,7 @@ PROOF
   <2> PICK p \in Proposer, bal \in Ballot : SendProposal(bal)
       BY <1>1 DEF ProposerAction
   <2> [type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {}] \in Message
-      BY OneA_Message
+      BY OneA_Message_base
   <2> QED BY DEF SendProposal, Send, TypeOK
 <1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
   <2> PICK acc \in SafeAcceptor, m \in msgs : Process(acc, m)
@@ -994,5 +994,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 10:53:29 CEST 2025 by karbyshev
+\* Last modified Wed Jun 25 21:18:18 CEST 2025 by karbyshev
 \* Created Tue May 20 23:09:22 CEST 2025 by karbyshev

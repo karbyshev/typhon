@@ -1106,7 +1106,7 @@ PROOF
 
 <1> DEFINE p1 == [ type |-> "1a", bal |-> bal1, prev |-> NoMessage, refs |-> {} ]
 <1> p1 \in Message /\ OneA(p1) /\ p1.bal = bal1
-    BY OneA_Message
+    BY OneA_Message_base
 <1> B(p1, bal1)
     BY B_1a
 <1> Tran(p1) = {p1}
@@ -1115,7 +1115,7 @@ PROOF
     BY PrevTran_1a
 <1> DEFINE p2 == [ type |-> "1a", bal |-> bal2, prev |-> NoMessage, refs |-> {} ]
 <1> p2 \in Message /\ OneA(p2) /\ p2.bal = bal2
-    BY OneA_Message
+    BY OneA_Message_base
 <1> B(p2, bal2)
     BY B_1a
 <1> Tran(p2) = {p2}
@@ -1943,5 +1943,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jun 10 22:38:16 CEST 2025 by karbyshev
+\* Last modified Wed Jun 25 21:18:47 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev

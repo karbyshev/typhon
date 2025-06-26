@@ -103,17 +103,60 @@ LEMMA Message_nontriv == Message # {}
 PROOF BY MessageRec_nontriv DEF Message
 
 LEMMA OneA_Message ==
+    ASSUME NEW bal \in Ballot,
+           NEW R \in SUBSET Message,
+           IsFiniteSet(R)
+    PROVE  LET msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> R ] IN
+           /\ msg \in Message
+           /\ OneA(msg)
+PROOF
+<1> DEFINE msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> R ]
+<1> OneA(msg)
+    BY DEF OneA
+<1>0. CASE R = {}
+  <2> msg \in MessageRec[0]
+      BY <1>0, MessageRec_def DEF MessageRec0
+  <2> QED BY DEF Message
+<1>1. CASE R # {}
+  <2>0. \A m \in R : \E n \in Nat : m \in MessageRec[n]
+        BY DEF Message
+  <2> DEFINE f == [ m \in R |-> CHOOSE n \in Nat : m \in MessageRec[n] ]
+  <2> f \in [ R -> Nat ]
+      BY DEF Message
+  <2> DEFINE I == Range(f)
+  <2> I \in SUBSET Nat
+      BY DEF Range
+  <2> I # {}
+      BY <1>1 DEF Range
+  <2>1. IsFiniteSet(I)
+    <3> f \in Surjection(R, I)
+        BY Fun_RangeProperties
+    <3> QED BY Zenon, FS_Surjection
+  <2> PICK n0 \in I : IsMax(n0, I)
+      BY <2>1, NatFiniteSetMaxExists
+  <2> n0 \in Nat
+      OBVIOUS
+  <2> \A m \in R : m \in MessageRec[n0]
+      BY <2>0, MessageRec_monotone DEF IsMax, Range
+  <2> msg \in MessageRec[n0 + 1]
+    <3>0. n0 = (n0 + 1) - 1
+        OBVIOUS
+    <3> SUFFICES R \in FINSUBSET(MessageRec[n0])
+        BY <3>0, MessageRec_eq1 DEF MessageRec1
+    <3> PICK seq \in Seq(R) : \A s \in R : \E n \in 1..Len(seq) : seq[n] = s
+        BY DEF IsFiniteSet
+    <3> R = Range(seq)
+        BY DEF Range
+    <3> QED BY DEF FINSUBSET
+  <2> QED BY DEF Message
+<1> QED BY <1>0, <1>1
+
+LEMMA OneA_Message_base ==
     ASSUME NEW bal \in Ballot
     PROVE  LET msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {} ] IN
            /\ msg \in Message
            /\ OneA(msg)
-PROOF
-<1> DEFINE msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {} ]
-<1> OneA(msg)
-    BY DEF OneA
-<1> msg \in MessageRec[0]
-    BY MessageRec_def DEF MessageRec0
-<1> QED BY DEF Message
+PROOF BY OneA_Message, FS_EmptySet
 
 LEMMA OneB_Message ==
     ASSUME NEW A \in Acceptor,
@@ -896,5 +939,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1 DEF PrevTran
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 21:50:30 CEST 2025 by karbyshev
+\* Last modified Wed Jun 25 21:21:13 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev
