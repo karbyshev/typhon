@@ -43,7 +43,7 @@ PROOF
 <1> QED BY MessageRec_eq1 DEF MessageRec1
 
 LEMMA MessageRec_monotone ==
-    \A n, m \in Nat : n <= m => MessageRec[n] \subseteq MessageRec[m]
+    \A n, m \in Nat : n =< m => MessageRec[n] \subseteq MessageRec[m]
 PROOF
 <1> DEFINE P(m) == \A n \in Nat : n < m => MessageRec[n] \subseteq MessageRec[m]
 <1> SUFFICES \A j \in Nat : P(j)
