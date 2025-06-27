@@ -127,37 +127,82 @@ PROOF BY Tran_trans DEF B, Get1a
 \* Facts about Latest
 
 LEMMA LatestSubset ==
-    ASSUME NEW P \in SUBSET Message
-    PROVE  Latest(P) \in SUBSET P
+    ASSUME NEW M PROVE Latest(M) \in SUBSET M
 PROOF BY DEF Latest
 
 LEMMA LatestNonEmpty ==
-    ASSUME NEW P \in SUBSET { m \in Message : WellFormed(m) },
-           P # {},
-           IsFiniteSet(P)
-    PROVE  Latest(P) # {}
+    ASSUME NEW M \in SUBSET { m \in Message : WellFormed(m) },
+           M # {},
+           IsFiniteSet(M)
+    PROVE  Latest(M) # {}
 PROOF
-<1> DEFINE f == [ m \in P |-> CHOOSE bal \in Ballot : B(m, bal) ]
-<1> f \in [ P -> Ballot ]
+<1> DEFINE f == [ m \in M |-> CHOOSE bal \in Ballot : B(m, bal) ]
+<1> f \in [ M -> Ballot ]
     BY DEF WellFormed
-<1> DEFINE Q == Range(f)
-<1> Q \in SUBSET Ballot
+<1> DEFINE R == Range(f)
+<1> R \in SUBSET Ballot
     BY DEF Range
-<1> Q # {}
+<1> R # {}
     BY B_func DEF Range
-<1> f \in Surjection(P, Q)
+<1> f \in Surjection(M, R)
     BY Fun_RangeProperties
-<1> IsFiniteSet(Q)
+<1> IsFiniteSet(R)
     BY Zenon, FS_Surjection
-<1> PICK bal1 \in Q : IsMax(bal1, Q)
+<1> PICK bal0 \in R : IsMax(bal0, R)
     BY BallotFiniteSetMaxExists
-<1> bal1 \in Ballot
+<1> bal0 \in Ballot
     BY DEF Range
-<1> PICK m1 \in P : f[m1] = bal1
+<1> PICK m0 \in M : f[m0] = bal0
     BY DEF Surjection
-<1> m1 \in Latest(P)
-    BY B_func DEF Latest, IsMax, Range
+<1> m0 \in Latest(M)
+    BY B_func DEF Latest, IsMax, Range, BallotUpperBound
 <1> QED OBVIOUS
+
+LEMMA LatestEqBallot ==
+    ASSUME NEW M
+    PROVE  \A x, y \in Latest(M) : \A bx, by \in Ballot :
+            B(x, bx) /\ B(y, by) => bx = by
+PROOF BY DEF Latest, BallotUpperBound, Ballot
+
+-----------------------------------------------------------------------------
+
+LEMMA BallotUpperBoundLeq ==
+    ASSUME NEW M,
+           NEW x \in Ballot,
+           BallotUpperBound(M, x)
+    PROVE  \A y \in Ballot: x =< y => BallotUpperBound(M, y)
+PROOF BY DEF BallotUpperBound, Ballot
+
+LEMMA BallotUpperBoundExistence ==
+    ASSUME NEW M \in SUBSET { m \in Message : WellFormed(m) },
+           IsFiniteSet(M)
+    PROVE  \E bal \in Ballot : BallotUpperBound(M, bal)
+PROOF
+<1>0. CASE M = {}
+  <2> PICK bal0 \in Ballot : TRUE
+      BY DEF Ballot
+  <2> WITNESS bal0 \in Ballot
+  <2> QED BY <1>0 DEF BallotUpperBound
+<1>1. CASE M # {}
+  <2> DEFINE f == [ m \in M |-> CHOOSE bal \in Ballot : B(m, bal) ]
+  <2> f \in [ M -> Ballot ]
+      BY DEF WellFormed
+  <2> DEFINE Q == Range(f)
+  <2> Q \in SUBSET Ballot
+      BY DEF Range
+  <2> Q # {}
+      BY <1>1, B_func DEF Range
+  <2> f \in Surjection(M, Q)
+      BY Fun_RangeProperties
+  <2> IsFiniteSet(Q)
+      BY Zenon, FS_Surjection
+  <2> PICK bal1 \in Q : IsMax(bal1, Q)
+      BY BallotFiniteSetMaxExists
+  <2> bal1 \in Ballot
+      BY DEF Range
+  <2> WITNESS bal1 \in Ballot
+  <2> QED BY B_func DEF BallotUpperBound, IsMax, Range
+<1> QED BY <1>0, <1>1
 
 -----------------------------------------------------------------------------
 \* Check equivalence of two well-formedness conditions for 1b messages
@@ -986,5 +1031,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Wed Jun 25 01:55:02 CEST 2025 by karbyshev
+\* Last modified Fri Jun 27 16:50:56 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

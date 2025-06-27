@@ -4,12 +4,6 @@ EXTENDS HPaxos_2, HPaxos_2_Specs
 LOCAL INSTANCE FiniteSets
 
 -----------------------------------------------------------------------------
-(* Upper ballot bound *)
-
-Bound(M, bal) ==
-    \A m \in M : \A mb \in Ballot : B(m, mb) => mb =< bal
-
------------------------------------------------------------------------------
 
 LEMMA BallotFiniteSetMaxExists ==
     ASSUME NEW A \in SUBSET Ballot,
@@ -54,8 +48,7 @@ LEMMA B_1a ==
 LEMMA B_1a_bis ==
     ASSUME NEW m \in Message,
                OneA(m),
-               \A r \in m.refs :
-                \A bal \in Ballot : B(r, bal) => bal =< m.bal
+               BallotUpperBound(m.refs, m.bal)
     PROVE  B(m, m.bal)
 
 LEMMA V_func ==
@@ -90,25 +83,35 @@ LEMMA TranBallot ==
            B(m1, b1), B(m2, b2)
     PROVE  b2 =< b1
 
-\* TODO prove it
-LEMMA BallotOfSet ==
-    ASSUME NEW M \in SUBSET { m \in Message : WellFormed(m) },
-           IsFiniteSet(M)
-    PROVE  \E bal \in Ballot :
-            \A m \in M : \A b \in Ballot : B(m, b) => b =< bal
-
 -----------------------------------------------------------------------------
 \* Facts about Latest
 
 LEMMA LatestSubset ==
-    ASSUME NEW P \in SUBSET Message
-    PROVE  Latest(P) \in SUBSET P
+    ASSUME NEW M PROVE Latest(M) \in SUBSET M
 
 LEMMA LatestNonEmpty ==
-    ASSUME NEW P \in SUBSET { m \in Message : WellFormed(m) },
-           P # {},
-           IsFiniteSet(P)
-    PROVE  Latest(P) # {}
+    ASSUME NEW M \in SUBSET { m \in Message : WellFormed(m) },
+           M # {},
+           IsFiniteSet(M)
+    PROVE  Latest(M) # {}
+
+LEMMA LatestEqBallot ==
+    ASSUME NEW M
+    PROVE  \A x, y \in Latest(M) : \A bx, by \in Ballot :
+            B(x, bx) /\ B(y, by) => bx = by
+
+-----------------------------------------------------------------------------
+
+LEMMA BallotUpperBoundLeq ==
+    ASSUME NEW M,
+           NEW x \in Ballot,
+           BallotUpperBound(M, x)
+    PROVE  \A y \in Ballot: x =< y => BallotUpperBound(M, y)
+
+LEMMA BallotUpperBoundExistence ==
+    ASSUME NEW M \in SUBSET { m \in Message : WellFormed(m) },
+           IsFiniteSet(M)
+    PROVE  \E bal \in Ballot : BallotUpperBound(M, bal)
 
 -----------------------------------------------------------------------------
 
@@ -313,5 +316,5 @@ LEMMA WellFormedTwoALearners ==
 
 =============================================================================
 \* Modification History
-\* Last modified Wed Jun 25 11:49:43 CEST 2025 by karbyshev
+\* Last modified Fri Jun 27 16:48:42 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev
