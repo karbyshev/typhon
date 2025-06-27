@@ -1,8 +1,6 @@
 ------------------------- MODULE HPaxos_2_Liveness -------------------------
 
-EXTENDS HMessage, HMessageTheorems, HPaxos_2_Specs, HPaxos_2_Structures
-
-
+EXTENDS HMessage, HPaxos_2_Specs
 
 THEOREM Liveness ==
     TypeOK =>
@@ -45,5 +43,5 @@ THEOREM Liveness ==
 
 =============================================================================
 \* Modification History
-\* Last modified Wed Jun 25 11:50:31 CEST 2025 by karbyshev
+\* Last modified Wed Jun 25 17:05:47 CEST 2025 by karbyshev
 \* Created Mon Jun 09 20:06:52 CEST 2025 by karbyshev
