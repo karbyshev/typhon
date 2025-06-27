@@ -69,13 +69,10 @@ CONSTANT WellFormed2a(_)
         \* /\ TwoA(m) \* implied by the following since the intersection is non-empty
         /\ m.lrns \cap Con(alpha, x) # {}
 
-    \* TODO define Latest in terms of Max, as existence of Max is proven?
+    BallotUpperBound(M, bal) ==
+        \A m \in M : \A bm \in Ballot : B(m, bm) => bm =< bal
     Latest(P) ==
-        { x \in P :
-            \A bx \in Ballot :
-                B(x, bx) =>
-                \A y \in P, by \in Ballot :
-                    B(y, by) => by <= bx }
+        { x \in P : \A bx \in Ballot : B(x, bx) => BallotUpperBound(P, bx) }
 
     Fresh(alpha, x) == \* alpha : Learner, x : 1b
         \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
@@ -255,7 +252,7 @@ CONSTANT WellFormed2a(_)
 }
 
 ****************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "79ad88a3" /\ chksum(tla) = "e8aaadbe")
+\* BEGIN TRANSLATION (chksum(pcal) = "747c34fc" /\ chksum(tla) = "dbe69aff")
 VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision
 
 (* define statement *)
@@ -309,13 +306,12 @@ D(alpha, x, m) ==
 
     /\ m.lrns \cap Con(alpha, x) # {}
 
+BallotUpperBound(M, bal) ==
+    \A m \in M : \A bm \in Ballot : B(m, bm) => bm =< bal
+
 
 Latest(P) ==
-    { x \in P :
-        \A bx \in Ballot :
-            B(x, bx) =>
-            \A y \in P, by \in Ballot :
-                B(y, by) => by <= bx }
+    { x \in P : \A bx \in Ballot : B(x, bx) => BallotUpperBound(P, bx) }
 
 Fresh(alpha, x) ==
     \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
@@ -429,7 +425,7 @@ safe_acceptor(self) == /\ \E m \in msgs:
                                                refs |-> recent_msgs[self] \cup {m},
                                                lrns |-> LL] IN
                                      /\ Assert(new \in Message, 
-                                               "Failure of assertion at line 186, column 7 of macro called at line 238, column 9.")
+                                               "Failure of assertion at line 185, column 7 of macro called at line 237, column 9.")
                                      /\ \/ /\ ReplyType(m, T)
                                            /\ WellFormed(new)
                                            /\ prev_msg' = [prev_msg EXCEPT ![self] = new]
@@ -601,5 +597,5 @@ UniqueDecision ==
 
 =============================================================================
 \* Modification History
-\* Last modified Thu Jun 12 20:32:14 CEST 2025 by karbyshev
+\* Last modified Fri Jun 27 16:50:33 CEST 2025 by karbyshev
 \* Created Mon Jun 19 12:24:03 CEST 2022 by karbyshev

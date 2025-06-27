@@ -486,7 +486,7 @@ PROOF
 
 <1> DEFINE p == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {} ]
 <1> p \in Message /\ OneA(p) /\ p.bal = bal
-    BY OneA_Message
+    BY OneA_Message_base
 <1> Proposal(p)
     BY DEF OneA, Proposal
 <1> B(p, bal)
