@@ -113,6 +113,10 @@ LEMMA Tran_acyclic ==
            m1 \in Tran(m2)
     PROVE  m1 = m2
 
+LEMMA Tran_finite ==
+    ASSUME NEW m \in Message
+    PROVE  IsFiniteSet(Tran(m))
+
 -----------------------------------------------------------------------------
 (* Transitive references of prev *)
 
@@ -141,5 +145,5 @@ LEMMA Message_prev_PrevTran ==
 
 =============================================================================
 \* Modification History
-\* Last modified Wed Jun 25 21:19:16 CEST 2025 by karbyshev
+\* Last modified Sat Jun 28 00:21:21 CEST 2025 by karbyshev
 \* Created Mon May 19 20:59:25 CEST 2025 by karbyshev

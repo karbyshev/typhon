@@ -315,6 +315,11 @@ PROOF
   <2>10. QED BY <2>1, <1>0, <1>2
 <1>10. QED BY <1>1, <1>2
 
+\* TODO prove it
+LEMMA MessageRefs_finite ==
+    ASSUME NEW msg \in Message
+    PROVE  IsFiniteSet(msg.refs)
+
 -----------------------------------------------------------------------------
 LEMMA NoMessageIsNotAMessage ==
     NoMessage \notin Message
@@ -691,6 +696,44 @@ PROOF
   <2>2. QED BY <2>1, Tran_ref_acyclic
 <1>3. QED BY <1>1, <1>2, TranBound_eq1, Isa
 
+LEMMA Tran_finite ==
+    ASSUME NEW m \in Message
+    PROVE  IsFiniteSet(Tran(m))
+PROOF
+<1> DEFINE P(k) == \A x \in MessageRec[k] :
+                    IsFiniteSet(Tran(x))
+<1> SUFFICES \A j \in Nat : P(j)
+    BY DEF Message
+<1>0. P(0)
+  <2> SUFFICES ASSUME NEW x \in MessageRec[0] PROVE IsFiniteSet(Tran(x))
+      OBVIOUS
+  <2> x \in Message
+      BY DEF Message
+  <2> PICK bal \in Ballot :
+            x = [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {} ]
+      BY MessageRec_eq0 DEF MessageRec0
+  <2> Tran(x) = {x}
+      BY Tran_eq
+  <2> QED BY FS_Singleton
+<1>1. ASSUME NEW k \in Nat, P(k) PROVE P(k + 1)
+  <2> SUFFICES ASSUME NEW x \in MessageRec[k + 1],
+                      x \notin MessageRec[k]
+               PROVE IsFiniteSet(Tran(x))
+      BY MessageRec_eq1, <1>1
+  <2> x \in Message
+      BY DEF Message
+  <2> SUFFICES IsFiniteSet(UNION { Tran(r) : r \in x.refs })
+      BY Tran_eq, FS_Union, FS_Singleton
+  <2> SUFFICES IsFiniteSet({ Tran(r) : r \in x.refs })
+    <3> \A r \in x.refs : IsFiniteSet(Tran(r))
+        BY <1>1, MessageRec_ref1
+    <3> QED BY FS_UNION
+  <2> SUFFICES IsFiniteSet(x.refs)
+      BY FS_Image, Isa
+  <2> QED BY MessageRefs_finite
+<1> HIDE DEF P
+<1> QED BY <1>0, <1>1, NatInduction, Isa
+
 -----------------------------------------------------------------------------
 (* Transitive references of prev *)
 
@@ -939,5 +982,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1 DEF PrevTran
 
 =============================================================================
 \* Modification History
-\* Last modified Wed Jun 25 21:21:13 CEST 2025 by karbyshev
+\* Last modified Sat Jun 28 00:21:38 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev
