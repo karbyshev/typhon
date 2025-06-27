@@ -40,15 +40,15 @@ LEMMA B_def ==
 
 LEMMA B_1a ==
     ASSUME NEW m \in Message,
-               OneA(m),
-               m.refs = {}
+           OneA(m),
+           m.refs = {}
     PROVE  B(m, m.bal)
 
 \* TODO rename and prove
 LEMMA B_1a_bis ==
     ASSUME NEW m \in Message,
-               OneA(m),
-               BallotUpperBound(m.refs, m.bal)
+           OneA(m),
+           BallotUpperBound(m.refs, m.bal)
     PROVE  B(m, m.bal)
 
 LEMMA V_func ==
@@ -316,5 +316,5 @@ LEMMA WellFormedTwoALearners ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 27 16:48:42 CEST 2025 by karbyshev
+\* Last modified Fri Jun 27 21:54:12 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev
