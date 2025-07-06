@@ -734,6 +734,70 @@ PROOF
 <1> HIDE DEF P
 <1> QED BY <1>0, <1>1, NatInduction, Isa
 
+LEMMA Message_Induction ==
+    ASSUME NEW P(_),
+           \A M \in SUBSET Message :
+            (\A m \in M : P(m)) =>
+            \A bal \in Ballot : P(proposal(bal, M)),
+           \A M \in SUBSET Message :
+            (\A m \in M : P(m)) =>
+            \A type \in {"1b", "2a"} :
+            \A acc \in Acceptor :
+            \A prev \in Message \cup {NoMessage} :
+            \A lrns \in SUBSET Learner :
+                P(non_proposal(type, acc, prev, M, lrns))
+    PROVE  \A m \in Message : P(m)
+PROOF
+<1> DEFINE Q(k) == \A x \in MessageRec[k] : P(x)
+<1> SUFFICES \A j \in Nat : Q(j)
+    BY DEF Message
+<1>0. Q(0)
+  <2> SUFFICES ASSUME NEW bal \in Ballot
+               PROVE  P([type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {}])
+      BY MessageRec_eq0 DEF MessageRec0
+  <2> QED BY DEF proposal
+<1>1. ASSUME NEW k \in Nat, Q(k) PROVE Q(k + 1)
+  <2> SUFFICES ASSUME NEW x \in MessageRec[k + 1],
+                      x \notin MessageRec[k]
+               PROVE P(x)
+      BY <1>1
+  <2> k + 1 # 0
+      OBVIOUS
+  <2> (k + 1) - 1 = k
+      OBVIOUS
+  <2>1. CASE \E bal \in Ballot : \E R \in FINSUBSET(MessageRec[k]) :
+            x = [type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> R]
+    <3> PICK bal \in Ballot, R \in FINSUBSET(MessageRec[k]) :
+            x = [type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> R]
+        BY <2>1
+    <3> \A m \in R : P(m)
+        BY FinSubset_sub, <1>1
+    <3> R \in SUBSET Message
+        BY FinSubset_sub DEF Message
+    <3> QED BY <1>1 DEF proposal
+  <2>2. CASE \E T \in {"1b", "2a"} : \E acc \in Acceptor :
+             \E prev \in MessageRec[k] \cup {NoMessage} :
+             \E R \in FINSUBSET(MessageRec[k]) :
+             \E lrns \in SUBSET Learner :
+            x = [type |-> T, acc |-> acc, prev |-> prev, refs |-> R, lrns |-> lrns]
+    <3> PICK T \in {"1b", "2a"},
+             acc \in Acceptor,
+             prev \in MessageRec[k] \cup {NoMessage},
+             R \in FINSUBSET(MessageRec[k]),
+             lrns \in SUBSET Learner :
+            x = [type |-> T, acc |-> acc, prev |-> prev, refs |-> R, lrns |-> lrns]
+        BY <2>2
+    <3> \A m \in R : P(m)
+        BY FinSubset_sub, <1>1
+    <3> R \in SUBSET Message
+        BY FinSubset_sub DEF Message
+    <3> prev \in Message \cup {NoMessage}
+        BY DEF Message
+    <3> QED BY <1>1 DEF non_proposal
+  <2> QED BY <2>1, <2>2, MessageRec_eq1 DEF MessageRec1
+<1> HIDE DEF Q
+<1> QED BY <1>0, <1>1, NatInduction, Isa
+
 -----------------------------------------------------------------------------
 (* Transitive references of prev *)
 

@@ -26,6 +26,12 @@ MessageRec[n \in Nat] ==
 
 Message == UNION { MessageRec[n] : n \in Nat }
 
+proposal(bal, M) ==
+    [type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> M]
+
+non_proposal(type, acc, prev, M, lrns) ==
+    [type |-> type, acc |-> acc, prev |-> prev, refs |-> M, lrns |-> lrns]
+
 -----------------------------------------------------------------------------
 (* Message types *)
 

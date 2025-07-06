@@ -117,6 +117,20 @@ LEMMA Tran_finite ==
     ASSUME NEW m \in Message
     PROVE  IsFiniteSet(Tran(m))
 
+\*LEMMA Message_Induction ==
+\*    ASSUME NEW P(_),
+\*           \A M \in SUBSET Message :
+\*            (\A m \in M : P(m)) =>
+\*            \A bal \in Ballot : P(proposal(bal, M)),
+\*           \A M \in SUBSET Message :
+\*            (\A m \in M : P(m)) =>
+\*            \A type \in {"1b", "2a"} :
+\*            \A acc \in Acceptor :
+\*            \A prev \in Message \cup {NoMessage} :
+\*            \A lrns \in SUBSET Learner :
+\*                P(non_proposal(type, acc, prev, M, lrns))
+\*    PROVE  \A m \in Message : P(m)
+
 -----------------------------------------------------------------------------
 (* Transitive references of prev *)
 
