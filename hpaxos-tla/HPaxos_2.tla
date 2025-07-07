@@ -71,6 +71,7 @@ CONSTANT WellFormed2a(_)
 
     BallotUpperBound(M, bal) ==
         \A m \in M : \A bm \in Ballot : B(m, bm) => bm =< bal
+
     Latest(P) ==
         { x \in P : \A bx \in Ballot : B(x, bx) => BallotUpperBound(P, bx) }
 
@@ -252,7 +253,7 @@ CONSTANT WellFormed2a(_)
 }
 
 ****************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "747c34fc" /\ chksum(tla) = "dbe69aff")
+\* BEGIN TRANSLATION (chksum(pcal) = "f5320c6c" /\ chksum(tla) = "924ed462")
 VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision
 
 (* define statement *)
@@ -308,7 +309,6 @@ D(alpha, x, m) ==
 
 BallotUpperBound(M, bal) ==
     \A m \in M : \A bm \in Ballot : B(m, bm) => bm =< bal
-
 
 Latest(P) ==
     { x \in P : \A bx \in Ballot : B(x, bx) => BallotUpperBound(P, bx) }
@@ -425,7 +425,7 @@ safe_acceptor(self) == /\ \E m \in msgs:
                                                refs |-> recent_msgs[self] \cup {m},
                                                lrns |-> LL] IN
                                      /\ Assert(new \in Message, 
-                                               "Failure of assertion at line 185, column 7 of macro called at line 237, column 9.")
+                                               "Failure of assertion at line 184, column 7 of macro called at line 236, column 9.")
                                      /\ \/ /\ ReplyType(m, T)
                                            /\ WellFormed(new)
                                            /\ prev_msg' = [prev_msg EXCEPT ![self] = new]
