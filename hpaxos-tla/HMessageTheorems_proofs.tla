@@ -382,6 +382,24 @@ PROOF
 LEMMA MessageRefs_finite ==
     ASSUME NEW msg \in Message
     PROVE  IsFiniteSet(msg.refs)
+PROOF
+<1> DEFINE P(m) == IsFiniteSet(m.refs)
+<1> SUFFICES P(msg)
+    OBVIOUS
+<1>0. \A M \in FINSUBSET(Message) :
+        (\A m \in M : P(m)) =>
+        \A bal \in Ballot : P(proposal(bal, M))
+      BY DEF proposal, FINSUBSET
+<1>1. \A M \in FINSUBSET(Message) :
+            (\A m \in M : P(m)) =>
+            \A type \in {"1b", "2a"} :
+            \A acc \in Acceptor :
+            \A prev \in Message \cup {NoMessage} :
+            \A lrns \in SUBSET Learner :
+                P(non_proposal(type, acc, prev, M, lrns))
+      BY DEF non_proposal, FINSUBSET
+<1> HIDE DEF P
+<1> QED BY Message_Induction, <1>0, <1>1, Isa
 
 -----------------------------------------------------------------------------
 LEMMA NoMessageIsNotAMessage ==
@@ -1045,5 +1063,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1 DEF PrevTran
 
 =============================================================================
 \* Modification History
-\* Last modified Sat Jun 28 00:21:38 CEST 2025 by karbyshev
+\* Last modified Tue Jul 08 15:28:53 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev
