@@ -60,116 +60,6 @@ LEMMA B_def ==
     PROVE  \E b \in Ballot : B(m, b)
 PROOF BY Get1a_correct, Get1a_TypeOK DEF B
 
-LEMMA B_1a ==
-    ASSUME NEW m \in Message,
-           OneA(m),
-           m.refs = {}
-    PROVE  B(m, m.bal)
-PROOF
-<1> Tran(m) = {m}
-    BY Tran_eq
-<1> Get1a(m) = {m}
-    BY MessageSpec DEF Get1a, Ballot, OneA
-<1> QED BY DEF B
-
-LEMMA B_1a_bal ==
-    ASSUME NEW m \in Message,
-           OneA(m),
-           NEW bal \in Ballot,
-           B(m, bal)
-    PROVE  m.bal =< bal
-PROOF BY Tran_refl DEF B, Get1a
-
-LEMMA B_Tran ==
-    ASSUME NEW z \in Message,
-           NEW bz \in Ballot,
-           B(z, bz)
-    PROVE  BallotUpperBound(Tran(z), bz)
-PROOF
-<1> SUFFICES ASSUME NEW y \in Tran(z),
-                    NEW by \in Ballot,
-                    B(y, by)
-             PROVE  by =< bz
-    BY DEF BallotUpperBound
-<1> QED BY Tran_trans DEF B, Get1a, Ballot
-
-LEMMA B_exists ==
-    ASSUME NEW m \in Message,
-           NEW z \in Tran(m),
-           OneA(z)
-    PROVE  \E bal \in Ballot : B(m, bal)
-PROOF
-<1>0. IsFiniteSet(Tran(m))
-      BY Tran_finite
-<1> DEFINE one_a == { mm \in Tran(m) : OneA(mm) }
-<1>1. IsFiniteSet(one_a)
-      BY <1>0, FS_Subset
-<1>2. one_a \in SUBSET Message
-      BY Tran_Message
-<1> DEFINE f == [x \in one_a |-> x.bal]
-<1> f \in [one_a -> Ballot]
-    BY <1>2, MessageSpec DEF OneA
-<1> DEFINE Q == Range(f)
-<1> Q \in SUBSET Ballot
-    BY DEF Range
-<1> Q # {}
-    BY DEF Range
-<1> f \in Surjection(one_a, Q)
-    BY Fun_RangeProperties
-<1> IsFiniteSet(Q)
-    BY Zenon, <1>1, FS_Surjection
-<1> PICK bal1 \in Q : IsMax(bal1, Q)
-    BY BallotFiniteSetMaxExists
-<1> bal1 \in Ballot
-    BY DEF Range
-<1> PICK z1 \in one_a : f[z1] = bal1
-    BY DEF Range
-<1> z1 \in Get1a(m)
-  <2> SUFFICES ASSUME NEW y \in one_a PROVE y.bal =< z1.bal
-      BY DEF Get1a
-  <2> QED BY DEF Range, IsMax, Ballot
-<1> WITNESS bal1 \in Ballot
-<1> QED BY DEF B
-
-LEMMA B_1a_exists ==
-    ASSUME NEW m \in Message,
-           OneA(m)
-    PROVE  \E bal \in Ballot : B(m, bal)
-BY B_exists, Tran_refl
-
-LEMMA B_1a_bis ==
-    ASSUME NEW m \in Message,
-           OneA(m),
-           BallotUpperBound(m.refs, m.bal)
-    PROVE  B(m, m.bal)
-PROOF
-<1> m \in Tran(m)
-    BY Tran_refl
-<1> m \in Get1a(m)
-  <2> SUFFICES ASSUME NEW y \in Tran(m),
-                      y # m,
-                      OneA(y)
-               PROVE  y.bal =< m.bal
-      BY MessageSpec DEF Get1a, Ballot, OneA
-  <2> y \in Message
-      BY Tran_Message
-  <2> PICK z \in m.refs : y \in Tran(z)
-      BY Tran_eq
-  <2> z \in Message
-      BY MessageSpec
-  <2> PICK bz \in Ballot : B(z, bz)
-      BY B_exists
-  <2> PICK by \in Ballot : B(y, by)
-      BY B_1a_exists, Tran_Message
-  <2> y.bal =< by
-      BY B_1a_bal
-  <2> by =< bz
-      BY B_Tran DEF BallotUpperBound
-  <2> bz =< m.bal
-      BY DEF BallotUpperBound
-  <2> QED BY MessageSpec DEF OneA, Ballot
-<1> QED BY DEF B
-
 LEMMA V_func ==
     ASSUME NEW m \in Message,
            NEW v1 \in Value, V(m, v1),
@@ -220,6 +110,103 @@ LEMMA TranBallot ==
            B(m1, b1), B(m2, b2)
     PROVE  b2 =< b1
 PROOF BY Tran_trans DEF B, Get1a
+
+LEMMA B_1a ==
+    ASSUME NEW m \in Message,
+           OneA(m),
+           m.refs = {}
+    PROVE  B(m, m.bal)
+PROOF
+<1> Tran(m) = {m}
+    BY Tran_eq
+<1> Get1a(m) = {m}
+    BY MessageSpec DEF Get1a, Ballot, OneA
+<1> QED BY DEF B
+
+LEMMA B_1a_bal ==
+    ASSUME NEW m \in Message,
+           OneA(m),
+           NEW bal \in Ballot,
+           B(m, bal)
+    PROVE  m.bal =< bal
+PROOF BY Tran_refl DEF B, Get1a
+
+LEMMA B_exists ==
+    ASSUME NEW m \in Message,
+           NEW z \in Tran(m),
+           OneA(z)
+    PROVE  \E bal \in Ballot : B(m, bal)
+PROOF
+<1>0. IsFiniteSet(Tran(m))
+      BY Tran_finite
+<1> DEFINE one_a == { mm \in Tran(m) : OneA(mm) }
+<1>1. IsFiniteSet(one_a)
+      BY <1>0, FS_Subset
+<1>2. one_a \in SUBSET Message
+      BY Tran_Message
+<1> DEFINE f == [x \in one_a |-> x.bal]
+<1> f \in [one_a -> Ballot]
+    BY <1>2, MessageSpec DEF OneA
+<1> DEFINE Q == Range(f)
+<1> Q \in SUBSET Ballot
+    BY DEF Range
+<1> Q # {}
+    BY DEF Range
+<1> f \in Surjection(one_a, Q)
+    BY Fun_RangeProperties
+<1> IsFiniteSet(Q)
+    BY Zenon, <1>1, FS_Surjection
+<1> PICK bal1 \in Q : IsMax(bal1, Q)
+    BY BallotFiniteSetMaxExists
+<1> bal1 \in Ballot
+    BY DEF Range
+<1> PICK z1 \in one_a : f[z1] = bal1
+    BY DEF Range
+<1> z1 \in Get1a(m)
+  <2> SUFFICES ASSUME NEW y \in one_a PROVE y.bal =< z1.bal
+      BY DEF Get1a
+  <2> QED BY DEF Range, IsMax, Ballot
+<1> WITNESS bal1 \in Ballot
+<1> QED BY DEF B
+
+LEMMA B_1a_exists ==
+    ASSUME NEW m \in Message,
+           OneA(m)
+    PROVE  \E bal \in Ballot : B(m, bal)
+BY B_exists, Tran_refl
+
+LEMMA B_1a_refs ==
+    ASSUME NEW m \in Message,
+           OneA(m),
+           BallotUpperBound(m.refs, m.bal)
+    PROVE  B(m, m.bal)
+PROOF
+<1> m \in Tran(m)
+    BY Tran_refl
+<1> m \in Get1a(m)
+  <2> SUFFICES ASSUME NEW y \in Tran(m),
+                      y # m,
+                      OneA(y)
+               PROVE  y.bal =< m.bal
+      BY MessageSpec DEF Get1a, Ballot, OneA
+  <2> y \in Message
+      BY Tran_Message
+  <2> PICK z \in m.refs : y \in Tran(z)
+      BY Tran_eq
+  <2> z \in Message
+      BY MessageSpec
+  <2> PICK bz \in Ballot : B(z, bz)
+      BY B_exists
+  <2> PICK by \in Ballot : B(y, by)
+      BY B_1a_exists, Tran_Message
+  <2> y.bal =< by
+      BY B_1a_bal
+  <2> by =< bz
+      BY TranBallot
+  <2> bz =< m.bal
+      BY DEF BallotUpperBound
+  <2> QED BY MessageSpec DEF OneA, Ballot
+<1> QED BY DEF B
 
 -----------------------------------------------------------------------------
 \* Facts about Latest
@@ -1129,5 +1116,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jul 08 13:27:45 CEST 2025 by karbyshev
+\* Last modified Tue Jul 08 19:09:20 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

@@ -141,7 +141,7 @@ PROOF
   <2> x.refs = y.refs
       OBVIOUS
   <2>2. B(x, bal)
-        BY B_1a_bis, <2>1 DEF OneA, Proposal
+        BY B_1a_refs, <2>1 DEF OneA, Proposal
   <2>3. Latest({ mm \in M : D(alpha, x, mm) }) = Ly
     <3> HIDE DEF x, y
     <3> QED BY Zenon, XXX DEF D
@@ -174,7 +174,7 @@ PROOF
   <2> x.refs = y.refs
       OBVIOUS
   <2>2. B(x, bal)
-        BY B_1a_bis, <2>1 DEF OneA, Proposal
+        BY B_1a_refs, <2>1 DEF OneA, Proposal
   <2>3. Latest({ mm \in M : D(alpha, x, mm) }) = Ly
     <3> HIDE DEF x, y
     <3> QED BY Zenon, XXX DEF D
@@ -195,5 +195,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 27 17:29:23 CEST 2025 by karbyshev
+\* Last modified Tue Jul 08 19:10:28 CEST 2025 by karbyshev
 \* Created Wed Jun 25 11:47:50 CEST 2025 by karbyshev

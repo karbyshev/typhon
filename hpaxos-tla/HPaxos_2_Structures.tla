@@ -38,19 +38,6 @@ LEMMA B_def ==
            NEW x \in Get1a(m)
     PROVE  \E b \in Ballot : B(m, b)
 
-LEMMA B_1a ==
-    ASSUME NEW m \in Message,
-           OneA(m),
-           m.refs = {}
-    PROVE  B(m, m.bal)
-
-\* TODO rename and prove
-LEMMA B_1a_bis ==
-    ASSUME NEW m \in Message,
-           OneA(m),
-           BallotUpperBound(m.refs, m.bal)
-    PROVE  B(m, m.bal)
-
 LEMMA V_func ==
     ASSUME NEW m \in Message,
            NEW v1 \in Value, V(m, v1),
@@ -82,6 +69,18 @@ LEMMA TranBallot ==
            NEW b1 \in Ballot, NEW b2 \in Ballot,
            B(m1, b1), B(m2, b2)
     PROVE  b2 =< b1
+
+LEMMA B_1a ==
+    ASSUME NEW m \in Message,
+           OneA(m),
+           m.refs = {}
+    PROVE  B(m, m.bal)
+
+LEMMA B_1a_refs ==
+    ASSUME NEW m \in Message,
+           OneA(m),
+           BallotUpperBound(m.refs, m.bal)
+    PROVE  B(m, m.bal)
 
 -----------------------------------------------------------------------------
 \* Facts about Latest
@@ -316,5 +315,5 @@ LEMMA WellFormedTwoALearners ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 27 21:54:12 CEST 2025 by karbyshev
+\* Last modified Tue Jul 08 19:03:57 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev
