@@ -1,5 +1,7 @@
 ------------------------- MODULE LibTheorems_proofs -------------------------
-EXTENDS FiniteSetTheorems, SequenceTheorems, Lib, TLAPS
+EXTENDS SequenceTheorems, Lib, TLAPS
+
+LOCAL INSTANCE FiniteSetTheorems
 
 LEMMA InitialSegmentIsFinite ==
     ASSUME NEW n \in Nat PROVE IsFiniteSet(0..n)
@@ -104,9 +106,18 @@ LEMMA FinSubset_sub ==
     ASSUME NEW S,
            NEW F \in FINSUBSET(S)
     PROVE  F \subseteq S
-PROOF BY DEF Range, FINSUBSET
+PROOF BY DEF FINSUBSET
+
+LEMMA FinSubset_empty ==
+    ASSUME NEW S PROVE {} \in FINSUBSET(S)
+PROOF BY FS_EmptySet DEF FINSUBSET
+
+LEMMA FinSubset_subset ==
+    ASSUME NEW S, NEW Q \in SUBSET S
+    PROVE  FINSUBSET(Q) \in SUBSET FINSUBSET(S)
+PROOF BY FS_Subset DEF FINSUBSET
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 01:29:12 CEST 2025 by karbyshev
+\* Last modified Tue Jul 08 14:51:42 CEST 2025 by karbyshev
 \* Created Tue May 20 00:05:14 CEST 2025 by karbyshev

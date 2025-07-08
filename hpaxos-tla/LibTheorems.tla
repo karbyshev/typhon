@@ -48,7 +48,14 @@ LEMMA FinSubset_sub ==
            NEW F \in FINSUBSET(S)
     PROVE  F \subseteq S
 
+LEMMA FinSubset_empty ==
+    ASSUME NEW S PROVE {} \in FINSUBSET(S)
+
+LEMMA FinSubset_subset ==
+    ASSUME NEW S, NEW Q \in SUBSET S
+    PROVE  FINSUBSET(Q) \in SUBSET FINSUBSET(S)
+
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 01:29:53 CEST 2025 by karbyshev
+\* Last modified Tue Jul 08 15:05:51 CEST 2025 by karbyshev
 \* Created Mon May 19 20:15:40 CEST 2025 by karbyshev
