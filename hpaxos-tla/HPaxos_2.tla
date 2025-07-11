@@ -157,6 +157,13 @@ CONSTANT WellFormed2a(_)
         \/ OneA(m) /\ t = "1b"
         \/ OneB(m) /\ t = "2a"
         \/ TwoA(m) /\ t = "2a"
+
+    Reply(new, m, acc) ==
+        /\ ReplyType(m, new.type)
+        /\ new.acc = acc
+        /\ new.prev = prev_msg[acc]
+        /\ new.refs = recent_msgs[acc] \cup {m}
+        /\ WellFormed(new)
   } \* define
 
   macro Send(m) { msgs := msgs \cup {m} }
@@ -172,31 +179,18 @@ CONSTANT WellFormed2a(_)
   }
 
   macro Process(m) {
-    with (T \in {"1b", "2a"},
-          LL \in SUBSET Learner,
-          new = [type |-> T,
-                 acc  |-> self,
-                 prev |-> prev_msg[self],
-                 refs |-> recent_msgs[self] \cup {m},
-                 lrns |-> LL])
-    {
-      \* TODO prove that new \in Message
-      assert new \in Message ;
-      either {
-        when ReplyType(m, T);
-        when WellFormed(new) ;
+    \* TODO formulate a lemma that claims that given a Message m a reply Message can be contructed?
+    either {
+      with (new \in {reply \in Message : Reply(reply, m, self)})
+      {
         prev_msg[self] := new ;
         recent_msgs[self] := {new} ;
         Send(new)
       }
-      or {
-        \* TODO fix liveness: this branch might triggered when LL is picked to be non-wellformed
-        \* TODO replace non-determinism by picking the correct set
-        when ReplyType(m, T);
-        when ~WellFormed(new) ;
-        when ~OneA(m) ;
-        recent_msgs[self] := recent_msgs[self] \cup {m}
-      }
+    }
+    or {
+      when \A new \in Message : ~Reply(new, m, self) ;
+      recent_msgs[self] := recent_msgs[self] \cup {m}
     }
   }
 
@@ -206,8 +200,6 @@ CONSTANT WellFormed2a(_)
           T \in {"1b", "2a"},
           msg = [type |-> T, acc |-> self, refs |-> fin, lrns |-> LL])
     {
-      \* TODO can we remove the well-formedness condition here?
-      when WellFormed(msg) ;
       Send(msg)
     }
   }
@@ -253,7 +245,7 @@ CONSTANT WellFormed2a(_)
 }
 
 ****************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "f5320c6c" /\ chksum(tla) = "924ed462")
+\* BEGIN TRANSLATION (chksum(pcal) = "30f8afe" /\ chksum(tla) = "8bd229e6")
 VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision
 
 (* define statement *)
@@ -396,6 +388,13 @@ ReplyType(m, t) ==
     \/ OneB(m) /\ t = "2a"
     \/ TwoA(m) /\ t = "2a"
 
+Reply(new, m, acc) ==
+    /\ ReplyType(m, new.type)
+    /\ new.acc = acc
+    /\ new.prev = prev_msg[acc]
+    /\ new.refs = recent_msgs[acc] \cup {m}
+    /\ WellFormed(new)
+
 
 vars == << msgs, known_msgs, recent_msgs, prev_msg, decision >>
 
@@ -417,25 +416,13 @@ safe_acceptor(self) == /\ \E m \in msgs:
                                /\ KnownRefs(self, m)
                             /\ known_msgs' = [known_msgs EXCEPT ![self] = known_msgs[self] \cup {m}]
                             /\ WellFormed(m)
-                            /\ \E T \in {"1b", "2a"}:
-                                 \E LL \in SUBSET Learner:
-                                   LET new == [type |-> T,
-                                               acc  |-> self,
-                                               prev |-> prev_msg[self],
-                                               refs |-> recent_msgs[self] \cup {m},
-                                               lrns |-> LL] IN
-                                     /\ Assert(new \in Message, 
-                                               "Failure of assertion at line 184, column 7 of macro called at line 236, column 9.")
-                                     /\ \/ /\ ReplyType(m, T)
-                                           /\ WellFormed(new)
-                                           /\ prev_msg' = [prev_msg EXCEPT ![self] = new]
-                                           /\ recent_msgs' = [recent_msgs EXCEPT ![self] = {new}]
-                                           /\ msgs' = (msgs \cup {new})
-                                        \/ /\ ReplyType(m, T)
-                                           /\ ~WellFormed(new)
-                                           /\ ~OneA(m)
-                                           /\ recent_msgs' = [recent_msgs EXCEPT ![self] = recent_msgs[self] \cup {m}]
-                                           /\ UNCHANGED <<msgs, prev_msg>>
+                            /\ \/ /\ \E new \in {reply \in Message : Reply(reply, m, self)}:
+                                       /\ prev_msg' = [prev_msg EXCEPT ![self] = new]
+                                       /\ recent_msgs' = [recent_msgs EXCEPT ![self] = {new}]
+                                       /\ msgs' = (msgs \cup {new})
+                               \/ /\ \A new \in Message : ~Reply(new, m, self)
+                                  /\ recent_msgs' = [recent_msgs EXCEPT ![self] = recent_msgs[self] \cup {m}]
+                                  /\ UNCHANGED <<msgs, prev_msg>>
                        /\ UNCHANGED decision
 
 learner(self) == /\ \/ /\ \E m \in msgs:
@@ -455,8 +442,7 @@ fake_acceptor(self) == /\ \E fin \in FINSUBSET(msgs):
                             \E LL \in SUBSET Learner:
                               \E T \in {"1b", "2a"}:
                                 LET msg == [type |-> T, acc |-> self, refs |-> fin, lrns |-> LL] IN
-                                  /\ WellFormed(msg)
-                                  /\ msgs' = (msgs \cup {msg})
+                                  msgs' = (msgs \cup {msg})
                        /\ UNCHANGED << known_msgs, recent_msgs, prev_msg, 
                                        decision >>
 
@@ -485,24 +471,13 @@ SendProposal(b) ==
 Process(a, m) ==
     /\ Recv(a, m)
     /\ WellFormed(m)
-    /\ \E LL \in SUBSET Learner :
-       \E T \in {"1b", "2a"} :
-        LET new == [type |-> T,
-                    acc  |-> a,
-                    prev |-> prev_msg[a],
-                    refs |-> recent_msgs[a] \cup {m},
-                    lrns |-> LL] IN
-        /\ new \in Message
-        /\ \/ /\ ReplyType(m, T)
-              /\ WellFormed(new)
-              /\ prev_msg' = [prev_msg EXCEPT ![a] = new]
-              /\ recent_msgs' = [recent_msgs EXCEPT ![a] = {new}]
-              /\ Send(new)
-           \/ /\ ReplyType(m, T)
-              /\ ~WellFormed(new)
-              /\ ~OneA(m)
-              /\ recent_msgs' = [recent_msgs EXCEPT ![a] = recent_msgs[a] \cup {m}]
-              /\ UNCHANGED << msgs, prev_msg >>
+    /\ \/ \E new \in {reply \in Message : Reply(reply, m, a)}:
+            /\ prev_msg' = [prev_msg EXCEPT ![a] = new]
+            /\ recent_msgs' = [recent_msgs EXCEPT ![a] = {new}]
+            /\ msgs' = (msgs \cup {new})
+       \/ /\ \A new \in Message : ~Reply(new, m, a)
+          /\ recent_msgs' = [recent_msgs EXCEPT ![a] = recent_msgs[a] \cup {m}]
+          /\ UNCHANGED <<msgs, prev_msg>>
     /\ UNCHANGED decision
 
 ProposerAction(p) ==
@@ -516,8 +491,7 @@ FakeSendControlMessage(a) ==
         \E LL \in SUBSET Learner :
         \E T \in {"1b", "2a"} :
             LET new == [type |-> T, acc |-> a, refs |-> fin, lrns |-> LL] IN
-            /\ WellFormed(new)
-            /\ Send(new)
+            Send(new)
     /\ UNCHANGED << known_msgs, recent_msgs, prev_msg  >>
     /\ UNCHANGED decision
 
@@ -597,5 +571,5 @@ UniqueDecision ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 27 16:50:33 CEST 2025 by karbyshev
+\* Last modified Thu Jul 10 21:50:55 CEST 2025 by karbyshev
 \* Created Mon Jun 19 12:24:03 CEST 2022 by karbyshev
