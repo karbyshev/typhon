@@ -196,10 +196,12 @@ CONSTANT WellFormed2a(_)
 
   macro FakeSendControlMessage() {
     with (fin \in FINSUBSET(msgs),
+          P \in msgs \cup {NoMessage},
           LL \in SUBSET Learner,
           T \in {"1b", "2a"},
-          msg = [type |-> T, acc |-> self, refs |-> fin, lrns |-> LL])
+          msg = [type |-> T, acc |-> self, prev |-> P, refs |-> fin, lrns |-> LL])
     {
+      when T = "2a" \/ LL = {} ;
       Send(msg)
     }
   }
@@ -245,7 +247,7 @@ CONSTANT WellFormed2a(_)
 }
 
 ****************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "30f8afe" /\ chksum(tla) = "8bd229e6")
+\* BEGIN TRANSLATION (chksum(pcal) = "2c793f03" /\ chksum(tla) = "37449b54")
 VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision
 
 (* define statement *)
@@ -439,10 +441,12 @@ learner(self) == /\ \/ /\ \E m \in msgs:
                  /\ UNCHANGED << msgs, recent_msgs, prev_msg >>
 
 fake_acceptor(self) == /\ \E fin \in FINSUBSET(msgs):
-                            \E LL \in SUBSET Learner:
-                              \E T \in {"1b", "2a"}:
-                                LET msg == [type |-> T, acc |-> self, refs |-> fin, lrns |-> LL] IN
-                                  msgs' = (msgs \cup {msg})
+                            \E P \in msgs \cup {NoMessage}:
+                              \E LL \in SUBSET Learner:
+                                \E T \in {"1b", "2a"}:
+                                  LET msg == [type |-> T, acc |-> self, prev |-> P, refs |-> fin, lrns |-> LL] IN
+                                    /\ T = "2a" \/ LL = {}
+                                    /\ msgs' = (msgs \cup {msg})
                        /\ UNCHANGED << known_msgs, recent_msgs, prev_msg, 
                                        decision >>
 
@@ -468,16 +472,22 @@ SendProposal(b) ==
     /\ UNCHANGED << known_msgs, recent_msgs, prev_msg >>
     /\ UNCHANGED decision
 
+ProcessWithReply(a, m) ==
+    \E new \in {reply \in Message : Reply(reply, m, a)}:
+        /\ prev_msg' = [prev_msg EXCEPT ![a] = new]
+        /\ recent_msgs' = [recent_msgs EXCEPT ![a] = {new}]
+        /\ msgs' = msgs \cup {new}
+
+ProcessNoReply(a, m) ==
+    /\ \A new \in Message : ~Reply(new, m, a)
+    /\ recent_msgs' = [recent_msgs EXCEPT ![a] = recent_msgs[a] \cup {m}]
+    /\ UNCHANGED <<msgs, prev_msg>>
+
 Process(a, m) ==
     /\ Recv(a, m)
     /\ WellFormed(m)
-    /\ \/ \E new \in {reply \in Message : Reply(reply, m, a)}:
-            /\ prev_msg' = [prev_msg EXCEPT ![a] = new]
-            /\ recent_msgs' = [recent_msgs EXCEPT ![a] = {new}]
-            /\ msgs' = (msgs \cup {new})
-       \/ /\ \A new \in Message : ~Reply(new, m, a)
-          /\ recent_msgs' = [recent_msgs EXCEPT ![a] = recent_msgs[a] \cup {m}]
-          /\ UNCHANGED <<msgs, prev_msg>>
+    /\ \/ ProcessWithReply(a, m)
+       \/ ProcessNoReply(a, m)
     /\ UNCHANGED decision
 
 ProposerAction(p) ==
@@ -488,10 +498,12 @@ SafeAcceptorAction(a) ==
 
 FakeSendControlMessage(a) ==
     /\ \E fin \in FINSUBSET(msgs) :
+        \E P \in msgs \cup {NoMessage} :
         \E LL \in SUBSET Learner :
         \E T \in {"1b", "2a"} :
-            LET new == [type |-> T, acc |-> a, refs |-> fin, lrns |-> LL] IN
-            Send(new)
+            /\ T = "2a" \/ LL = {}
+            /\ LET new == [type |-> T, acc |-> a, prev |-> P, refs |-> fin, lrns |-> LL] IN
+                Send(new)
     /\ UNCHANGED << known_msgs, recent_msgs, prev_msg  >>
     /\ UNCHANGED decision
 
@@ -531,7 +543,7 @@ THEOREM NextDef == Next <=> NextTLA
       BY DEF proposer, ProposerAction, SendProposal, Send
 <1>2. ASSUME NEW self \in SafeAcceptor
       PROVE safe_acceptor(self) <=> SafeAcceptorAction(self)
-      BY Zenon DEF safe_acceptor, SafeAcceptorAction, Process, Recv, Send, Assert
+      BY Zenon DEF safe_acceptor, SafeAcceptorAction, Process, ProcessWithReply, ProcessNoReply, Recv, Send, Assert
 <1>3. ASSUME NEW self \in Learner
       PROVE learner(self) <=> LearnerAction(self)
       BY Zenon DEF learner, LearnerAction, LearnerRecv, LearnerDecide, Recv
