@@ -1,5 +1,5 @@
 --------------------- MODULE HPaxos_2_Invariants_proofs ---------------------
-EXTENDS HPaxos_2_Specs, HMessageTheorems, HPaxos_2_Structures, TLAPS
+EXTENDS HPaxos_2_Specs, HMessageTheorems, HPaxos_2_Structures, LibTheorems, TLAPS
 
 LOCAL INSTANCE FiniteSetTheorems
 
@@ -25,47 +25,38 @@ PROOF
   <2> acc \in Acceptor BY DEF Acceptor
   <2> m \in Message BY DEF TypeOK
   <2> msgs' \in SUBSET Message
-      BY WellFormedMessage DEF Process, Send, TypeOK
+      BY WellFormedMessage DEF Process, ProcessWithReply, ProcessNoReply, Send, TypeOK
   <2> known_msgs' \in [Acceptor \cup Learner -> SUBSET Message]
       BY DEF Process, Recv, TypeOK
   <2> recent_msgs' \in [Acceptor -> SUBSET Message]
-    <4> PICK ll \in SUBSET Learner,
-             t \in {"1b", "2a"} :
-        LET new == [type |-> t,
-                    acc  |-> acc,
-                    prev |-> prev_msg[acc],
-                    refs |-> recent_msgs[acc] \cup {m},
-                    lrns |-> ll] IN
-        /\ new \in Message
-        /\ \/ /\ ReplyType(m, t)
-              /\ WellFormed(new)
-              /\ Send(new)
-              /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = {new}]
-              /\ prev_msg' = [prev_msg EXCEPT ![acc] = new]
-           \/ /\ ReplyType(m, t)
-              /\ ~WellFormed(new)
-              /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = recent_msgs[acc] \cup {m}]
-        BY DEF Process
-    <4> DEFINE new == [type |-> t,
-                       acc  |-> acc,
-                       prev |-> prev_msg[acc],
-                       refs |-> recent_msgs[acc] \cup {m},
-                       lrns |-> ll]
-    <4> new \in Message
-        OBVIOUS
-    <4> recent_msgs[acc] \cup {m} \in SUBSET Message
-        BY DEF TypeOK
-    <4> QED BY DEF TypeOK
+      BY DEF Process, ProcessWithReply, ProcessNoReply, TypeOK
   <2> prev_msg' \in [Acceptor -> Message \cup {NoMessage}]
-      BY DEF Process, TypeOK
+      BY DEF Process, ProcessWithReply, ProcessNoReply, TypeOK
   <2> decision' \in [Learner \X Ballot -> SUBSET Value]
       BY DEF Process, TypeOK
   <2> QED BY DEF TypeOK
 <1>7. CASE \E l \in Learner : LearnerAction(l)
       BY <1>7 DEF LearnerAction, LearnerRecv, LearnerDecide, Recv, TypeOK
 <1>8. CASE \E a \in FakeAcceptor : FakeAcceptorAction(a)
-      BY <1>8, WellFormedMessage
-      DEF FakeAcceptorAction, FakeSendControlMessage, Send, TypeOK
+  <2> SUFFICES msgs' \in SUBSET Message
+      BY <1>8 DEF FakeAcceptorAction, FakeSendControlMessage, TypeOK
+  <2> PICK fake \in FakeAcceptor,
+           fin \in FINSUBSET(msgs),
+           P \in msgs \cup {NoMessage},
+           LL \in SUBSET Learner,
+           T \in {"1b", "2a"} :
+      /\ T = "2a" \/ LL = {}
+      /\ Send([type |-> T, acc |-> fake, prev |-> P, refs |-> fin, lrns |-> LL])
+      BY <1>8 DEF FakeAcceptorAction, FakeSendControlMessage
+  <2> SUFFICES [type |-> T, acc |-> fake, prev |-> P, refs |-> fin, lrns |-> LL] \in Message
+      BY DEF Send, TypeOK
+  <2> P \in Message \cup {NoMessage}
+      BY DEF TypeOK
+  <2> fin \in SUBSET Message
+      BY FinSubset_sub DEF TypeOK
+  <2> IsFiniteSet(fin)
+      BY DEF FINSUBSET
+  <2> QED BY OneB_Message, TwoA_Message DEF Acceptor
 <1>9. QED BY <1>1, <1>3, <1>7, <1>8
           DEF NextTLA, SafeAcceptorAction
 
