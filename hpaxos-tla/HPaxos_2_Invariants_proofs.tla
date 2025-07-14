@@ -74,7 +74,7 @@ PROOF
 <1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
   <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
       BY <1>3
-  <2> QED BY DEF Process, Send
+  <2> QED BY DEF Process, ProcessWithReply, ProcessNoReply, Send
 <1>6. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
       BY <1>6 DEF LearnerRecv
 <1>7. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
@@ -102,7 +102,7 @@ PROOF
 <1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
   <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
       BY <1>3
-  <2> QED BY DEF Process, Send
+  <2> QED BY DEF Process, ProcessWithReply, ProcessNoReply, Send
 <1>6. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
       BY <1>6 DEF LearnerRecv
 <1>7. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
@@ -173,8 +173,9 @@ PROOF
       BY <1>9, KnownMsgMonotone
       DEF FakeAcceptorAction, FakeSendControlMessage, V, TypeOK
 <1>10. QED BY <1>1, <1>3, <1>7, <1>8, <1>9
-          DEF NextTLA, SafeAcceptorAction, LearnerAction
+           DEF NextTLA, SafeAcceptorAction, LearnerAction
 
+\* TODO finish the proof
 LEMMA RecentMsgsSpec1Invariant ==
     TypeOK /\ RecentMsgsSpec1 /\ NextTLA =>
     RecentMsgsSpec1'
@@ -185,6 +186,9 @@ PROOF
                     M.acc = A
              PROVE  M \in SentBy(A)'
     BY DEF RecentMsgsSpec1
+<1> SUFFICES ASSUME M \notin recent_msgs[A]
+             PROVE  M \in SentBy(A)'
+    BY Sent_monotone DEF RecentMsgsSpec1, SentBy, TypeOK
 <1> TypeOK' BY TypeOKInvariant
 <1> SafeAcceptor \in SUBSET Acceptor
     BY DEF Acceptor
@@ -193,29 +197,19 @@ PROOF
 <1>1. CASE \E p \in Proposer : ProposerAction(p)
   <2> PICK bal \in Ballot : SendProposal(bal)
       BY <1>1 DEF ProposerAction
-  <2> QED BY DEF RecentMsgsSpec1, SendProposal, SentBy, Send, TypeOK
+  <2> QED BY DEF SendProposal, SentBy, Send, TypeOK
 <1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
   <2> PICK acc \in SafeAcceptor, m \in msgs : Process(acc, m)
       BY <1>3
   <2> m \in Message BY DEF TypeOK
-  <2> PICK ll \in SUBSET Learner,
-           t \in {"1b", "2a"} :
-      LET new == [type |-> t,
-                  acc  |-> acc,
-                  prev |-> prev_msg[acc],
-                  refs |-> recent_msgs[acc] \cup {m},
-                  lrns |-> ll] IN
-      \/ /\ ReplyType(m, t)
-         /\ WellFormed(new)
-         /\ Send(new)
-         /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = {new}]
-      \/ /\ ReplyType(m, t)
-         /\ ~WellFormed(new)
-         /\ ~OneA(m)
-         /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = recent_msgs[acc] \cup {m}]
-         /\ UNCHANGED << msgs >>
-      BY DEF Process
-  <2> QED BY MessageTypeSpec DEF RecentMsgsSpec1, ReplyType, Recv, Send, SentBy, OneA, TypeOK
+  <2>1. CASE ProcessWithReply(acc, m)
+        BY <2>1 DEF ProcessWithReply, Reply, ReplyType, SentBy, Send, OneA, TypeOK
+  <2>2. CASE ProcessNoReply(acc, m)
+    <3> ~OneA(m)
+\*    <3> M = m
+\*        BY <2>2 DEF ProcessNoReply, TypeOK
+    <3> QED BY <2>2 DEF ProcessNoReply, SentBy, Send, OneA, TypeOK
+  <2> QED BY <2>1, <2>2 DEF Process
 <1>7. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
   <2> PICK lrn \in Learner, msg \in msgs : LearnerRecv(lrn, msg)
       BY <1>7
@@ -294,43 +288,24 @@ PROOF
   <2> PICK acc \in SafeAcceptor, m \in msgs : Process(acc, m)
       BY <1>3
   <2> m \in Message BY DEF TypeOK
-  <2> PICK ll \in SUBSET Learner,
-           t \in {"1b", "2a"} :
-        LET new == [type |-> t,
-                    acc |-> acc,
-                    prev |-> prev_msg[acc],
-                    refs |-> recent_msgs[acc] \cup {m},
-                    lrns |-> ll] IN
-        /\ new \in Message
-        /\ \/ /\ ReplyType(m, t)
-              /\ WellFormed(new)
-              /\ Send(new)
-              /\ prev_msg' = [prev_msg EXCEPT ![acc] = new]
-           \/ /\ ReplyType(m, t)
-              /\ ~WellFormed(new)
-              /\ ~OneA(m)
-              /\ UNCHANGED << prev_msg, msgs >>
-      BY DEF Process
-  <2> DEFINE new == [type |-> t,
-                     acc |-> acc,
-                     prev |-> prev_msg[acc],
-                     refs |-> recent_msgs[acc] \cup {m},
-                     lrns |-> ll]
-  <2> new \in Message
-      OBVIOUS
-  <2> CASE WellFormed(new)
-    <3> prev_msg' = [prev_msg EXCEPT ![acc] = new]
-        OBVIOUS
-    <3> new \in msgs'
-        BY DEF Send
+  <2>1. CASE ProcessWithReply(acc, m)
+    <3> PICK new \in Message :
+                /\ Reply(new, m, acc)
+                /\ prev_msg' = [prev_msg EXCEPT ![acc] = new]
+                /\ msgs' = msgs \cup {new}
+        BY <2>1 DEF ProcessWithReply
+    <3> ~OneA(new)
+        BY ReplyNotOneA
     <3> new.acc = acc
-        OBVIOUS
-    <3> CASE acc # A
-        BY NoMessageIsNotAMessage DEF SentBy, Send, TypeOK
-    <3> QED BY NoMessageIsNotAMessage DEF SentBy, Send, OneA, TypeOK
-  <2> CASE ~WellFormed(new)
-      BY DEF SentBy
-  <2> QED OBVIOUS
+        BY DEF Reply
+    <3>1. CASE acc # A
+          BY <3>1, NoMessageIsNotAMessage DEF SentBy, Send, OneA, TypeOK
+    <3>2. CASE acc = A
+          BY <3>2, NoMessageIsNotAMessage DEF SentBy, Send, OneA, TypeOK
+    <3> QED BY <3>1, <3>2
+  <2>2. CASE ProcessNoReply(acc, m)
+        BY <2>2 DEF ProcessNoReply, SentBy
+  <2> QED BY <2>1, <2>2 DEF Process
 <1>6. CASE \E l \in Learner : LearnerAction(l)
       BY <1>6 DEF LearnerAction, LearnerRecv, LearnerDecide, Send, SentBy
 <1>7. CASE \E a \in FakeAcceptor : FakeSendControlMessage(a)
@@ -372,58 +347,35 @@ PROOF
             \E m \in msgs : Process(a, m)
   <2> PICK acc \in SafeAcceptor, m \in msgs : Process(acc, m)
       BY <1>3
-  <2> PICK ll \in SUBSET Learner,
-           t \in {"1b", "2a"} :
-      LET new == [type |-> t,
-                  acc  |-> acc,
-                  prev |-> prev_msg[acc],
-                  refs |-> recent_msgs[acc] \cup {m},
-                  lrns |-> ll] IN
-      /\ new \in Message
-      /\ \/ /\ ReplyType(m, t)
-            /\ WellFormed(new)
-            /\ Send(new)
-            /\ prev_msg' = [prev_msg EXCEPT ![acc] = new]
-            /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = {new}]
-         \/ /\ ReplyType(m, t)
-            /\ ~WellFormed(new)
-            /\ ~OneA(m)
-            /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = recent_msgs[acc] \cup {m}]
-            /\ UNCHANGED << prev_msg, msgs >>
-      BY DEF Process
-  <2> DEFINE new == [type |-> t,
-                     acc  |-> acc,
-                     prev |-> prev_msg[acc],
-                     refs |-> recent_msgs[acc] \cup {m},
-                     lrns |-> ll]
-  <2> new \in Message
-      OBVIOUS
-  <2> CASE acc = A
-    <3> CASE WellFormed(new)
-      <4> msgs' = msgs \cup {new}
-          BY DEF Send, OneA
-      <4> new # NoMessage
-          BY NoMessageIsNotAMessage
-      <4> new.prev = prev_msg[A]
-          OBVIOUS
+  <2>1. CASE ProcessWithReply(acc, m)
+    <3> PICK new \in Message :
+                /\ Reply(new, m, acc)
+                /\ prev_msg' = [prev_msg EXCEPT ![acc] = new]
+                /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = {new}]
+                /\ msgs' = msgs \cup {new}
+        BY <2>1 DEF ProcessWithReply
+    <3> ~OneA(new)
+        BY ReplyNotOneA
+    <3> new # NoMessage
+        BY NoMessageIsNotAMessage
+    <3>1. CASE acc = A
       <4> SentBy(A)' = SentBy(A) \cup {new}
-          BY DEF Send, SentBy, OneA
+          BY <3>1 DEF SentBy, OneA, Reply
       <4> prev_msg[A]' = new
-          BY DEF Send, TypeOK
+          BY <3>1 DEF Send, TypeOK
       <4> ASSUME SentBy(A) # {} PROVE prev_msg[A] \in PrevTran(new)
-          BY Message_prev_PrevTran DEF SafeAcceptorPrevSpec1
+          BY <3>1, Message_prev_PrevTran DEF SafeAcceptorPrevSpec1, Reply
       <4> prev_msg[A]' \in SentBy(A)'
           OBVIOUS
       <4> prev_msg[A]' \in recent_msgs[A]'
           BY DEF TypeOK
-      <4> HIDE DEF new
       <4> QED BY PrevTran_trans, PrevTran_refl DEF SafeAcceptorPrevSpec1
-    <3> CASE ~WellFormed(new)
-        BY DEF SentBy, TypeOK
-    <3> QED OBVIOUS
-  <2> CASE acc # A
-      BY DEF SentBy, Send, TypeOK
-  <2> QED OBVIOUS
+    <3>2. CASE acc # A
+          BY <3>2 DEF SentBy, Reply, TypeOK
+    <3> QED BY <3>1, <3>2
+  <2>2. CASE ProcessNoReply(acc, m)
+        BY <2>2 DEF ProcessNoReply, SentBy, TypeOK
+  <2> QED BY <2>1, <2>2 DEF Process
 <1>6. CASE \E l \in Learner : LearnerAction(l)
       BY <1>6 DEF LearnerAction, LearnerRecv, LearnerDecide, Send, SentBy
 <1>7. CASE \E a \in FakeAcceptor : FakeSendControlMessage(a)
@@ -655,29 +607,23 @@ PROOF
 <1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
   <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
       BY <1>3
-  <2> PICK ll \in SUBSET Learner,
-           t \in {"1b", "2a"} :
-      LET new2a == [type |-> t,
-                    acc  |-> acc,
-                    prev |-> prev_msg[acc],
-                    refs |-> recent_msgs[acc] \cup {msg},
-                    lrns |-> ll] IN
-      /\ new2a \in Message
-      /\ Send(new2a)
-      /\ prev_msg' = [prev_msg EXCEPT ![acc] = new2a]
-      BY DEF Process, TypeOK
-  <2> DEFINE new2a == [type |-> t,
-                       acc  |-> acc,
-                       prev |-> prev_msg[acc],
-                       refs |-> recent_msgs[acc] \cup {msg},
-                       lrns |-> ll]
-  <2> m2 = new2a BY DEF Send
-  <2> m2 \in Message BY DEF TypeOK
-  <2> \A m \in SentBy(A) : m \in PrevTran(prev_msg[A])
-      BY DEF SafeAcceptorPrevSpec2
-  <2> prev_msg[A] \in PrevTran(m2)
-      BY Message_prev_PrevTran
-  <2> QED BY PrevTran_trans DEF SentBy
+  <2>1. CASE ProcessWithReply(acc, msg)
+    <3> PICK new \in Message :
+                /\ Reply(new, msg, acc)
+                /\ prev_msg' = [prev_msg EXCEPT ![acc] = new]
+                /\ recent_msgs' = [recent_msgs EXCEPT ![acc] = {new}]
+                /\ msgs' = msgs \cup {new}
+        BY <2>1 DEF ProcessWithReply
+    <3> m2 = new
+        OBVIOUS
+    <3> \A m \in SentBy(A) : m \in PrevTran(prev_msg[A])
+        BY DEF SafeAcceptorPrevSpec2
+    <3> prev_msg[A] \in PrevTran(m2)
+        BY Message_prev_PrevTran DEF Reply
+    <3> QED BY PrevTran_trans DEF SentBy
+  <2>2. CASE ProcessNoReply(acc, msg)
+        BY <2>2 DEF ProcessNoReply
+  <2> QED BY <2>1, <2>2 DEF Process
 <1>6. CASE \E l \in Learner : LearnerAction(l)
       BY <1>6 DEF LearnerAction, LearnerRecv, LearnerDecide, Send
 <1>7. CASE \E acc \in FakeAcceptor : FakeSendControlMessage(acc)
