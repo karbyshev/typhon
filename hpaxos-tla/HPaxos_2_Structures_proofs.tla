@@ -208,6 +208,11 @@ PROOF
   <2> QED BY MessageSpec DEF OneA, Ballot
 <1> QED BY DEF B
 
+LEMMA ReplyNotOneA ==
+    ASSUME NEW acc, NEW msg, NEW reply, Reply(reply, msg, acc)
+    PROVE ~OneA(reply)
+PROOF BY DEF Reply, ReplyType, OneA
+
 -----------------------------------------------------------------------------
 \* Facts about Latest
 

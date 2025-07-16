@@ -82,6 +82,10 @@ LEMMA B_1a_refs ==
            BallotUpperBound(m.refs, m.bal)
     PROVE  B(m, m.bal)
 
+LEMMA ReplyNotOneA ==
+    ASSUME NEW acc, NEW msg, NEW reply, Reply(reply, msg, acc)
+    PROVE ~OneA(reply)
+
 -----------------------------------------------------------------------------
 \* Facts about Latest
 
