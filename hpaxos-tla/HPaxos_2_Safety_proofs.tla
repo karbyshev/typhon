@@ -11,14 +11,6 @@ LOCAL INSTANCE WellFoundedInduction
 
 -----------------------------------------------------------------------------
 
-Safety ==
-    \A L1, L2 \in Learner: \A B1, B2 \in Ballot : \A V1, V2 \in Value :
-        <<L1, L2>> \in Ent /\
-        V1 \in decision[L1, B1] /\ V2 \in decision[L2, B2] =>
-        V1 = V2
-
------------------------------------------------------------------------------
-
 \* TODO not used
 THEOREM GeneralBallotInduction ==
     ASSUME NEW P(_),
@@ -1720,19 +1712,6 @@ PROOF
 <1>3. QED BY <1>0, <1>1, <1>2 DEF Ballot
 
 -----------------------------------------------------------------------------
-\* TODO check if all used
-FullSafetyInvariant ==
-    /\ TypeOK
-    /\ KnownMsgsSpec1
-    /\ KnownMsgsSpec2
-    /\ SafeAcceptorPrevSpec1
-    /\ SafeAcceptorPrevSpec2
-    /\ MsgsSafeAcceptorPrevTranLinearSpec
-\*    /\ MsgsSafeAcceptorSpec3
-    /\ MsgsSafeAcceptorPrevRefSpec
-    /\ KnownMsgsPrevTranSpec
-    /\ DecisionSpec
-    /\ Safety
 
 LEMMA SafetyStep ==
     TypeOK /\ NextTLA /\
