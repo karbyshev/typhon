@@ -1879,7 +1879,7 @@ LEMMA SafetyStutter ==
     Safety /\ vars = vars' => Safety'
 PROOF BY DEF Safety, vars
 
-LEMMA FullSafetyInvariantNext ==
+LEMMA FullSafetyInvariantNextTLA ==
     FullSafetyInvariant /\ [NextTLA]_vars => FullSafetyInvariant'
 PROOF
 <1> SUFFICES ASSUME FullSafetyInvariant,
@@ -1915,8 +1915,15 @@ PROOF
       DEF FullSafetyInvariant
 <1>3. QED BY <1>1, <1>2
 
+LEMMA FullSafetyInvariantNext ==
+    FullSafetyInvariant /\ [Next]_vars => FullSafetyInvariant'
+PROOF BY FullSafetyInvariantNextTLA, NextDef
+
+LEMMA FullSafetyInvariant_always == Spec => []FullSafetyInvariant
+PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext DEF Spec
+
 THEOREM SafetyResult == Spec => []Safety
-PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext, NextDef
+PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext
       DEF Spec, FullSafetyInvariant
 
 

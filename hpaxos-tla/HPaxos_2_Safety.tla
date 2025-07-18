@@ -3,8 +3,10 @@ EXTENDS HPaxos_2, HPaxos_2_Specs
 
 -----------------------------------------------------------------------------
 
+LEMMA FullSafetyInvariantNext ==
+    FullSafetyInvariant /\ [Next]_vars => FullSafetyInvariant'
 
------------------------------------------------------------------------------
+LEMMA FullSafetyInvariant_always == Spec => []FullSafetyInvariant
 
 THEOREM SafetyResult == Spec => []Safety
 
