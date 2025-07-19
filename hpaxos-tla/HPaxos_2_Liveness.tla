@@ -1,30 +1,29 @@
 ------------------------- MODULE HPaxos_2_Liveness -------------------------
 
-EXTENDS HMessage, HPaxos_2_Specs
+EXTENDS HMessage,
+        HPaxos_2,
+\*        HPaxos_2_Invariants,
+        TLAPS
 
-THEOREM Attempt1 ==
-    Spec /\ WF_vars(Next) =>
-    \A bal \in Ballot :
-    \A val \in Value :
-    \A safe \in SafeAcceptor :
-    \A M \in SUBSET msgs :
-        \* (0) M is a subset of sent messages, and
-        \* (1) M covers all the messages of the smaller ballot number that will ever be received by safe acceptors
-        /\ (\A acc \in SafeAcceptor :
-            \A x \in Message :
-            \A xbal \in Ballot :
-                B(x, xbal) /\ xbal < bal /\ (<> (x \in known_msgs[acc])) =>
-                x \in M)
-        \* (2) assume that the proposal p has "just" been proposed and it is the last proposal that will be ever proposed
-        /\ LET p == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> M ] IN
-            /\ V(p, val) \* val = BVal(bal)
-            /\ (\A x \in Message :
-                \A xbal \in Ballot :
-                    Proposal(x) /\ B(x, xbal) /\ bal =< xbal /\ (<> (x \in msgs)) =>
-                    x = p)
-        => <> \E m1b \in msgs : OneB(m1b) /\ msgs.acc = safe /\ B(m1b, bal)
-PROOF
-<1> QED
+\*LEMMA enabled ==
+\*    FullSafetyInvariant => ENABLED <<Next>>_vars
+\*PROOF BY ExpandENABLED DEF Next, proposer, vars, TypeOK
+
+\*<1> SUFFICES []FullSafetyInvariant /\ [][Next]_vars /\ WF_vars(Next) =>
+\*                \A alpha \in Learner :
+\*                \A bal \in Ballot :
+\*                \A val \in Value :
+\*                \A safe \in SafeAcceptor :
+\*                \A M \in SUBSET msgs :
+\*                    ((FullSafetyInvariant /\ F(bal, val, M)) ~> G(safe, bal))
+\*    BY PTL
+\*<1>2. \A alpha \in Learner :
+\*      \A bal \in Ballot :
+\*      \A val \in Value :
+\*      \A safe \in SafeAcceptor :
+\*      \A M \in SUBSET msgs :
+\*     (FullSafetyInvariant /\ F) /\ [Next]_vars => ((FullSafetyInvariant' /\ F') \/ G')
+\*        BY invariant DEF Next, vars
 
 \*    ChosenIn(alpha, b, v) ==
 \*        \E S \in SUBSET Known2a(alpha, b, v) :
