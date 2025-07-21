@@ -162,15 +162,12 @@ LEMMA OneB_Message ==
     ASSUME NEW A \in Acceptor,
            NEW P \in Message \cup {NoMessage},
            NEW R \in SUBSET Message,
-           IsFiniteSet(R),
-           P \in R
+           IsFiniteSet(R)
     PROVE  LET msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
            /\ msg \in Message
            /\ OneB(msg)
 PROOF
 <1> DEFINE msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ]
-<1> R # {}
-    OBVIOUS
 <1> OneB(msg)
     BY DEF OneB
 <1>0. \A m \in R : \E n \in Nat : m \in MessageRec[n]
@@ -181,18 +178,33 @@ PROOF
 <1> DEFINE I == Range(f)
 <1> I \in SUBSET Nat
     BY DEF Range
-<1> I # {}
-    BY DEF Range
 <1>1. IsFiniteSet(I)
   <2> f \in Surjection(R, I)
       BY Fun_RangeProperties
   <2> QED BY Zenon, FS_Surjection
-<1> PICK n0 \in I : IsMax(n0, I)
-    BY <1>1, NatFiniteSetMaxExists
+<1> nP == IF P = NoMessage THEN 0 ELSE CHOOSE nP \in Nat : P \in MessageRec[nP]
+<1> nP \in Nat
+    BY DEF Message
+<1> ASSUME P # NoMessage PROVE P \in MessageRec[nP]
+    BY DEF Message
+<1> J == I \cup { nP }
+<1>2. IsFiniteSet(J)
+  <2> IsFiniteSet({ nP })
+      BY FS_Singleton
+  <2> QED BY <1>1, FS_Union
+<1>3. J \in SUBSET Nat
+      BY DEF Message
+<1> PICK n0 \in J : IsMax(n0, J)
+    BY <1>2, <1>3, NatFiniteSetMaxExists
 <1> n0 \in Nat
     OBVIOUS
 <1> \A m \in R : m \in MessageRec[n0]
     BY <1>0, MessageRec_monotone DEF IsMax, Range
+<1> ASSUME P # NoMessage PROVE P \in MessageRec[n0]
+  <2> HIDE DEF nP
+  <2> nP =< n0
+      BY DEF IsMax
+  <2> QED BY MessageRec_monotone
 <1> msg \in MessageRec[n0 + 1]
   <2>0. n0 = (n0 + 1) - 1
       OBVIOUS
@@ -210,15 +222,12 @@ LEMMA TwoA_Message ==
            NEW P \in Message \cup {NoMessage},
            NEW R \in SUBSET Message,
            IsFiniteSet(R),
-           P \in R,
            NEW L \in SUBSET Learner
     PROVE  LET msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> L ] IN
            /\ msg \in Message
            /\ TwoA(msg)
 PROOF
 <1> DEFINE msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> L ]
-<1> R # {}
-    OBVIOUS
 <1> TwoA(msg)
     BY DEF TwoA
 <1>0. \A m \in R : \E n \in Nat : m \in MessageRec[n]
@@ -229,18 +238,33 @@ PROOF
 <1> DEFINE I == Range(f)
 <1> I \in SUBSET Nat
     BY DEF Range
-<1> I # {}
-    BY DEF Range
 <1>1. IsFiniteSet(I)
   <2> f \in Surjection(R, I)
       BY Fun_RangeProperties
   <2> QED BY Zenon, FS_Surjection
-<1> PICK n0 \in I : IsMax(n0, I)
-    BY <1>1, NatFiniteSetMaxExists
+<1> nP == IF P = NoMessage THEN 0 ELSE CHOOSE nP \in Nat : P \in MessageRec[nP]
+<1> nP \in Nat
+    BY DEF Message
+<1> ASSUME P # NoMessage PROVE P \in MessageRec[nP]
+    BY DEF Message
+<1> J == I \cup { nP }
+<1>2. IsFiniteSet(J)
+  <2> IsFiniteSet({ nP })
+      BY FS_Singleton
+  <2> QED BY <1>1, FS_Union
+<1>3. J \in SUBSET Nat
+      BY DEF Message
+<1> PICK n0 \in J : IsMax(n0, J)
+    BY <1>2, <1>3, NatFiniteSetMaxExists
 <1> n0 \in Nat
     OBVIOUS
 <1> \A m \in R : m \in MessageRec[n0]
     BY <1>0, MessageRec_monotone DEF IsMax, Range
+<1> ASSUME P # NoMessage PROVE P \in MessageRec[n0]
+  <2> HIDE DEF nP
+  <2> nP =< n0
+      BY DEF IsMax
+  <2> QED BY MessageRec_monotone
 <1> msg \in MessageRec[n0 + 1]
   <2>0. n0 = (n0 + 1) - 1
       OBVIOUS
@@ -1063,5 +1087,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1 DEF PrevTran
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jul 08 15:28:53 CEST 2025 by karbyshev
+\* Last modified Sun Jul 20 19:22:26 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev

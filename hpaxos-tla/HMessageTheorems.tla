@@ -24,8 +24,7 @@ LEMMA OneB_Message ==
     ASSUME NEW A \in Acceptor,
            NEW P \in Message \cup {NoMessage},
            NEW R \in SUBSET Message,
-           IsFiniteSet(R),
-           P \in R
+           IsFiniteSet(R)
     PROVE  LET msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
            /\ msg \in Message
            /\ OneB(msg)
@@ -35,7 +34,6 @@ LEMMA TwoA_Message ==
            NEW P \in Message \cup {NoMessage},
            NEW R \in SUBSET Message,
            IsFiniteSet(R),
-           P \in R,
            NEW L \in SUBSET Learner
     PROVE  LET msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> L ] IN
            /\ msg \in Message
@@ -159,5 +157,5 @@ LEMMA Message_prev_PrevTran ==
 
 =============================================================================
 \* Modification History
-\* Last modified Sat Jun 28 00:21:21 CEST 2025 by karbyshev
+\* Last modified Sun Jul 20 10:58:59 CEST 2025 by karbyshev
 \* Created Mon May 19 20:59:25 CEST 2025 by karbyshev

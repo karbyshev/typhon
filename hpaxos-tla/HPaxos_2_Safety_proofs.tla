@@ -1124,7 +1124,13 @@ PROOF
 <1> oneb_1 \in SUBSET { mm \in Message : OneB(mm) }
   <2> IsFiniteSet({p1})
       BY FS_Singleton
-  <2> QED BY Isa, OneB_Message DEF Acceptor
+  <2> {p1} \in SUBSET Message
+      OBVIOUS
+  <2> SUFFICES ASSUME NEW fake \in FakeAcceptor
+               PROVE  [ type |-> "1b", acc |-> fake, prev |-> p1, refs |-> {p1}, lrns |-> {} ] \in Message /\
+                      OneB([ type |-> "1b", acc |-> fake, prev |-> p1, refs |-> {p1}, lrns |-> {} ])
+      OBVIOUS
+  <2> QED BY OneB_Message DEF Acceptor
 <1> IsFiniteSet(oneb_1)
   <2> PICK fseq \in Seq(FakeAcceptor) :
         \A f \in FakeAcceptor : \E n \in 1..Len(fseq) : fseq[n] = f
@@ -1178,7 +1184,13 @@ PROOF
 <1> oneb_2 \in SUBSET { mm \in Message : OneB(mm) }
   <2> IsFiniteSet({p2})
       BY FS_Singleton
-  <2> QED BY Isa, OneB_Message DEF Acceptor
+  <2> {p2} \in SUBSET Message
+      OBVIOUS
+  <2> SUFFICES ASSUME NEW fake \in FakeAcceptor
+               PROVE  [ type |-> "1b", acc |-> fake, prev |-> p2, refs |-> {p2}, lrns |-> {} ] \in Message /\
+                      OneB([ type |-> "1b", acc |-> fake, prev |-> p2, refs |-> {p2}, lrns |-> {} ])
+      OBVIOUS
+  <2> QED BY OneB_Message DEF Acceptor
 <1> IsFiniteSet(oneb_2)
   <2> PICK fseq \in Seq(FakeAcceptor) :
         \A f \in FakeAcceptor : \E n \in 1..Len(fseq) : fseq[n] = f
