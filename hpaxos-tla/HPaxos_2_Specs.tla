@@ -14,6 +14,10 @@ TypeOK ==
 -----------------------------------------------------------------------------
 SentBy(acc) == { mm \in msgs : ~OneA(mm) /\ mm.acc = acc }
 
+RecentMsgsSpec0 ==
+    \A A \in SafeAcceptor :
+        IsFiniteSet(recent_msgs[A])
+
 \* TODO not used (remove?)
 RecentMsgsSpec1 ==
     \A A \in SafeAcceptor :
@@ -89,6 +93,15 @@ MsgsSafeAcceptorPrevTranLinearSpec ==
         \A m1, m2 \in SentBy(A) :
             m1 \in PrevTran(m2) \/ m2 \in PrevTran(m1)
 
+\* TODO remove if not used
+OneAProcessed ==
+    \A A \in SafeAcceptor :
+        \A m \in known_msgs[A] :
+            Proposal(m) =>
+            \E m1b \in msgs :
+                OneB(m1b) /\ \* ... for example, SameBallot(m1b, m)
+                m1b.acc = A
+
 -----------------------------------------------------------------------------
 Safety ==
     \A L1, L2 \in Learner: \A B1, B2 \in Ballot : \A V1, V2 \in Value :
@@ -117,5 +130,5 @@ FullLivenessInvariant ==
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 10:58:18 CEST 2025 by karbyshev
+\* Last modified Tue Jul 22 12:40:06 CEST 2025 by karbyshev
 \* Created Tue May 20 23:34:17 CEST 2025 by karbyshev
