@@ -64,11 +64,18 @@ LEMMA SameBallotValue ==
            SameBallot(x, y)
     PROVE  SameValue(x, y)
 
+\* TODO replace it by TranBallot_bis
 LEMMA TranBallot ==
     ASSUME NEW m1 \in Message, NEW m2 \in Tran(m1),
            NEW b1 \in Ballot, NEW b2 \in Ballot,
            B(m1, b1), B(m2, b2)
     PROVE  b2 =< b1
+
+LEMMA TranBallot_bis ==
+    ASSUME NEW m \in Message,
+           NEW b \in Ballot,
+           B(m, b)
+    PROVE  BallotUpperBound(Tran(m), b)
 
 LEMMA B_1a ==
     ASSUME NEW m \in Message,
