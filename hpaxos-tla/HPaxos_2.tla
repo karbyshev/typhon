@@ -72,6 +72,9 @@ CONSTANT WellFormed2a(_)
     BallotUpperBound(M, bal) ==
         \A m \in M : \A bm \in Ballot : B(m, bm) => bm =< bal
 
+    BallotStrictUpperBound(M, bal) ==
+        \A m \in M : \A bm \in Ballot : B(m, bm) => bm < bal
+
     Latest(P) ==
         { x \in P : \A bx \in Ballot : B(x, bx) => BallotUpperBound(P, bx) }
 
@@ -247,7 +250,7 @@ CONSTANT WellFormed2a(_)
 }
 
 ****************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "2c793f03" /\ chksum(tla) = "37449b54")
+\* BEGIN TRANSLATION (chksum(pcal) = "ed07a777" /\ chksum(tla) = "92d06082")
 VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision
 
 (* define statement *)
@@ -303,6 +306,9 @@ D(alpha, x, m) ==
 
 BallotUpperBound(M, bal) ==
     \A m \in M : \A bm \in Ballot : B(m, bm) => bm =< bal
+
+BallotStrictUpperBound(M, bal) ==
+    \A m \in M : \A bm \in Ballot : B(m, bm) => bm < bal
 
 Latest(P) ==
     { x \in P : \A bx \in Ballot : B(x, bx) => BallotUpperBound(P, bx) }
@@ -583,5 +589,5 @@ UniqueDecision ==
 
 =============================================================================
 \* Modification History
-\* Last modified Thu Jul 10 21:50:55 CEST 2025 by karbyshev
+\* Last modified Wed Jul 23 19:55:08 CEST 2025 by karbyshev
 \* Created Mon Jun 19 12:24:03 CEST 2022 by karbyshev
