@@ -79,6 +79,140 @@ LOCAL INSTANCE FiniteSetTheorems
 \*        /\ [from |-> alpha, to |-> beta, q |-> S] \in TrustSafe
 \*        /\ S \cap Caught(x) = {}
 
+\*    ReplyType(m, t) ==
+\*        \/ OneA(m) /\ t = "1b"
+\*        \/ OneB(m) /\ t = "2a"
+\*        \/ TwoA(m) /\ t = "2a"
+\*
+\*    Reply(new, m, acc) ==
+\*        /\ ReplyType(m, new.type)
+\*        /\ new.acc = acc
+\*        /\ new.prev = prev_msg[acc]
+\*        /\ new.refs = recent_msgs[acc] \cup {m}
+\*        /\ WellFormed(new)
+
+\*RecentMsgsSpec3 ==
+\*    \A A \in SafeAcceptor :
+\*        recent_msgs[A] = known_msgs[A]
+
+\*    KnownRefs(a, m) == \A r \in m.refs : r \in known_msgs[a]
+
+\*KnownMsgsSpec2 ==
+\*    \A AL \in SafeAcceptor \cup Learner :
+\*        /\ \A M \in known_msgs[AL] :
+\*            /\ KnownRefs(AL, M)
+\*            /\ WellFormed(M)
+\*            /\ Tran(M) \in SUBSET known_msgs[AL]
+\*            /\ \E b \in Ballot : B(M, b)
+
+LEMMA ProposalReplyExistence ==
+    ASSUME TypeOK,
+           RecentMsgsSpec0,
+           RecentMsgsSpec3,
+           SafeAcceptorPrevSpec2,
+           KnownMsgsSpec2,
+           NEW acc \in SafeAcceptor,
+           NEW p \in Message,
+           Proposal(p),
+           KnownRefs(acc, p),
+           NEW bal \in Ballot,
+           B(p, bal),
+           BallotStrictUpperBound(recent_msgs[acc], bal)
+    PROVE  \E msg \in Message : Reply(msg, p, acc)
+PROOF
+<1> acc \in Acceptor
+    BY DEF Acceptor
+<1> DEFINE reply == [ type |-> "1b", acc |-> acc, prev |-> prev_msg[acc], refs |-> recent_msgs[acc] \cup {p}, lrns |-> {} ]
+<1> reply.lrns = {}
+    OBVIOUS
+<1> reply \in Message /\ OneB(reply)
+  <2> IsFiniteSet(recent_msgs[acc] \cup {p})
+      BY FS_Union, FS_Singleton DEF RecentMsgsSpec0
+  <2> QED BY OneB_Message DEF TypeOK
+<1> p \in Tran(reply)
+    BY Tran_refl, Tran_trans, Tran_eq
+<1> Reply(reply, p, acc)
+  <2> ReplyType(p, "1b")
+      BY DEF ReplyType, OneA, Proposal
+  <2> WellFormed(reply)
+    <3>bal. \E b \in Ballot : B(reply, b)
+      <4> QED BY B_exists DEF Proposal, OneA
+    <3>chain. ChainRef(reply)
+      <4> CASE prev_msg[acc] = NoMessage
+          BY DEF ChainRef
+      <4> CASE prev_msg[acc] # NoMessage
+        <5> prev_msg[acc] \in Message
+            BY DEF TypeOK
+        <5> QED BY DEF ChainRef, SafeAcceptorPrevSpec2, SentBy
+      <4> QED OBVIOUS
+    <3>q. {} = { alpha \in Learner :
+                [lr |-> alpha, q |-> {mm.acc : mm \in qd(alpha, reply, 1)}] \in TrustLive }
+        <4> ~TwoA(reply)
+            BY MessageTypeSpec
+        <4> \A alpha \in Learner : qd(alpha, reply, 1) = {}
+            BY Qd_eq
+        <4> QED BY Zenon, TrustLiveNonEmpty
+    <3>wf. WellFormed1b(reply)
+      <4> PICK bal0 \in Ballot : B(reply, bal0)
+          BY <3>bal
+      <4> bal =< bal0
+          BY TranBallot_bis DEF BallotUpperBound
+      <4> SUFFICES ASSUME NEW y \in Tran(reply),
+                          reply # y,
+                          SameBallot(reply, y)
+          PROVE  Proposal(y)
+          BY DEF WellFormed1b
+      <4>0. Tran(reply) = {reply} \cup (UNION {Tran(r) : r \in recent_msgs[acc] \cup {p}})
+            BY Tran_eq
+      <4>1. CASE y \in Tran(p)
+        <5>0. CASE y = p
+              BY <5>0
+        <5>1. CASE \E r \in p.refs : y \in Tran(r)
+          <6> PICK r \in p.refs : y \in Tran(r)
+                BY <5>1
+          <6> r \in Message
+              BY MessageSpec
+\*          <6>1. r \in Tran(p)
+\*                BY Tran_refl, Tran_eq
+          <6> PICK br \in Ballot : B(r, br)
+              BY DEF KnownRefs, KnownMsgsSpec2
+          <6> PICK by \in Ballot : B(y, by)
+              BY DEF KnownRefs, KnownMsgsSpec2
+            <6> QED BY DEF Proposal, OneA, RecentMsgsSpec3, KnownMsgsSpec2, KnownRefs
+        <5> QED BY <4>1, <5>0, <5>1, Tran_eq
+      <4>2. CASE \E r \in recent_msgs[acc] : y \in Tran(r)
+        <5> PICK r \in recent_msgs[acc] : y \in Tran(r)
+            BY <4>2
+        <5> r \in known_msgs[acc]
+            BY DEF RecentMsgsSpec3
+        <5> r \in Message
+            BY MessageSpec
+        <5> r \in Tran(reply)
+            BY Tran_eq, Tran_refl, Tran_trans
+        <5> PICK br \in Ballot : B(r, br)
+            BY DEF KnownMsgsSpec2
+        <5> PICK by \in Ballot : B(y, by)
+            BY DEF KnownRefs, KnownMsgsSpec2
+        <5> by =< br
+            BY TranBallot_bis DEF BallotUpperBound
+        <5> br =< bal0
+            BY TranBallot_bis DEF BallotUpperBound
+        <5> by = bal0
+            BY B_func DEF SameBallot
+        <5> br = bal0
+            BY DEF Ballot
+        <5> br < bal
+            BY DEF BallotStrictUpperBound
+        \* Hence, br < bal <= bal0, contradiction with br = bal0.
+        <5> QED BY DEF Ballot
+      <4> QED BY <4>0, <4>1, <4>2
+    <3> HIDE DEF reply
+    <3> QED BY <3>bal, <3>chain, <3>q, <3>wf, MessageTypeSpec DEF WellFormed
+  <2> QED BY DEF Reply
+<1> HIDE DEF reply
+<1> WITNESS reply \in Message
+<1> QED OBVIOUS
+
 LEMMA YYY ==
     ASSUME NEW x \in Message,
            NEW y \in Message,
@@ -419,18 +553,10 @@ PROOF
 
 \*      BY enabled
 
-\*****************************************************************************************
-\* PROOF SCHEME
-\*<1>2. (FullSafetyInvariant /\ F) /\ [Next]_vars => ((FullSafetyInvariant' /\ F') \/ G')
-\*<1>3. (FullSafetyInvariant /\ F) /\ <<Next>>_vars => G'
-\*<1>4. FullSafetyInvariant /\ F => ENABLED <<Next>>_vars
-\*<1> HIDE DEF F, G
-\*<1> QED BY <1>2, <1>3, <1>4, PTL
-\*****************************************************************************************
 
 <1> QED BY <1>2, <1>3, <1>4, PTL
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jul 08 19:10:28 CEST 2025 by karbyshev
+\* Last modified Sat Jul 26 22:46:29 CEST 2025 by karbyshev
 \* Created Wed Jun 25 11:47:50 CEST 2025 by karbyshev
