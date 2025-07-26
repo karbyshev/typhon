@@ -83,6 +83,12 @@ LEMMA B_1a ==
            m.refs = {}
     PROVE  B(m, m.bal)
 
+LEMMA B_exists ==
+    ASSUME NEW m \in Message,
+           NEW z \in Tran(m),
+           OneA(z)
+    PROVE  \E bal \in Ballot : B(m, bal)
+
 LEMMA B_1a_refs ==
     ASSUME NEW m \in Message,
            OneA(m),
