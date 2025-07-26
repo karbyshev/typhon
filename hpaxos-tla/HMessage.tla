@@ -59,6 +59,8 @@ TranBound[n \in Nat] ==
 
 Tran(m) == UNION {TranBound[n][m] : n \in Nat}
 
+TranSet(M) == UNION { Tran(m) : m \in M }
+
 -----------------------------------------------------------------------------
 (* Transitive references of prev *)
 
@@ -76,5 +78,5 @@ PrevTran(m) == UNION {PrevTranBound[n][m] : n \in Nat}
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 22:30:29 CEST 2025 by karbyshev
+\* Last modified Sat Jul 26 22:54:02 CEST 2025 by karbyshev
 \* Created Tue May 14 16:39:44 CEST 2024 by karbyshev
