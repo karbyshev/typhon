@@ -29,6 +29,11 @@ RecentMsgsSpec2 ==
         \A x \in SentBy(A) :
             x \notin known_msgs[A] => x \in recent_msgs[A]
 
+\* TODO prove it
+RecentMsgsSpec3 ==
+    \A A \in SafeAcceptor :
+        recent_msgs[A] \in SUBSET known_msgs[A]
+
 KnownMsgsSpec1 ==
     \A AL \in SafeAcceptor \cup Learner :
         /\ known_msgs[AL] \in SUBSET msgs
