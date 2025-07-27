@@ -680,7 +680,7 @@ PROOF
                         NEW z \in TranBound[k][y]
                  PROVE  z \in TranBound[n + 1 + k][x]
         OBVIOUS
-  <2> n + 1 + k \in Nat
+  <2> k =< n + 1 + k
       OBVIOUS
   <2>2. CASE y = x
         BY <2>2, TranBound_monotone
@@ -830,6 +830,8 @@ PROOF
   <2> SUFFICES IsFiniteSet(UNION { Tran(r) : r \in x.refs })
       BY Tran_eq, FS_Union, FS_Singleton
   <2> SUFFICES IsFiniteSet({ Tran(r) : r \in x.refs })
+    <3> (k + 1) - 1 = k
+        OBVIOUS
     <3> \A r \in x.refs : IsFiniteSet(Tran(r))
         BY <1>1, MessageRec_ref1
     <3> QED BY FS_UNION
@@ -1031,10 +1033,10 @@ PROOF
                       NEW z \in PrevTranBound[k][y]
                PROVE  z \in PrevTranBound[n + 1 + k][x]
       OBVIOUS
-  <2> (n + 1) + k \in Nat
+  <2> k =< (n + 1) + k
       OBVIOUS
   <2>1. CASE y = x
-        BY <2>1, PrevTranBound_monotone, Isa
+        BY <2>1, PrevTranBound_monotone
   <2>2. CASE y # x
      <3> x.prev # NoMessage
          BY <2>2, PrevTranBound_eq1
