@@ -493,7 +493,7 @@ LEMMA ChosenBalVal ==
     PROVE  \A x \in Message : B(x, bal) => V(x, val)
 PROOF
 <1>1. PICK Q \in SUBSET Known2a(alpha, bal, val) :
-        [lr |-> alpha, q |-> { mm.acc : mm \in Q }] \in TrustLive
+        [lr |-> alpha, q |-> { mm.src : mm \in Q }] \in TrustLive
     BY DEF ChosenIn
 <1> PICK m \in Known2a(alpha, bal, val) : TRUE
     BY <1>1, TrustLiveNonEmpty
@@ -536,15 +536,15 @@ LEMMA LiveQuorumEntIntersection ==
            <<alpha, beta>> \in Ent,
            NEW Qalpha \in SUBSET Message,
            NEW Qbeta \in SUBSET Message,
-           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
-           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive
+           [lr |-> alpha, q |-> { mm.src : mm \in Qalpha }] \in TrustLive,
+           [lr |-> beta, q |-> { mm.src : mm \in Qbeta }] \in TrustLive
     PROVE  \E p \in SafeAcceptor, ma \in Qalpha, mb \in Qbeta :
-            /\ ma.acc = p
-            /\ mb.acc = p
+            /\ ma.src = p
+            /\ mb.src = p
 PROOF
-<1> { mm.acc : mm \in Qalpha } \in ByzQuorum
+<1> { mm.src : mm \in Qalpha } \in ByzQuorum
     BY TrustLiveAssumption
-<1> { mm.acc : mm \in Qbeta } \in ByzQuorum
+<1> { mm.src : mm \in Qbeta } \in ByzQuorum
     BY TrustLiveAssumption
 <1> QED BY EntanglementTrustLive
 
@@ -554,22 +554,22 @@ LEMMA LiveQuorumConIntersection ==
            NEW beta \in Learner,
            NEW Qalpha \in SUBSET Message,
            NEW Qbeta \in SUBSET Message,
-           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
-           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
+           [lr |-> alpha, q |-> { mm.src : mm \in Qalpha }] \in TrustLive,
+           [lr |-> beta, q |-> { mm.src : mm \in Qbeta }] \in TrustLive,
            NEW M \in Message,
            beta \in Con(alpha, M)
     PROVE  \E p \in Acceptor, ma \in Qalpha, mb \in Qbeta :
             /\ p \notin Caught(M)
-            /\ ma.acc = p
-            /\ mb.acc = p
+            /\ ma.src = p
+            /\ mb.src = p
 PROOF
 <1> PICK S \in ByzQuorum : ConByQuorum(alpha, beta, M, S)
     BY DEF Con
 <1> /\ [from |-> alpha, to |-> beta, q |-> S] \in TrustSafe
     /\ S \cap Caught(M) = {}
     BY DEF ConByQuorum
-<1> PICK acc \in S : /\ acc \in { mm.acc : mm \in Qalpha }
-                     /\ acc \in { mm.acc : mm \in Qbeta }
+<1> PICK acc \in S : /\ acc \in { mm.src : mm \in Qalpha }
+                     /\ acc \in { mm.src : mm \in Qbeta }
     BY TrustLiveAssumption, LearnerGraphAssumptionValidity
 <1> QED BY ByzQuorumProperties
 
@@ -591,13 +591,13 @@ PROOF
     OBVIOUS
 <1> PICK msg \in CaughtMsg(M) :
             /\ ~Proposal(msg)
-            /\ msg.acc = acc
+            /\ msg.src = acc
     BY DEF Caught, CaughtMsg
 <1> msg \in Tran(M)
     BY DEF CaughtMsg
 <1> PICK msg1 \in Tran(M) :
             /\ ~Proposal(msg1)
-            /\ msg.acc = msg1.acc
+            /\ msg.src = msg1.src
             /\ msg # msg1
             /\ msg \notin PrevTran(msg1)
             /\ msg1 \notin PrevTran(msg)
@@ -889,7 +889,7 @@ LEMMA QRec_eq_2 ==
             { m \in Tran(y) :
                 /\ SameBallot(m, y)
                 /\ TwoA(m)
-                /\ [ lr |-> alpha, q  |-> { z.acc : z \in QRec[n - 1][<<alpha, x>>][m] } ] \in TrustLive }
+                /\ [ lr |-> alpha, q  |-> { z.src : z \in QRec[n - 1][<<alpha, x>>][m] } ] \in TrustLive }
 PROOF BY QRec_def, Tran_refl DEF QRec1
 
 LEMMA QRec_compat ==
@@ -926,12 +926,12 @@ PROOF
             /\ SameBallot(m, z)
             /\ TwoA(m)
             /\ [lr |-> alpha,
-                q  |-> { w.acc : w \in QRec[(h + 1) - 1][<<alpha, x>>][m] }] \in TrustLive } =
+                q  |-> { w.src : w \in QRec[(h + 1) - 1][<<alpha, x>>][m] }] \in TrustLive } =
         { m \in Tran(z) :
             /\ SameBallot(m, z)
             /\ TwoA(m)
             /\ [lr |-> alpha,
-                q  |-> { w.acc : w \in QRec[(h + 1) - 1][<<alpha, y>>][m] }] \in TrustLive }
+                q  |-> { w.src : w \in QRec[(h + 1) - 1][<<alpha, y>>][m] }] \in TrustLive }
         BY QRec_eq_2, Isa
     <3> SUFFICES ASSUME NEW m \in Tran(z)
                  PROVE  QRec[h][<<alpha, x>>][m] = QRec[h][<<alpha, y>>][m]
@@ -958,7 +958,7 @@ LEMMA Qd_eq ==
                         { m \in Tran(x) :
                             /\ SameBallot(m, x)
                             /\ TwoA(m)
-                            /\ [ lr |-> alpha, q  |-> { z.acc : z \in qd(alpha, m, d - 1) } ] \in TrustLive }
+                            /\ [ lr |-> alpha, q  |-> { z.src : z \in qd(alpha, m, d - 1) } ] \in TrustLive }
                 )
             )
             ELSE {}
@@ -973,24 +973,24 @@ PROOF
     <3> SUFFICES qd(alpha, x, d) = { m \in Tran(x) :
                         /\ SameBallot(m, x)
                         /\ TwoA(m)
-                        /\ [ lr |-> alpha, q  |-> { z.acc : z \in qd1(alpha, m, d - 1) } ] \in TrustLive }
+                        /\ [ lr |-> alpha, q  |-> { z.src : z \in qd1(alpha, m, d - 1) } ] \in TrustLive }
         BY <2>2
     <3> SUFFICES QRec[d][<<alpha, x>>][x] =
                     { m \in Tran(x) :
                         /\ SameBallot(m, x)
                         /\ TwoA(m)
-                        /\ [ lr |-> alpha, q  |-> { z.acc : z \in qd1(alpha, m, d - 1) } ] \in TrustLive }
+                        /\ [ lr |-> alpha, q  |-> { z.src : z \in qd1(alpha, m, d - 1) } ] \in TrustLive }
       <4> HIDE DEF qd1
       <4> QED BY DEF qd
     <3> SUFFICES
         { m \in Tran(x) :
             /\ SameBallot(m, x)
             /\ TwoA(m)
-            /\ [ lr |-> alpha, q  |-> { z.acc : z \in QRec[d - 1][<<alpha, x>>][m] } ] \in TrustLive } =
+            /\ [ lr |-> alpha, q  |-> { z.src : z \in QRec[d - 1][<<alpha, x>>][m] } ] \in TrustLive } =
         { m \in Tran(x) :
             /\ SameBallot(m, x)
             /\ TwoA(m)
-            /\ [ lr |-> alpha, q  |-> { z.acc : z \in qd1(alpha, m, d - 1) } ] \in TrustLive }
+            /\ [ lr |-> alpha, q  |-> { z.src : z \in qd1(alpha, m, d - 1) } ] \in TrustLive }
         BY QRec_eq_2, <2>2, Tran_refl
     <3> SUFFICES ASSUME NEW m \in Tran(x),
                         TwoA(m)
@@ -1040,7 +1040,7 @@ PROOF
   <2> /\ z \in Tran(y)
       /\ SameBallot(z, y)
       /\ TwoA(z)
-      /\ [ lr |-> alpha, q  |-> { m.acc : m \in qd(alpha, z, c - 1) } ] \in TrustLive
+      /\ [ lr |-> alpha, q  |-> { m.src : m \in qd(alpha, z, c - 1) } ] \in TrustLive
       BY <1>2, Qd_eq
   <2> z \in Tran(x)
       BY Tran_trans
@@ -1065,13 +1065,13 @@ LEMMA QdProperty4 ==
            NEW m \in Message,
            NEW d \in Nat, 1 =< d,
            NEW d1 \in Nat, d =< d1
-    PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d1) }] \in TrustLive =>
-           [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d) }] \in TrustLive
+    PROVE  [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, d1) }] \in TrustLive =>
+           [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, d) }] \in TrustLive
 PROOF
 <1> DEFINE P(n) ==
             \A k \in Nat :
-                1 =< k /\ k =< n /\ [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, n) }] \in TrustLive =>
-                [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, k) }] \in TrustLive
+                1 =< k /\ k =< n /\ [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, n) }] \in TrustLive =>
+                [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, k) }] \in TrustLive
 <1> SUFFICES \A n \in Nat : P(n)
     OBVIOUS
 <1>0. P(0)
@@ -1084,10 +1084,10 @@ PROOF
         OBVIOUS
     <3> 1 < n + 1
         BY <2>1
-    <3> SUFFICES ASSUME [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, n + 1) }] \in TrustLive
-                 PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, n) }] \in TrustLive
+    <3> SUFFICES ASSUME [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, n + 1) }] \in TrustLive
+                 PROVE  [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, n) }] \in TrustLive
         BY <1>1
-    <3> DEFINE Q2 == { mm.acc : mm \in qd(alpha, m, n + 1) }
+    <3> DEFINE Q2 == { mm.src : mm \in qd(alpha, m, n + 1) }
     <3> Q2 \in ByzQuorum
         BY Qd_spec, MessageSpec, QdProperty1 DEF ByzQuorum, Proposal
     <3> PICK acc \in SafeAcceptor : acc \in Q2
@@ -1098,13 +1098,13 @@ PROOF
         OBVIOUS
     <3> /\ TwoA(m)
         /\ m2 \in Tran(m)
-        /\ [ lr |-> alpha, q |-> { z.acc : z \in qd(alpha, m2, n) } ] \in TrustLive
+        /\ [ lr |-> alpha, q |-> { z.src : z \in qd(alpha, m2, n) } ] \in TrustLive
         BY Qd_eq
-    <3> { z.acc : z \in qd(alpha, m, n) } \in ByzQuorum
+    <3> { z.src : z \in qd(alpha, m, n) } \in ByzQuorum
         BY Qd_spec, MessageSpec, QdProperty1 DEF ByzQuorum, TwoA, Proposal
     <3> qd(alpha, m2, n) \in SUBSET qd(alpha, m, n)
         BY Qd_trans_monotone
-    <3> { z.acc : z \in qd(alpha, m2, n) } \in SUBSET { mm.acc : mm \in qd(alpha, m, n) }
+    <3> { z.src : z \in qd(alpha, m2, n) } \in SUBSET { mm.src : mm \in qd(alpha, m, n) }
         OBVIOUS
     <3> QED BY TrustLiveClosure
   <2> QED BY <2>0, <2>1
@@ -1129,5 +1129,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jul 08 19:09:20 CEST 2025 by karbyshev
+\* Last modified Mon Jul 28 11:14:42 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev

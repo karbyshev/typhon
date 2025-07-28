@@ -226,11 +226,11 @@ LEMMA LiveQuorumEntIntersection ==
            <<alpha, beta>> \in Ent,
            NEW Qalpha \in SUBSET Message,
            NEW Qbeta \in SUBSET Message,
-           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
-           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive
+           [lr |-> alpha, q |-> { mm.src : mm \in Qalpha }] \in TrustLive,
+           [lr |-> beta, q |-> { mm.src : mm \in Qbeta }] \in TrustLive
     PROVE  \E p \in SafeAcceptor, ma \in Qalpha, mb \in Qbeta :
-            /\ ma.acc = p
-            /\ mb.acc = p
+            /\ ma.src = p
+            /\ mb.src = p
 
 LEMMA LiveQuorumConIntersection ==
     ASSUME TypeOK,
@@ -238,14 +238,14 @@ LEMMA LiveQuorumConIntersection ==
            NEW beta \in Learner,
            NEW Qalpha \in SUBSET Message,
            NEW Qbeta \in SUBSET Message,
-           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
-           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
+           [lr |-> alpha, q |-> { mm.src : mm \in Qalpha }] \in TrustLive,
+           [lr |-> beta, q |-> { mm.src : mm \in Qbeta }] \in TrustLive,
            NEW M \in Message,
            beta \in Con(alpha, M)
     PROVE  \E p \in Acceptor, ma \in Qalpha, mb \in Qbeta :
             /\ p \notin Caught(M)
-            /\ ma.acc = p
-            /\ mb.acc = p
+            /\ ma.src = p
+            /\ mb.src = p
 
 -----------------------------------------------------------------------------
 
@@ -299,7 +299,7 @@ LEMMA Qd_eq ==
                         { m \in Tran(x) :
                             /\ SameBallot(m, x)
                             /\ TwoA(m)
-                            /\ [ lr |-> alpha, q  |-> { z.acc : z \in qd(alpha, m, d - 1) } ] \in TrustLive }
+                            /\ [ lr |-> alpha, q  |-> { z.src : z \in qd(alpha, m, d - 1) } ] \in TrustLive }
                 )
             )
             ELSE {}
@@ -319,8 +319,8 @@ LEMMA QdProperty4 ==
            NEW m \in Message,
            NEW d \in Nat, 1 =< d,
            NEW d1 \in Nat, d =< d1
-    PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d1) }] \in TrustLive =>
-           [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d) }] \in TrustLive
+    PROVE  [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, d1) }] \in TrustLive =>
+           [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, d) }] \in TrustLive
 
 -----------------------------------------------------------------------------
 
@@ -332,5 +332,5 @@ LEMMA WellFormedTwoALearners ==
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jul 08 19:03:57 CEST 2025 by karbyshev
+\* Last modified Mon Jul 28 11:14:55 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev

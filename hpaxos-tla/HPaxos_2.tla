@@ -45,7 +45,7 @@ CONSTANT WellFormed2a(_)
             /\ ~Proposal(m)
             /\ \E m1 \in Tran(x) :
                 /\ ~Proposal(m1)
-                /\ m.acc = m1.acc
+                /\ m.src = m1.src
                 /\ m # m1
                 /\ m \notin PrevTran(m1)
                 /\ m1 \notin PrevTran(m)
@@ -53,7 +53,7 @@ CONSTANT WellFormed2a(_)
 \* TODO revert the change?
          }
 
-    Caught(x) == { m.acc : m \in CaughtMsg(x) }
+    Caught(x) == { m.src : m \in CaughtMsg(x) }
 
     \* Connected
     ConByQuorum(alpha, beta, x, S) == \* alpha : Learner, beta : Learner, x : 1b, S \in ByzQuorum
@@ -99,7 +99,7 @@ CONSTANT WellFormed2a(_)
                             /\ TwoA(m)
                             /\ SameBallot(m, y)
                             /\ [ lr |-> alpha,
-                                 q  |-> { z.acc : z \in Q[LM][m] } ] \in TrustLive } ]
+                                 q  |-> { z.src : z \in Q[LM][m] } ] \in TrustLive } ]
         ]
 
     QRec[n \in Nat] ==
@@ -124,7 +124,7 @@ CONSTANT WellFormed2a(_)
     ChainRef(m) ==
         \/ m.prev = NoMessage
         \/ /\ m.prev \in m.refs
-           /\ m.prev.acc = m.acc
+           /\ m.prev.src = m.src
 
     WellFormed1b(m) ==
         \A y \in Tran(m) :
@@ -134,7 +134,7 @@ CONSTANT WellFormed2a(_)
         /\ m \in Message
         /\ \E b \in Ballot : B(m, b) \* TODO prove it
         /\ ChainRef(m)
-        /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
+        /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, 1) }] \in TrustLive }
         /\ OneA(m) => B(m, m.bal)
         /\ OneB(m) => WellFormed1b(m)
         /\ TwoA(m) =>
@@ -153,8 +153,8 @@ CONSTANT WellFormed2a(_)
 
     ChosenIn(alpha, b, v) ==
         \E S \in SUBSET Known2a(alpha, b, v) :
-            /\ \A x \in S : [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
-            /\ [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
+            /\ \A x \in S : [lr |-> alpha, q |-> { m.src : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+            /\ [lr |-> alpha, q |-> { m.src : m \in S }] \in TrustLive
 
     ReplyType(m, t) ==
         \/ OneA(m) /\ t = "1b"
@@ -163,7 +163,7 @@ CONSTANT WellFormed2a(_)
 
     Reply(new, m, acc) ==
         /\ ReplyType(m, new.type)
-        /\ new.acc = acc
+        /\ new.src = acc
         /\ new.prev = prev_msg[acc]
         /\ new.refs = recent_msgs[acc] \cup {m}
         /\ WellFormed(new)
@@ -171,9 +171,7 @@ CONSTANT WellFormed2a(_)
 
   macro Send(m) { msgs := msgs \cup {m} }
 
-  macro SendProposal(b) {
-    Send([type |-> "1a", bal |-> b, prev |-> NoMessage, refs |-> {}])
-  }
+  macro SendProposal(pr, b) { Send(proposal(pr, b, {})) }
 
   macro Receive(m) {
     when /\ m \notin known_msgs[self]
@@ -202,7 +200,7 @@ CONSTANT WellFormed2a(_)
           P \in msgs \cup {NoMessage},
           LL \in SUBSET Learner,
           T \in {"1b", "2a"},
-          msg = [type |-> T, acc |-> self, prev |-> P, refs |-> fin, lrns |-> LL])
+          msg = non_proposal(T, self, P, fin, LL))
     {
       when T = "2a" \/ LL = {} ;
       Send(msg)
@@ -221,7 +219,7 @@ CONSTANT WellFormed2a(_)
 
   process (proposer \in Proposer) {
     propose: while (TRUE) {
-      with (b \in Ballot) { SendProposal(b) }
+      with (b \in Ballot) { SendProposal(self, b) }
     }
   }
 
@@ -250,7 +248,7 @@ CONSTANT WellFormed2a(_)
 }
 
 ****************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "ed07a777" /\ chksum(tla) = "92d06082")
+\* BEGIN TRANSLATION (chksum(pcal) = "525e21c4" /\ chksum(tla) = "eb927199")
 VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision
 
 (* define statement *)
@@ -280,7 +278,7 @@ CaughtMsg(x) ==
         /\ ~Proposal(m)
         /\ \E m1 \in Tran(x) :
             /\ ~Proposal(m1)
-            /\ m.acc = m1.acc
+            /\ m.src = m1.src
             /\ m # m1
             /\ m \notin PrevTran(m1)
             /\ m1 \notin PrevTran(m)
@@ -288,7 +286,7 @@ CaughtMsg(x) ==
 
      }
 
-Caught(x) == { m.acc : m \in CaughtMsg(x) }
+Caught(x) == { m.src : m \in CaughtMsg(x) }
 
 
 ConByQuorum(alpha, beta, x, S) ==
@@ -334,7 +332,7 @@ QRec1(Q, n) ==
                         /\ TwoA(m)
                         /\ SameBallot(m, y)
                         /\ [ lr |-> alpha,
-                             q  |-> { z.acc : z \in Q[LM][m] } ] \in TrustLive } ]
+                             q  |-> { z.src : z \in Q[LM][m] } ] \in TrustLive } ]
     ]
 
 QRec[n \in Nat] ==
@@ -359,7 +357,7 @@ maxDepth(alpha) ==
 ChainRef(m) ==
     \/ m.prev = NoMessage
     \/ /\ m.prev \in m.refs
-       /\ m.prev.acc = m.acc
+       /\ m.prev.src = m.src
 
 WellFormed1b(m) ==
     \A y \in Tran(m) :
@@ -369,7 +367,7 @@ WellFormed(m) ==
     /\ m \in Message
     /\ \E b \in Ballot : B(m, b)
     /\ ChainRef(m)
-    /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
+    /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, 1) }] \in TrustLive }
     /\ OneA(m) => B(m, m.bal)
     /\ OneB(m) => WellFormed1b(m)
     /\ TwoA(m) =>
@@ -388,8 +386,8 @@ Known2a(alpha, b, v) ==
 
 ChosenIn(alpha, b, v) ==
     \E S \in SUBSET Known2a(alpha, b, v) :
-        /\ \A x \in S : [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
-        /\ [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
+        /\ \A x \in S : [lr |-> alpha, q |-> { m.src : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+        /\ [lr |-> alpha, q |-> { m.src : m \in S }] \in TrustLive
 
 ReplyType(m, t) ==
     \/ OneA(m) /\ t = "1b"
@@ -398,7 +396,7 @@ ReplyType(m, t) ==
 
 Reply(new, m, acc) ==
     /\ ReplyType(m, new.type)
-    /\ new.acc = acc
+    /\ new.src = acc
     /\ new.prev = prev_msg[acc]
     /\ new.refs = recent_msgs[acc] \cup {m}
     /\ WellFormed(new)
@@ -416,7 +414,7 @@ Init == (* Global variables *)
         /\ decision = [lb \in Learner \X Ballot |-> {}]
 
 proposer(self) == /\ \E b \in Ballot:
-                       msgs' = (msgs \cup {([type |-> "1a", bal |-> b, prev |-> NoMessage, refs |-> {}])})
+                       msgs' = (msgs \cup {(proposal(self, b, {}))})
                   /\ UNCHANGED << known_msgs, recent_msgs, prev_msg, decision >>
 
 safe_acceptor(self) == /\ \E m \in msgs:
@@ -450,7 +448,7 @@ fake_acceptor(self) == /\ \E fin \in FINSUBSET(msgs):
                             \E P \in msgs \cup {NoMessage}:
                               \E LL \in SUBSET Learner:
                                 \E T \in {"1b", "2a"}:
-                                  LET msg == [type |-> T, acc |-> self, prev |-> P, refs |-> fin, lrns |-> LL] IN
+                                  LET msg == non_proposal(T, self, P, fin, LL) IN
                                     /\ T = "2a" \/ LL = {}
                                     /\ msgs' = (msgs \cup {msg})
                        /\ UNCHANGED << known_msgs, recent_msgs, prev_msg, 
@@ -473,8 +471,8 @@ Recv(a, m) ==
     /\ KnownRefs(a, m)
     /\ known_msgs' = [known_msgs EXCEPT ![a] = known_msgs[a] \cup {m}]
 
-SendProposal(b) ==
-    /\ Send([type |-> "1a", bal |-> b, prev |-> NoMessage, refs |-> {}])
+SendProposal(p, b) ==
+    /\ Send(proposal(p, b, {}))
     /\ UNCHANGED << known_msgs, recent_msgs, prev_msg >>
     /\ UNCHANGED decision
 
@@ -497,7 +495,7 @@ Process(a, m) ==
     /\ UNCHANGED decision
 
 ProposerAction(p) ==
-    \E bal \in Ballot : SendProposal(bal)
+    \E bal \in Ballot : SendProposal(p, bal)
 
 SafeAcceptorAction(a) ==
     \E m \in msgs : Process(a, m)
@@ -508,8 +506,7 @@ FakeSendControlMessage(a) ==
         \E LL \in SUBSET Learner :
         \E T \in {"1b", "2a"} :
             /\ T = "2a" \/ LL = {}
-            /\ LET new == [type |-> T, acc |-> a, prev |-> P, refs |-> fin, lrns |-> LL] IN
-                Send(new)
+            /\ Send(non_proposal(T, a, P, fin, LL))
     /\ UNCHANGED << known_msgs, recent_msgs, prev_msg  >>
     /\ UNCHANGED decision
 
@@ -573,10 +570,10 @@ SanityCheck1 ==
     \A M \in msgs : ~TwoA(M)
 
 2aNotSentBySafeAcceptor ==
-    \A M \in msgs : TwoA(M) => M.acc \notin SafeAcceptor
+    \A M \in msgs : TwoA(M) => M.src \notin SafeAcceptor
 
 1bNotSentBySafeAcceptor ==
-    \A M \in msgs : OneB(M) => M.acc \notin SafeAcceptor
+    \A M \in msgs : OneB(M) => M.src \notin SafeAcceptor
 
 NoDecision ==
     \A L \in Learner : \A BB \in Ballot : \A VV \in Value :
@@ -589,5 +586,5 @@ UniqueDecision ==
 
 =============================================================================
 \* Modification History
-\* Last modified Wed Jul 23 19:55:08 CEST 2025 by karbyshev
+\* Last modified Mon Jul 28 12:51:04 CEST 2025 by karbyshev
 \* Created Mon Jun 19 12:24:03 CEST 2022 by karbyshev

@@ -33,8 +33,8 @@ LEMMA NotCaughtKnownSenderLinearTran ==
            NEW a \in Acceptor,
            NEW M \in known_msgs[AL],
            NEW x \in Tran(M), NEW y \in Tran(M),
-           x.acc = a,
-           y.acc = a,
+           x.src = a,
+           y.src = a,
            ~Proposal(x),
            ~Proposal(y),
            a \notin Caught(M)
@@ -119,10 +119,10 @@ HeterogeneousSpecCond(alpha, bal, M, V_M, seq, x) ==
         \* cond 10:
         /\ x > 1 => s \in Tran(seq[x - 1].s)
         \* cond 11:
-        /\ r.acc = s.acc
+        /\ r.src = s.src
         \* cond 12:
         /\ x =< maxDepth(alpha) =>
-            [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, s, maxDepth(alpha) - x + 1) }] \in TrustLive
+            [lr |-> alpha, q |-> { z.src : z \in qd(alpha, s, maxDepth(alpha) - x + 1) }] \in TrustLive
         \* cond 13:
         /\ B(s, bal)
         \* cond 14:
@@ -158,7 +158,7 @@ PROOF
     OBVIOUS
 <1>12. j =< maxDepth(alpha) =>
         [lr |-> alpha,
-         q |-> {z.acc : z \in qd(alpha, seq2[j].s, maxDepth(alpha) - j + 1)}]
+         q |-> {z.src : z \in qd(alpha, seq2[j].s, maxDepth(alpha) - j + 1)}]
         \in TrustLive
       BY DEF HeterogeneousSpecCond
 <1> QED BY <1>12 DEF HeterogeneousSpecCond
@@ -319,28 +319,28 @@ PROOF
   <2> S # {}
 \*    ChosenIn(alpha, b, v) ==
 \*        \E S \in SUBSET Known2a(alpha, b, v) :
-\*            /\ \A x \in S : [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
-\*            /\ [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
+\*            /\ \A x \in S : [lr |-> alpha, q |-> { m.src : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+\*            /\ [lr |-> alpha, q |-> { m.src : m \in S }] \in TrustLive
     <3>21. PICK Q1 \in SUBSET Known2a(alpha, bal, val) :
             /\ \A x \in Q1 :
-                [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
-            /\ [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
+                [lr |-> alpha, q |-> { m.src : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+            /\ [lr |-> alpha, q |-> { mm.src : mm \in Q1 }] \in TrustLive
         BY DEF ChosenIn
     <3> Q1 \in SUBSET msgs
         BY DEF Known2a, KnownMsgsSpec1
     <3> Q1 \in SUBSET Message
         BY DEF TypeOK
-    <3> [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
+    <3> [lr |-> alpha, q |-> { mm.src : mm \in Q1 }] \in TrustLive
         BY <3>21
     <3> \A x \in Q1 :
-            [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+            [lr |-> alpha, q |-> { m.src : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
         BY <3>21
 \*        From WellFormedness we have
-\*                /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
-    <3>22. M.lrns = { l \in Learner : [lr |-> l, q |-> { mm.acc : mm \in qd(l, M, 1) }] \in TrustLive }
+\*                /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, 1) }] \in TrustLive }
+    <3>22. M.lrns = { l \in Learner : [lr |-> l, q |-> { mm.src : mm \in qd(l, M, 1) }] \in TrustLive }
         BY DEF WellFormed
     <3> DEFINE Q2 == qd(beta, M, 1)
-    <3> [lr |-> beta, q |-> { mm.acc : mm \in Q2 }] \in TrustLive
+    <3> [lr |-> beta, q |-> { mm.src : mm \in Q2 }] \in TrustLive
         BY <3>22
     <3> Q2 \in SUBSET Tran(M)
         BY QdProperty1
@@ -349,8 +349,8 @@ PROOF
     <3> Q2 \in SUBSET known_msgs[L0]
         BY DEF KnownMsgsSpec2
     <3> PICK p \in SafeAcceptor, ma \in Q1, mb \in Q2 :
-            /\ ma.acc = p
-            /\ mb.acc = p
+            /\ ma.src = p
+            /\ mb.src = p
       <4> HIDE DEF Q2
       <4> QED BY LiveQuorumEntIntersection
     <3> B(ma, bal)
@@ -397,6 +397,8 @@ PROOF
       OBVIOUS
   <2> SUFFICES ASSUME k \in 0..maxDepth(alpha), P(k - 1) PROVE P(k)
         BY <2>0
+  <2> k \in Nat
+      OBVIOUS
   <2> k > 0
       BY <2>0
   <2> (k - 1) + 1 = k
@@ -479,12 +481,12 @@ PROOF
 
     <3> alpha \in seq[k].s.lrns
       \* By cond 12 we have
-      <4> [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq[k].s, maxDepth(alpha) - k + 1) }] \in TrustLive
+      <4> [lr |-> alpha, q |-> { z.src : z \in qd(alpha, seq[k].s, maxDepth(alpha) - k + 1) }] \in TrustLive
           BY DEF HeterogeneousSpecCond
       <4> maxDepth(alpha) - k + 1 >= 1
           OBVIOUS
       \* Therefore, by QdProperty4,
-      <4> [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq[k].s, 1) }] \in TrustLive
+      <4> [lr |-> alpha, q |-> { z.src : z \in qd(alpha, seq[k].s, 1) }] \in TrustLive
           BY QdProperty4
       \* ..which by definition of WellFormed-ness for seq[k].s results in
       <4> QED BY DEF WellFormed
@@ -631,10 +633,10 @@ PROOF
     \* that sent r0 from the quorum Q(m0, 1) and s0 from Q(s_k, maxDepth(alpha) - k)
     \* and is not Caught in r_k
     \* Therefore, similar, to the base case s_0 \in Tran(r_0)
-    <3>20. m0.lrns = { l \in Learner : [lr |-> l, q |-> { mm.acc : mm \in qd(l, m0, 1) }] \in TrustLive }
+    <3>20. m0.lrns = { l \in Learner : [lr |-> l, q |-> { mm.src : mm \in qd(l, m0, 1) }] \in TrustLive }
         BY DEF WellFormed
     <3> DEFINE Q2 == qd(gamma0, m0, 1)
-    <3> [lr |-> gamma0, q |-> { mm.acc : mm \in Q2 }] \in TrustLive
+    <3> [lr |-> gamma0, q |-> { mm.src : mm \in Q2 }] \in TrustLive
         BY <3>20
     <3> Q2 \in SUBSET Tran(m0)
         BY QdProperty1
@@ -669,7 +671,7 @@ PROOF
     <3> maxDepth(alpha) - k + 1 \in Nat
         OBVIOUS
     <3> DEFINE Q1 == qd(alpha, seq[k].s, maxDepth(alpha) - k + 1)
-    <3> [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
+    <3> [lr |-> alpha, q |-> { mm.src : mm \in Q1 }] \in TrustLive
         BY DEF HeterogeneousSpecCond \* cond 12
     <3> Q1 \in SUBSET Tran(seq[k].s)
         BY QdProperty1
@@ -682,8 +684,8 @@ PROOF
 
     <3> PICK p \in Acceptor, s0 \in Q1, r0 \in Q2 :
             /\ p \notin Caught(seq[k].r)
-            /\ s0.acc = p
-            /\ r0.acc = p
+            /\ s0.src = p
+            /\ r0.src = p
       <4> HIDE DEF Q2, Q1
       <4> QED BY LiveQuorumConIntersection
     <3> r0 \in Message /\ s0 \in Message
@@ -789,7 +791,7 @@ PROOF
           <6> k_star =< maxDepth(alpha)
               OBVIOUS
           <6> DEFINE Q1_star == qd(alpha, seq[k_star].s, (maxDepth(alpha) - k_star + 1))
-          <6> [lr |-> alpha, q |-> { mm.acc : mm \in Q1_star }] \in TrustLive
+          <6> [lr |-> alpha, q |-> { mm.src : mm \in Q1_star }] \in TrustLive
               BY DEF HeterogeneousSpecCond
           <6> Q1_star \in SUBSET Tran(seq[k_star].s)
               BY QdProperty1
@@ -809,8 +811,8 @@ PROOF
 
           <6> PICK p_star \in Acceptor, s_star \in Q1_star, r_star \in Q2 :
                 /\ p_star \notin Caught(seq[k_star].r)
-                /\ s_star.acc = p_star
-                /\ r_star.acc = p_star
+                /\ s_star.src = p_star
+                /\ r_star.src = p_star
             <7> HIDE DEF Q2, Q1_star
             <7> QED BY LiveQuorumConIntersection
           <6> s_star \in Message
@@ -880,13 +882,13 @@ PROOF
               <8> QED BY TranBallot DEF Ballot
             <7>10. seq_star[k_star + 1].s \in Tran(seq_star[k_star].s)
                    OBVIOUS
-            <7>11. seq_star[k_star + 1].r.acc = seq_star[k_star + 1].s.acc
+            <7>11. seq_star[k_star + 1].r.src = seq_star[k_star + 1].s.src
                    OBVIOUS
             <7>12. k_star + 1 =< maxDepth(alpha) =>
-                    [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq_star[k_star + 1].s, maxDepth(alpha) - (k_star + 1) + 1) }] \in TrustLive
+                    [lr |-> alpha, q |-> { z.src : z \in qd(alpha, seq_star[k_star + 1].s, maxDepth(alpha) - (k_star + 1) + 1) }] \in TrustLive
                    \* By definition of s_star, s_star \in Q1_star, with Q1_star == qd(alpha, seq[k_star].s, (maxDepth(alpha) - k_star + 1))
               <8>1. SUFFICES ASSUME k_star + 1 =< maxDepth(alpha)
-                             PROVE  [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, s_star, maxDepth(alpha) - k_star) }] \in TrustLive
+                             PROVE  [lr |-> alpha, q |-> { z.src : z \in qd(alpha, s_star, maxDepth(alpha) - k_star) }] \in TrustLive
                     OBVIOUS
               <8>2. QED BY Qd_eq
             <7>13. B(seq_star[k_star + 1].s, bal)
@@ -951,10 +953,10 @@ PROOF
             OBVIOUS
       <4>10. seq0[k + 1].s \in Tran(seq0[(k + 1) - 1].s)
              OBVIOUS
-      <4>11. seq0[k + 1].r.acc = seq0[k + 1].s.acc
+      <4>11. seq0[k + 1].r.src = seq0[k + 1].s.src
              OBVIOUS
       <4>12. k + 1 =< maxDepth(alpha) =>
-                [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, seq0[k + 1].s, maxDepth(alpha) - (k + 1) + 1) }] \in TrustLive
+                [lr |-> alpha, q |-> { z.src : z \in qd(alpha, seq0[k + 1].s, maxDepth(alpha) - (k + 1) + 1) }] \in TrustLive
              BY Qd_eq
       <4>13. B(seq0[k + 1].s, bal)
              OBVIOUS
@@ -1087,6 +1089,9 @@ PROOF
 <1> PICK safe \in SafeAcceptor : TRUE
     BY SafeAcceptorNonTrivial
 
+<1> PICK pr \in Proposer : TRUE
+    BY ProposerNonTrivial
+
 <1> PICK bal1 \in Ballot, bal2 \in Ballot : bal1 # bal2
     BY DEF Ballot
 <1> DEFINE v1 == BVal[bal1]
@@ -1096,16 +1101,16 @@ PROOF
 <1> v2 \in Value
     BY BValAssumption
 
-<1> DEFINE p1 == [ type |-> "1a", bal |-> bal1, prev |-> NoMessage, refs |-> {} ]
+<1> DEFINE p1 == [ type |-> "1a", src |-> pr, bal |-> bal1, prev |-> NoMessage, refs |-> {} ]
 <1> p1 \in Message /\ OneA(p1) /\ p1.bal = bal1
-    BY OneA_Message_base
+    BY OneA_Message_base DEF proposal
 <1> B(p1, bal1)
     BY B_1a
 <1> Tran(p1) = {p1}
     BY Tran_eq
 <1> PrevTran(p1) = {p1}
     BY PrevTran_1a
-<1> DEFINE p2 == [ type |-> "1a", bal |-> bal2, prev |-> NoMessage, refs |-> {} ]
+<1> DEFINE p2 == [ type |-> "1a", src |-> pr, bal |-> bal2, prev |-> NoMessage, refs |-> {} ]
 <1> p2 \in Message /\ OneA(p2) /\ p2.bal = bal2
     BY OneA_Message_base
 <1> B(p2, bal2)
@@ -1120,15 +1125,15 @@ PROOF
 <1> HIDE DEF p1
 <1> HIDE DEF p2
 
-<1> DEFINE oneb_1 == {[ type |-> "1b", acc |-> fake, prev |-> p1, refs |-> {p1}, lrns |-> {} ] : fake \in FakeAcceptor }
+<1> DEFINE oneb_1 == {[ type |-> "1b", src |-> fake, prev |-> p1, refs |-> {p1}, lrns |-> {} ] : fake \in FakeAcceptor }
 <1> oneb_1 \in SUBSET { mm \in Message : OneB(mm) }
   <2> IsFiniteSet({p1})
       BY FS_Singleton
   <2> {p1} \in SUBSET Message
       OBVIOUS
   <2> SUFFICES ASSUME NEW fake \in FakeAcceptor
-               PROVE  [ type |-> "1b", acc |-> fake, prev |-> p1, refs |-> {p1}, lrns |-> {} ] \in Message /\
-                      OneB([ type |-> "1b", acc |-> fake, prev |-> p1, refs |-> {p1}, lrns |-> {} ])
+               PROVE  [ type |-> "1b", src |-> fake, prev |-> p1, refs |-> {p1}, lrns |-> {} ] \in Message /\
+                      OneB([ type |-> "1b", src |-> fake, prev |-> p1, refs |-> {p1}, lrns |-> {} ])
       OBVIOUS
   <2> QED BY OneB_Message DEF Acceptor
 <1> IsFiniteSet(oneb_1)
@@ -1137,7 +1142,7 @@ PROOF
 \*      BY FiniteSetEnum, FakeAcceptorFinite
       BY FakeAcceptorFinite DEF IsFiniteSet
   <2> DEFINE mseq == [ x \in 1..Len(fseq) |->
-                        [ type |-> "1b", acc |-> fseq[x], prev |-> p1, refs |-> {p1}, lrns |-> {} ]
+                        [ type |-> "1b", src |-> fseq[x], prev |-> p1, refs |-> {p1}, lrns |-> {} ]
                      ]
   <2> mseq \in Seq(oneb_1)
       OBVIOUS
@@ -1148,9 +1153,9 @@ PROOF
   <2> QED BY DEF IsFiniteSet
 <1> \A m1 \in oneb_1 : B(m1, bal1)
   <2> SUFFICES ASSUME NEW f \in FakeAcceptor
-               PROVE  B([ type |-> "1b", acc |-> f, prev |-> p1, refs |-> {p1}, lrns |-> {} ], bal1)
+               PROVE  B([ type |-> "1b", src |-> f, prev |-> p1, refs |-> {p1}, lrns |-> {} ], bal1)
       OBVIOUS
-  <2> DEFINE oneb_fake == [ type |-> "1b", acc |-> f, prev |-> p1, refs |-> {p1}, lrns |-> {} ]
+  <2> DEFINE oneb_fake == [ type |-> "1b", src |-> f, prev |-> p1, refs |-> {p1}, lrns |-> {} ]
   <2> oneb_fake \in oneb_1
       OBVIOUS
   <2> ~OneA(oneb_fake)
@@ -1163,7 +1168,7 @@ PROOF
   <2> QED BY DEF B
 <1> \A m1 \in oneb_1 : Tran(m1) = {m1, p1}
     BY Tran_eq
-<1> \A m1 \in oneb_1 : m1.acc \in FakeAcceptor
+<1> \A m1 \in oneb_1 : m1.src \in FakeAcceptor
     OBVIOUS
 
 \*<1> ASSUME NEW F(_),
@@ -1180,15 +1185,15 @@ PROOF
 \*    PROVE  UNION {F(x) : x \in {e} \cup Y \cup Z} = F(e) \cup (UNION {F(y) : y \in Y}) \cup (UNION {F(z) : z \in Z})
 \*    BY SlowZenon
 
-<1> DEFINE oneb_2 == {[ type |-> "1b", acc |-> fake, prev |-> p2, refs |-> {p2}, lrns |-> {} ] : fake \in FakeAcceptor }
+<1> DEFINE oneb_2 == {[ type |-> "1b", src |-> fake, prev |-> p2, refs |-> {p2}, lrns |-> {} ] : fake \in FakeAcceptor }
 <1> oneb_2 \in SUBSET { mm \in Message : OneB(mm) }
   <2> IsFiniteSet({p2})
       BY FS_Singleton
   <2> {p2} \in SUBSET Message
       OBVIOUS
   <2> SUFFICES ASSUME NEW fake \in FakeAcceptor
-               PROVE  [ type |-> "1b", acc |-> fake, prev |-> p2, refs |-> {p2}, lrns |-> {} ] \in Message /\
-                      OneB([ type |-> "1b", acc |-> fake, prev |-> p2, refs |-> {p2}, lrns |-> {} ])
+               PROVE  [ type |-> "1b", src |-> fake, prev |-> p2, refs |-> {p2}, lrns |-> {} ] \in Message /\
+                      OneB([ type |-> "1b", src |-> fake, prev |-> p2, refs |-> {p2}, lrns |-> {} ])
       OBVIOUS
   <2> QED BY OneB_Message DEF Acceptor
 <1> IsFiniteSet(oneb_2)
@@ -1196,7 +1201,7 @@ PROOF
         \A f \in FakeAcceptor : \E n \in 1..Len(fseq) : fseq[n] = f
       BY FakeAcceptorFinite DEF IsFiniteSet
   <2> DEFINE mseq == [ x \in 1..Len(fseq) |->
-                        [ type |-> "1b", acc |-> fseq[x], prev |-> p2, refs |-> {p2}, lrns |-> {} ]
+                        [ type |-> "1b", src |-> fseq[x], prev |-> p2, refs |-> {p2}, lrns |-> {} ]
                      ]
   <2> mseq \in Seq(oneb_2)
       OBVIOUS
@@ -1207,9 +1212,9 @@ PROOF
   <2> QED BY DEF IsFiniteSet
 <1> \A m2 \in oneb_2 : B(m2, bal2)
   <2> SUFFICES ASSUME NEW f \in FakeAcceptor
-               PROVE  B([ type |-> "1b", acc |-> f, prev |-> p2, refs |-> {p2}, lrns |-> {} ], bal2)
+               PROVE  B([ type |-> "1b", src |-> f, prev |-> p2, refs |-> {p2}, lrns |-> {} ], bal2)
       OBVIOUS
-  <2> DEFINE oneb_fake == [ type |-> "1b", acc |-> f, prev |-> p2, refs |-> {p2}, lrns |-> {} ]
+  <2> DEFINE oneb_fake == [ type |-> "1b", src |-> f, prev |-> p2, refs |-> {p2}, lrns |-> {} ]
   <2> oneb_fake \in oneb_2
       OBVIOUS
   <2> ~OneA(oneb_fake)
@@ -1222,13 +1227,13 @@ PROOF
   <2> QED BY DEF B
 <1> \A m2 \in oneb_2 : Tran(m2) = {m2, p2}
     BY Tran_eq
-<1> \A m2 \in oneb_2 : m2.acc \in FakeAcceptor
+<1> \A m2 \in oneb_2 : m2.src \in FakeAcceptor
     OBVIOUS
 
-<1> DEFINE M0 == [ type |-> "2a", acc |-> M.acc, prev |-> M, refs |-> {M} \cup oneb_1 \cup oneb_2, lrns |-> {} ]
+<1> DEFINE M0 == [ type |-> "2a", src |-> M.src, prev |-> M, refs |-> {M} \cup oneb_1 \cup oneb_2, lrns |-> {} ]
 
 <1> M0 \in Message /\ TwoA(M0)
-  <2> M.acc \in Acceptor
+  <2> M.src \in Acceptor
       BY MessageSpec DEF TwoA
   <2> IsFiniteSet({M} \cup oneb_1 \cup oneb_2)
       BY FS_Union, FS_Singleton
@@ -1237,7 +1242,7 @@ PROOF
 <1> M \in Tran(M0)
     BY Message_ref_Tran
 <1> DEFINE SingletonM == {M}
-<1> M0.acc = M.acc
+<1> M0.src = M.src
     OBVIOUS
 <1> M0.refs = SingletonM \cup oneb_1 \cup oneb_2
     OBVIOUS
@@ -1259,8 +1264,8 @@ PROOF
   <2> SUFFICES ASSUME NEW fake \in FakeAcceptor
                PROVE  fake \in Caught(M0)
       OBVIOUS
-  <2> DEFINE proof1 == [ type |-> "1b", acc |-> fake, prev |-> p1, refs |-> {p1}, lrns |-> {} ]
-  <2> DEFINE proof2 == [ type |-> "1b", acc |-> fake, prev |-> p2, refs |-> {p2}, lrns |-> {} ]
+  <2> DEFINE proof1 == [ type |-> "1b", src |-> fake, prev |-> p1, refs |-> {p1}, lrns |-> {} ]
+  <2> DEFINE proof2 == [ type |-> "1b", src |-> fake, prev |-> p2, refs |-> {p2}, lrns |-> {} ]
   <2> proof1 # proof2
       OBVIOUS
   <2> ~Proposal(proof1)
@@ -1290,8 +1295,8 @@ PROOF
   <2> PICK x1 \in Tran(M0), x2 \in Tran(M0) :
             /\ ~Proposal(x1)
             /\ ~Proposal(x2)
-            /\ x1.acc = s
-            /\ x2.acc = s
+            /\ x1.src = s
+            /\ x2.src = s
             /\ x1 # x2
             /\ x1 \notin PrevTran(x2)
             /\ x2 \notin PrevTran(x1)
@@ -1303,7 +1308,7 @@ PROOF
     <3> QED BY <1>M0_tran, AcceptorAssumption DEF Proposal, OneA
   <2> ASSUME x1 = M0 PROVE FALSE
     <3> HIDE DEF oneb_1, oneb_2, M0
-    <3> M.acc = s
+    <3> M.src = s
         OBVIOUS
     <3> M \in SentBy(s)
         BY DEF KnownMsgsSpec1, SentBy, Proposal, OneA
@@ -1328,7 +1333,7 @@ PROOF
     <3> QED BY <1>M0_prevtran
   <2> ASSUME x2 = M0 PROVE FALSE
     <3> HIDE DEF oneb_1, oneb_2, M0
-    <3> M.acc = s
+    <3> M.src = s
         OBVIOUS
     <3> M \in SentBy(s)
         BY DEF KnownMsgsSpec1, SentBy, Proposal, OneA
@@ -1502,12 +1507,12 @@ PROOF
 
 \*    ChosenIn(alpha, b, v) ==
 \*        \E S \in SUBSET Known2a(alpha, b, v) :
-\*            /\ \A x \in S : [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
-\*            /\ [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
+\*            /\ \A x \in S : [lr |-> alpha, q |-> { m.src : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+\*            /\ [lr |-> alpha, q |-> { m.src : m \in S }] \in TrustLive
         <5>1. PICK Q1 \in SUBSET Known2a(alpha, bal, val) :
                 /\ \A x \in Q1 :
-                    [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
-                /\ [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
+                    [lr |-> alpha, q |-> { m.src : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+                /\ [lr |-> alpha, q |-> { mm.src : mm \in Q1 }] \in TrustLive
               BY DEF ChosenIn
         <5> Q1 \in SUBSET msgs
             BY DEF Known2a, KnownMsgsSpec1
@@ -1515,17 +1520,17 @@ PROOF
             BY DEF TypeOK
         <5> Q1 \in SUBSET known_msgs[alpha]
             BY DEF Zenon, Known2a, KnownMsgsSpec2
-        <5> [lr |-> alpha, q |-> { mm.acc : mm \in Q1 }] \in TrustLive
+        <5> [lr |-> alpha, q |-> { mm.src : mm \in Q1 }] \in TrustLive
             BY <5>1
         <5> \A x \in Q1 :
-                [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+                [lr |-> alpha, q |-> { m.src : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
             BY <5>1
         <5> \A x \in Q1 : B(x, bal)
             BY DEF Known2a
         <5> \A x \in Q1 : ~OneA(x)
             BY MessageTypeSpec DEF Known2a
 \*\*        From WellFormedness we have
-\*\*                /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
+\*\*                /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, 1) }] \in TrustLive }
         <5> seq[2].m \in Tran(M)
             BY HeterogeneousSpecCondProperties
         <5> WellFormed(seq[2].m)
@@ -1534,7 +1539,7 @@ PROOF
             BY DEF WellFormed
         <5> seq[2].m \in known_msgs[L0]
             BY DEF KnownMsgsSpec2
-        <5>2. seq[2].m.lrns = { l \in Learner : [lr |-> l, q |-> { mm.acc : mm \in qd(l, seq[2].m, 1) }] \in TrustLive }
+        <5>2. seq[2].m.lrns = { l \in Learner : [lr |-> l, q |-> { mm.src : mm \in qd(l, seq[2].m, 1) }] \in TrustLive }
               BY DEF WellFormed
         <5> seq[2].B_m \in Ballot
             BY TraceElementSpec
@@ -1542,7 +1547,7 @@ PROOF
             BY DEF HeterogeneousSpecCond
 
         <5> DEFINE Q2 == qd(seq[2].gamma, seq[2].m, 1)
-        <5> [lr |-> seq[2].gamma, q |-> { mm.acc : mm \in Q2 }] \in TrustLive
+        <5> [lr |-> seq[2].gamma, q |-> { mm.src : mm \in Q2 }] \in TrustLive
             BY <5>2 DEF HeterogeneousSpecCond
         <5> Q2 \in SUBSET Tran(seq[2].m)
             BY QdProperty1
@@ -1557,8 +1562,8 @@ PROOF
         <5> \A x \in Q2 : B(x, seq[2].B_m)
             BY QdProperty1 DEF HeterogeneousSpecCond, SameBallot
         <5> PICK p \in SafeAcceptor, s0 \in Q1, r0 \in Q2 :
-                /\ s0.acc = p
-                /\ r0.acc = p
+                /\ s0.src = p
+                /\ r0.src = p
           <6> HIDE DEF Q2
           <6> QED BY LiveQuorumEntIntersection
 
@@ -1590,11 +1595,11 @@ PROOF
             <7> r0 \in Tran(s0) \/ s0 \in Tran(r0)
                 BY <7>1 DEF KnownMsgsPrevTranSpec, SentBy
             <7> QED BY <6>2, TranBallot DEF Ballot
-          <6>11. w0.r.acc = w0.s.acc
+          <6>11. w0.r.src = w0.s.src
                  OBVIOUS
           <6> maxDepth(alpha) - 1 + 1 = maxDepth(alpha)
               OBVIOUS
-          <6>12. [lr |-> alpha, q |-> { z.acc : z \in qd(alpha, w0.s, maxDepth(alpha)) }] \in TrustLive
+          <6>12. [lr |-> alpha, q |-> { z.src : z \in qd(alpha, w0.s, maxDepth(alpha)) }] \in TrustLive
                  BY <5>1
           <6>13. B(w0.s, bal)
                  OBVIOUS
@@ -1639,17 +1644,17 @@ LEMMA ChosenSafeCaseEq ==
     PROVE  V1 = V2
 PROOF
 <1> PICK S1 \in SUBSET Known2a(L1, BB, V1) :
-        [lr |-> L1, q |-> { m.acc : m \in S1 }] \in TrustLive
+        [lr |-> L1, q |-> { m.src : m \in S1 }] \in TrustLive
     BY DEF ChosenIn, Zenon
 <1> S1 \in SUBSET Message
     BY DEF Known2a, KnownMsgsSpec1, TypeOK
-<1> DEFINE Q1 == { m.acc : m \in S1 }
+<1> DEFINE Q1 == { m.src : m \in S1 }
 <1> PICK S2 \in SUBSET Known2a(L2, BB, V2) :
-        [lr |-> L2, q |-> { m.acc : m \in S2 }] \in TrustLive
+        [lr |-> L2, q |-> { m.src : m \in S2 }] \in TrustLive
     BY DEF ChosenIn
 <1> S2 \in SUBSET Message
     BY DEF Known2a, KnownMsgsSpec1, TypeOK
-<1> DEFINE Q2 == { m.acc : m \in S2 }
+<1> DEFINE Q2 == { m.src : m \in S2 }
 <1> PICK A \in SafeAcceptor, m1 \in S1, m2 \in S2 : TRUE
     BY LiveQuorumEntIntersection
 <1>4. /\ m1 \in known_msgs[L1]
@@ -1681,9 +1686,9 @@ PROOF
 <1> SUFFICES ASSUME V1 # V2 PROVE FALSE
     OBVIOUS
 <1> PICK S2 \in SUBSET Known2a(L2, B2, V2) :
-        [lr |-> L2, q |-> { m.acc : m \in S2 }] \in TrustLive
+        [lr |-> L2, q |-> { m.src : m \in S2 }] \in TrustLive
     BY DEF ChosenIn
-<1> DEFINE Q2 == { m.acc : m \in S2 }
+<1> DEFINE Q2 == { m.src : m \in S2 }
 <1> Q2 \in ByzQuorum
     BY TrustLiveAssumption
 <1> <<L2, L2>> \in Ent
@@ -1941,5 +1946,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext
 
 =============================================================================
 \* Modification History
-\* Last modified Wed Jun 25 21:18:47 CEST 2025 by karbyshev
+\* Last modified Mon Jul 28 19:03:21 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev

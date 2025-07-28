@@ -8,13 +8,13 @@ EXTENDS HQuorum, HLearner, HBallotValue, Lib
 NoMessage == [ type |-> "null" ]
 
 MessageRec0 ==
-    [ type : {"1a"}, bal : Ballot, prev : {NoMessage}, refs : {{}} ]
+    [ type : {"1a"}, src : Proposer, bal : Ballot, prev : {NoMessage}, refs : {{}} ]
 
 MessageRec1(M, n) ==
     M
-    \cup [ type : {"1a"}, bal : Ballot, prev : {NoMessage}, refs : FINSUBSET(M) ]
+    \cup [ type : {"1a"}, src : Proposer, bal : Ballot, prev : {NoMessage}, refs : FINSUBSET(M) ]
     \cup [ type : {"1b", "2a"},
-           acc  : Acceptor,
+           src  : Acceptor,
            prev : M \cup {NoMessage},
            refs : FINSUBSET(M),
            lrns : SUBSET Learner ]
@@ -26,11 +26,11 @@ MessageRec[n \in Nat] ==
 
 Message == UNION { MessageRec[n] : n \in Nat }
 
-proposal(bal, M) ==
-    [type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> M]
+proposal(P, bal, M) ==
+    [type |-> "1a", src |-> P, bal |-> bal, prev |-> NoMessage, refs |-> M]
 
 non_proposal(type, acc, prev, M, lrns) ==
-    [type |-> type, acc |-> acc, prev |-> prev, refs |-> M, lrns |-> lrns]
+    [type |-> type, src |-> acc, prev |-> prev, refs |-> M, lrns |-> lrns]
 
 -----------------------------------------------------------------------------
 (* Message types *)
@@ -78,5 +78,5 @@ PrevTran(m) == UNION {PrevTranBound[n][m] : n \in Nat}
 
 =============================================================================
 \* Modification History
-\* Last modified Sat Jul 26 22:54:02 CEST 2025 by karbyshev
+\* Last modified Mon Jul 28 10:19:33 CEST 2025 by karbyshev
 \* Created Tue May 14 16:39:44 CEST 2024 by karbyshev

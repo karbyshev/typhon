@@ -61,7 +61,9 @@ PROOF
 <1> SUFFICES \A j \in Nat : P(j)
     OBVIOUS
 <1>0. P(0)
-  <2> [type |-> "1a", bal |-> 0, prev |-> NoMessage, refs |-> {}] \in MessageRec[0]
+  <2> PICK pr \in Proposer : TRUE
+      BY ProposerNonTrivial
+  <2> [type |-> "1a", src |-> pr, bal |-> 0, prev |-> NoMessage, refs |-> {}] \in MessageRec[0]
       BY MessageRec_eq0 DEF MessageRec0, Ballot
   <2> QED OBVIOUS
 <1>1. ASSUME NEW m \in Nat, P(m) PROVE P(m + 1)
@@ -103,14 +105,15 @@ LEMMA Message_nontriv == Message # {}
 PROOF BY MessageRec_nontriv DEF Message
 
 LEMMA OneA_Message ==
-    ASSUME NEW bal \in Ballot,
+    ASSUME NEW pr \in Proposer,
+           NEW bal \in Ballot,
            NEW R \in SUBSET Message,
            IsFiniteSet(R)
-    PROVE  LET msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> R ] IN
+    PROVE  LET msg == [ type |-> "1a", src |-> pr, bal |-> bal, prev |-> NoMessage, refs |-> R ] IN
            /\ msg \in Message
            /\ OneA(msg)
 PROOF
-<1> DEFINE msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> R ]
+<1> DEFINE msg == [ type |-> "1a", src |-> pr, bal |-> bal, prev |-> NoMessage, refs |-> R ]
 <1> OneA(msg)
     BY DEF OneA
 <1>0. CASE R = {}
@@ -152,8 +155,9 @@ PROOF
 <1> QED BY <1>0, <1>1
 
 LEMMA OneA_Message_base ==
-    ASSUME NEW bal \in Ballot
-    PROVE  LET msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {} ] IN
+    ASSUME NEW pr \in Proposer,
+           NEW bal \in Ballot
+    PROVE  LET msg == [ type |-> "1a", src |-> pr, bal |-> bal, prev |-> NoMessage, refs |-> {} ] IN
            /\ msg \in Message
            /\ OneA(msg)
 PROOF BY OneA_Message, FS_EmptySet
@@ -163,11 +167,11 @@ LEMMA OneB_Message ==
            NEW P \in Message \cup {NoMessage},
            NEW R \in SUBSET Message,
            IsFiniteSet(R)
-    PROVE  LET msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
+    PROVE  LET msg == [ type |-> "1b", src |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
            /\ msg \in Message
            /\ OneB(msg)
 PROOF
-<1> DEFINE msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ]
+<1> DEFINE msg == [ type |-> "1b", src |-> A, prev |-> P, refs |-> R, lrns |-> {} ]
 <1> OneB(msg)
     BY DEF OneB
 <1>0. \A m \in R : \E n \in Nat : m \in MessageRec[n]
@@ -223,11 +227,11 @@ LEMMA TwoA_Message ==
            NEW R \in SUBSET Message,
            IsFiniteSet(R),
            NEW L \in SUBSET Learner
-    PROVE  LET msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> L ] IN
+    PROVE  LET msg == [ type |-> "2a", src |-> A, prev |-> P, refs |-> R, lrns |-> L ] IN
            /\ msg \in Message
            /\ TwoA(msg)
 PROOF
-<1> DEFINE msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> L ]
+<1> DEFINE msg == [ type |-> "2a", src |-> A, prev |-> P, refs |-> R, lrns |-> L ]
 <1> TwoA(msg)
     BY DEF TwoA
 <1>0. \A m \in R : \E n \in Nat : m \in MessageRec[n]
@@ -276,6 +280,16 @@ PROOF
       BY DEF Range
   <2> QED BY DEF FINSUBSET
 <1> QED BY DEF Message
+
+\*LEMMA NonProposal_Message ==
+\*        ASSUME NEW A \in Acceptor,
+\*           NEW P \in Message \cup {NoMessage},
+\*           NEW R \in SUBSET Message,
+\*           IsFiniteSet(R),
+\*           NEW L \in SUBSET Learner,
+\*           NEW T \in {"1b", "2a"},
+\*           T = "2a" \/ L = {}
+\*        PROVE  [ type |-> T, src |-> A, prev |-> P, refs |-> R, lrns |-> L ] \in Message
 
 LEMMA Message_ref ==
     ASSUME NEW m \in Message
@@ -342,9 +356,10 @@ PROOF
 -----------------------------------------------------------------------------
 LEMMA Message_Induction ==
     ASSUME NEW P(_),
+           \A pr \in Proposer :
            \A M \in FINSUBSET(Message) :
             (\A m \in M : P(m)) =>
-            \A bal \in Ballot : P(proposal(bal, M)),
+            \A bal \in Ballot : P(proposal(pr, bal, M)),
            \A M \in FINSUBSET(Message) :
             (\A m \in M : P(m)) =>
             \A type \in {"1b", "2a"} :
@@ -358,8 +373,9 @@ PROOF
 <1> SUFFICES \A j \in Nat : Q(j)
     BY DEF Message
 <1>0. Q(0)
-  <2> SUFFICES ASSUME NEW bal \in Ballot
-               PROVE  P([type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {}])
+  <2> SUFFICES ASSUME NEW pr \in Proposer,
+                      NEW bal \in Ballot
+               PROVE  P([type |-> "1a", src |-> pr, bal |-> bal, prev |-> NoMessage, refs |-> {}])
       BY MessageRec_eq0 DEF MessageRec0
   <2> QED BY FinSubset_empty DEF proposal
 <1>1. ASSUME NEW k \in Nat, Q(k) PROVE Q(k + 1)
@@ -373,10 +389,10 @@ PROOF
       OBVIOUS
   <2> MessageRec[k] \in SUBSET Message
       BY DEF Message
-  <2>1. CASE \E bal \in Ballot : \E R \in FINSUBSET(MessageRec[k]) :
-            x = [type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> R]
-    <3> PICK bal \in Ballot, R \in FINSUBSET(MessageRec[k]) :
-            x = [type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> R]
+  <2>1. CASE \E pr \in Proposer : \E bal \in Ballot : \E R \in FINSUBSET(MessageRec[k]) :
+            x = [type |-> "1a", src |-> pr, bal |-> bal, prev |-> NoMessage, refs |-> R]
+    <3> PICK pr \in Proposer, bal \in Ballot, R \in FINSUBSET(MessageRec[k]) :
+            x = [type |-> "1a", src |-> pr, bal |-> bal, prev |-> NoMessage, refs |-> R]
         BY <2>1
     <3> \A m \in R : P(m)
         BY FinSubset_sub, <1>1
@@ -385,13 +401,13 @@ PROOF
              \E prev \in MessageRec[k] \cup {NoMessage} :
              \E R \in FINSUBSET(MessageRec[k]) :
              \E lrns \in SUBSET Learner :
-            x = [type |-> T, acc |-> acc, prev |-> prev, refs |-> R, lrns |-> lrns]
+            x = [type |-> T, src |-> acc, prev |-> prev, refs |-> R, lrns |-> lrns]
     <3> PICK T \in {"1b", "2a"},
              acc \in Acceptor,
              prev \in MessageRec[k] \cup {NoMessage},
              R \in FINSUBSET(MessageRec[k]),
              lrns \in SUBSET Learner :
-            x = [type |-> T, acc |-> acc, prev |-> prev, refs |-> R, lrns |-> lrns]
+            x = [type |-> T, src |-> acc, prev |-> prev, refs |-> R, lrns |-> lrns]
         BY <2>2
     <3> \A m \in R : P(m)
         BY FinSubset_sub, <1>1
@@ -410,9 +426,10 @@ PROOF
 <1> DEFINE P(m) == IsFiniteSet(m.refs)
 <1> SUFFICES P(msg)
     OBVIOUS
-<1>0. \A M \in FINSUBSET(Message) :
+<1>0. \A pr \in Proposer :
+      \A M \in FINSUBSET(Message) :
         (\A m \in M : P(m)) =>
-        \A bal \in Ballot : P(proposal(bal, M))
+        \A bal \in Ballot : P(proposal(pr, bal, M))
       BY DEF proposal, FINSUBSET
 <1>1. \A M \in FINSUBSET(Message) :
             (\A m \in M : P(m)) =>
@@ -444,12 +461,13 @@ PROOF
 LEMMA MessageSpec ==
     ASSUME NEW m \in Message
     PROVE  \/ /\ m.type = "1a"
+              /\ m.src \in Proposer
               /\ m.bal \in Ballot
               /\ m.prev = NoMessage
               /\ m.refs \in SUBSET Message
            \/ /\ \/ m.type = "1b"
                  \/ m.type = "2a"
-              /\ m.acc \in Acceptor
+              /\ m.src \in Acceptor
               /\ m.prev \in Message \cup {NoMessage}
               /\ m.refs \in SUBSET Message
               /\ m.lrns \in SUBSET Learner
@@ -457,12 +475,13 @@ PROOF
 <1> DEFINE P(n) ==
         \A x \in MessageRec[n] :
             \/ /\ x.type = "1a"
+               /\ x.src \in Proposer
                /\ x.bal \in Ballot
                /\ x.prev = NoMessage
                /\ x.refs \in SUBSET Message
             \/ /\ \/ x.type = "1b"
                   \/ x.type = "2a"
-               /\ x.acc \in Acceptor
+               /\ x.src \in Acceptor
                /\ x.prev \in Message \cup {NoMessage}
                /\ x.refs \in SUBSET Message
                /\ x.lrns \in SUBSET Learner
@@ -475,12 +494,13 @@ PROOF
       OBVIOUS
   <2> SUFFICES ASSUME NEW x \in MessageRec[k + 1]
                PROVE  \/ /\ x.type = "1a"
+                         /\ x.src \in Proposer
                          /\ x.bal \in Ballot
                          /\ x.prev = NoMessage
                          /\ x.refs \in SUBSET Message
                       \/ /\ \/ x.type = "1b"
                             \/ x.type = "2a"
-                         /\ x.acc \in Acceptor
+                         /\ x.src \in Acceptor
                          /\ x.prev \in Message \cup {NoMessage}
                          /\ x.refs \in SUBSET Message
                          /\ x.lrns \in SUBSET Learner
@@ -488,10 +508,10 @@ PROOF
   <2>1. CASE x \in MessageRec[k]
         BY <1>1, <2>1
   <2>3. CASE x \notin MessageRec[k]
-    <3> x \in [ type : {"1a"}, bal : Ballot, prev : {NoMessage}, refs : FINSUBSET(MessageRec[k]) ]
+    <3> x \in [ type : {"1a"}, src : Proposer, bal : Ballot, prev : {NoMessage}, refs : FINSUBSET(MessageRec[k]) ]
               \cup
               [ type : {"1b", "2a"},
-                acc  : Acceptor,
+                src  : Acceptor,
                 prev : MessageRec[k] \cup {NoMessage},
                 refs : FINSUBSET(MessageRec[k]),
                 lrns : SUBSET Learner ]
@@ -814,8 +834,8 @@ PROOF
       OBVIOUS
   <2> x \in Message
       BY DEF Message
-  <2> PICK bal \in Ballot :
-            x = [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {} ]
+  <2> PICK pr \in Proposer, bal \in Ballot :
+            x = [ type |-> "1a", src |-> pr, bal |-> bal, prev |-> NoMessage, refs |-> {} ]
       BY MessageRec_eq0 DEF MessageRec0
   <2> Tran(x) = {x}
       BY Tran_eq
@@ -1089,5 +1109,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1 DEF PrevTran
 
 =============================================================================
 \* Modification History
-\* Last modified Sun Jul 20 19:22:26 CEST 2025 by karbyshev
+\* Last modified Mon Jul 28 10:31:15 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev

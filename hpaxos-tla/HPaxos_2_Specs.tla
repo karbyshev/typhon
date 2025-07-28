@@ -12,7 +12,7 @@ TypeOK ==
     /\ decision \in [Learner \X Ballot -> SUBSET Value]
 
 -----------------------------------------------------------------------------
-SentBy(acc) == { mm \in msgs : ~OneA(mm) /\ mm.acc = acc }
+SentBy(acc) == { mm \in msgs : ~OneA(mm) /\ mm.src = acc }
 
 RecentMsgsSpec0 ==
     \A A \in SafeAcceptor :
@@ -22,7 +22,7 @@ RecentMsgsSpec0 ==
 RecentMsgsSpec1 ==
     \A A \in SafeAcceptor :
         \A x \in recent_msgs[A] :
-            x.acc = A => x \in SentBy(A)
+            x.src = A => x \in SentBy(A)
 
 RecentMsgsSpec2 ==
     \A A \in SafeAcceptor :
@@ -105,7 +105,7 @@ OneAProcessed ==
             Proposal(m) =>
             \E m1b \in msgs :
                 OneB(m1b) /\ \* ... for example, SameBallot(m1b, m)
-                m1b.acc = A
+                m1b.src = A
 
 -----------------------------------------------------------------------------
 Safety ==
@@ -135,5 +135,5 @@ FullLivenessInvariant ==
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jul 22 12:40:06 CEST 2025 by karbyshev
+\* Last modified Mon Jul 28 11:21:25 CEST 2025 by karbyshev
 \* Created Tue May 20 23:34:17 CEST 2025 by karbyshev
