@@ -1250,6 +1250,8 @@ PROOF
     OBVIOUS
 
 <1>M0_tran. Tran(M0) \subseteq { M0, p1, p2 } \cup Tran(M) \cup oneb_1 \cup oneb_2
+  <2> M0.refs = {M} \cup oneb_1 \cup oneb_2
+      OBVIOUS
   <2> HIDE DEF M0
   <2> Tran(M0) = {M0} \cup Tran(M) \cup (UNION { Tran(x) : x \in oneb_1 }) \cup (UNION { Tran(y) : y \in oneb_2 })
     <3> HIDE DEF oneb_1, oneb_2
@@ -1943,8 +1945,7 @@ THEOREM SafetyResult == Spec => []Safety
 PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext
       DEF Spec, FullSafetyInvariant
 
-
 =============================================================================
 \* Modification History
-\* Last modified Mon Jul 28 19:03:21 CEST 2025 by karbyshev
+\* Last modified Mon Jul 28 19:53:59 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev
