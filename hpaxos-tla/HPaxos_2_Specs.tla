@@ -12,7 +12,11 @@ TypeOK ==
     /\ decision \in [Learner \X Ballot -> SUBSET Value]
 
 -----------------------------------------------------------------------------
-SentBy(acc) == { mm \in msgs : ~OneA(mm) /\ mm.src = acc }
+SentBy(acc) == { mm \in msgs : mm.src = acc }
+
+SentSpec ==
+    \A A \in SafeAcceptor :
+        \A m \in SentBy(A) : ~OneA(m)
 
 RecentMsgsSpec0 ==
     \A A \in SafeAcceptor :

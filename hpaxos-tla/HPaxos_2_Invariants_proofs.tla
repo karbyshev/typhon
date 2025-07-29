@@ -113,6 +113,37 @@ PROOF
 <1>9. QED BY <1>1, <1>3, <1>6, <1>7, <1>8
           DEF NextTLA, SafeAcceptorAction, LearnerAction
 
+LEMMA SentSpecInvariant ==
+    NextTLA /\ SentSpec => SentSpec'
+PROOF
+<1> SUFFICES ASSUME NextTLA,
+                    SentSpec,
+                    NEW A \in SafeAcceptor,
+                    NEW M \in msgs' \ msgs,
+                    M.src = A
+             PROVE  ~OneA(M)
+    BY DEF SentSpec, SentBy
+<1> USE DEF SentSpec
+<1>1. CASE \E p \in Proposer : ProposerAction(p)
+  <2> PICK p \in Proposer, bal \in Ballot : SendProposal(p, bal)
+      BY <1>1 DEF ProposerAction
+  <2> M = proposal(p, bal, {})
+      BY DEF SendProposal, Send
+  <2> QED BY AcceptorNotProposer DEF proposal, Acceptor
+<1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
+  <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
+      BY <1>3
+  <2> QED BY ReplyNotOneA DEF Process, ProcessWithReply, ProcessNoReply, Send
+<1>6. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
+      BY <1>6 DEF LearnerRecv
+<1>7. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
+            LearnerDecide(lrn, bal, val)
+      BY <1>7 DEF LearnerDecide
+<1>8. CASE \E a \in FakeAcceptor : FakeAcceptorAction(a)
+      BY <1>8 DEF FakeAcceptorAction, FakeSendControlMessage, Send, non_proposal, OneA
+<1>9. QED BY <1>1, <1>3, <1>6, <1>7, <1>8
+          DEF NextTLA, SafeAcceptorAction, LearnerAction
+
 LEMMA WellFormed_monotone ==
     \A m \in Message : WellFormed(m) <=> WellFormed(m)'
 PROOF BY DEF WellFormed
