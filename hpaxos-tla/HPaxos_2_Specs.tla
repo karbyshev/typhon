@@ -36,8 +36,7 @@ RecentMsgsSpec3 ==
 
 KnownMsgsSpec1 ==
     \A AL \in SafeAcceptor \cup Learner :
-        /\ known_msgs[AL] \in SUBSET msgs
-        /\ IsFiniteSet(known_msgs[AL])
+        known_msgs[AL] \in SUBSET msgs
 
 KnownMsgsSpec2 ==
     \A AL \in SafeAcceptor \cup Learner :

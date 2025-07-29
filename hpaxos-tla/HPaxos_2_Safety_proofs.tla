@@ -284,6 +284,7 @@ LEMMA HeterogeneousTraceExistence ==
            beta \in M.lrns,
            MsgsSafeAcceptorPrevTranLinearSpec,
            KnownMsgsPrevTranSpec,
+           SentFinite,
            KnownMsgsSpec1,
            KnownMsgsSpec2,
            CaughtSpec, \* used by EntConnected
@@ -548,7 +549,7 @@ PROOF
            BY DEF KnownMsgsSpec2
     <3>14. IsFiniteSet(r_fresh_set)
       <4> IsFiniteSet(known_msgs[L0])
-          BY DEF KnownMsgsSpec1
+          BY FS_Subset DEF KnownMsgsSpec1, SentFinite
       <4> QED BY <3>13, FS_Subset
     <3>15. Latest(r_fresh_set) # {}
            BY <3>10, <3>11, <3>12, <3>14, LatestNonEmpty

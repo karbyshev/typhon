@@ -447,8 +447,7 @@ PROOF
 <1> TypeOK'
     BY TypeOKInvariant
 <1> SUFFICES ASSUME NEW AL \in SafeAcceptor \cup Learner
-             PROVE  /\ known_msgs[AL]' \in SUBSET msgs'
-                    /\ IsFiniteSet(known_msgs[AL]')
+             PROVE  known_msgs[AL]' \in SUBSET msgs'
     BY DEF KnownMsgsSpec1
 <1> USE DEF KnownMsgsSpec1
 <1>1. CASE \E p \in Proposer : ProposerAction(p)
@@ -462,10 +461,6 @@ PROOF
       BY DEF Process
   <2> known_msgs[AL]' \in SUBSET msgs'
       BY Sent_monotone DEF Recv, TypeOK, Acceptor
-  <2> IsFiniteSet(known_msgs[AL]')
-    <3> IsFiniteSet(known_msgs[acc] \cup {m})
-        BY FS_Singleton, FS_Union
-    <3> QED BY DEF Recv, TypeOK, Acceptor
   <2> QED OBVIOUS
 <1>6. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
   <2> PICK lrn \in Learner, m \in msgs : LearnerRecv(lrn, m)
@@ -474,10 +469,6 @@ PROOF
       BY DEF LearnerRecv
   <2> known_msgs[AL]' \in SUBSET msgs'
       BY Sent_monotone DEF Recv, TypeOK, Acceptor
-  <2> IsFiniteSet(known_msgs[AL]')
-    <3> IsFiniteSet(known_msgs[lrn] \cup {m})
-        BY FS_Singleton, FS_Union
-    <3> QED BY DEF Recv, TypeOK, Acceptor
   <2> QED OBVIOUS
 <1>7. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
             LearnerDecide(lrn, bal, val)
@@ -964,5 +955,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jul 28 17:08:12 CEST 2025 by karbyshev
+\* Last modified Tue Jul 29 17:57:43 CEST 2025 by karbyshev
 \* Created Tue May 20 23:09:22 CEST 2025 by karbyshev

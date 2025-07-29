@@ -107,8 +107,9 @@ LOCAL INSTANCE FiniteSetTheorems
 
 LEMMA ProposalReplyExistence ==
     ASSUME TypeOK,
-           RecentMsgsSpec0,
-           RecentMsgsSpec3,
+           SentFinite,
+           RecentMsgsSpec1,
+           RecentMsgsSpec4,
            SafeAcceptorPrevSpec2,
            KnownMsgsSpec2,
            NEW acc \in SafeAcceptor,
@@ -127,7 +128,7 @@ PROOF
     OBVIOUS
 <1> reply \in Message /\ OneB(reply)
   <2> IsFiniteSet(recent_msgs[acc] \cup {p})
-      BY FS_Union, FS_Singleton DEF RecentMsgsSpec0
+      BY FS_Subset, FS_Union, FS_Singleton DEF RecentMsgsSpec1, SentFinite
   <2> QED BY OneB_Message DEF TypeOK
 <1> p \in Tran(reply)
     BY Tran_refl, Tran_trans, Tran_eq
