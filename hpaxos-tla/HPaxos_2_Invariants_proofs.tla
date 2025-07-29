@@ -144,6 +144,32 @@ PROOF
 <1>9. QED BY <1>1, <1>3, <1>6, <1>7, <1>8
           DEF NextTLA, SafeAcceptorAction, LearnerAction
 
+LEMMA SentFiniteInvariant ==
+    NextTLA /\ SentFinite => SentFinite'
+PROOF
+<1> SUFFICES ASSUME NextTLA,
+                    SentFinite
+             PROVE  IsFiniteSet(msgs')
+    BY DEF SentFinite
+<1> USE DEF SentFinite
+<1>1. CASE \E p \in Proposer : ProposerAction(p)
+  <2> PICK p \in Proposer, bal \in Ballot : SendProposal(p, bal)
+      BY <1>1 DEF ProposerAction
+  <2> QED BY FS_Union, FS_Singleton DEF SendProposal, Send
+<1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
+  <2> PICK acc \in SafeAcceptor, msg \in msgs : Process(acc, msg)
+      BY <1>3
+  <2> QED BY FS_Union, FS_Singleton DEF Process, ProcessWithReply, ProcessNoReply, Send
+<1>6. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
+      BY <1>6 DEF LearnerRecv
+<1>7. CASE \E lrn \in Learner : \E bal \in Ballot : \E val \in Value :
+            LearnerDecide(lrn, bal, val)
+      BY <1>7 DEF LearnerDecide
+<1>8. CASE \E a \in FakeAcceptor : FakeAcceptorAction(a)
+      BY <1>8, FS_Union, FS_Singleton DEF FakeAcceptorAction, FakeSendControlMessage, Send
+<1>9. QED BY <1>1, <1>3, <1>6, <1>7, <1>8
+          DEF NextTLA, SafeAcceptorAction, LearnerAction
+
 LEMMA WellFormed_monotone ==
     \A m \in Message : WellFormed(m) <=> WellFormed(m)'
 PROOF BY DEF WellFormed
@@ -206,25 +232,21 @@ PROOF
 <1>10. QED BY <1>1, <1>3, <1>7, <1>8, <1>9
            DEF NextTLA, SafeAcceptorAction, LearnerAction
 
-\* TODO finish the proof
 LEMMA RecentMsgsSpec1Invariant ==
     TypeOK /\ RecentMsgsSpec1 /\ NextTLA =>
     RecentMsgsSpec1'
 PROOF
 <1> SUFFICES ASSUME TypeOK, RecentMsgsSpec1, NextTLA,
                     NEW A \in SafeAcceptor,
-                    NEW M \in recent_msgs[A]',
-                    M.src = A
-             PROVE  M \in SentBy(A)'
+                    NEW M \in recent_msgs[A]'
+             PROVE  M \in msgs'
     BY DEF RecentMsgsSpec1
 <1> SUFFICES ASSUME M \notin recent_msgs[A]
-             PROVE  M \in SentBy(A)'
+             PROVE  M \in msgs'
     BY Sent_monotone DEF RecentMsgsSpec1, SentBy, TypeOK
 <1> TypeOK' BY TypeOKInvariant
-<1> SafeAcceptor \in SUBSET Acceptor
-    BY DEF Acceptor
 <1> A \in Acceptor
-    OBVIOUS
+    BY DEF Acceptor
 <1>1. CASE \E p \in Proposer : ProposerAction(p)
   <2> PICK p \in Proposer, bal \in Ballot : SendProposal(p, bal)
       BY <1>1 DEF ProposerAction
@@ -236,10 +258,7 @@ PROOF
   <2>1. CASE ProcessWithReply(acc, m)
         BY <2>1 DEF ProcessWithReply, Reply, ReplyType, SentBy, Send, OneA, TypeOK
   <2>2. CASE ProcessNoReply(acc, m)
-    <3> ~OneA(m)
-\*    <3> M = m
-\*        BY <2>2 DEF ProcessNoReply, TypeOK
-    <3> QED BY <2>2 DEF ProcessNoReply, SentBy, Send, OneA, TypeOK
+    <3> QED BY <2>2 DEF RecentMsgsSpec1, ProcessNoReply, SentBy, Send, OneA, TypeOK
   <2> QED BY <2>1, <2>2 DEF Process
 <1>7. CASE \E lrn \in Learner : \E m \in msgs : LearnerRecv(lrn, m)
   <2> PICK lrn \in Learner, msg \in msgs : LearnerRecv(lrn, msg)

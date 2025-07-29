@@ -18,15 +18,11 @@ SentSpec ==
     \A A \in SafeAcceptor :
         \A m \in SentBy(A) : ~OneA(m)
 
-RecentMsgsSpec0 ==
-    \A A \in SafeAcceptor :
-        IsFiniteSet(recent_msgs[A])
+SentFinite == IsFiniteSet(msgs)
 
-\* TODO not used (remove?)
 RecentMsgsSpec1 ==
     \A A \in SafeAcceptor :
-        \A x \in recent_msgs[A] :
-            x.src = A => x \in SentBy(A)
+        recent_msgs[A] \in SUBSET msgs
 
 RecentMsgsSpec2 ==
     \A A \in SafeAcceptor :
