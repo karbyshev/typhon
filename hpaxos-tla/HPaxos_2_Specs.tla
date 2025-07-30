@@ -20,20 +20,6 @@ SentSpec ==
 
 SentFinite == IsFiniteSet(msgs)
 
-RecentMsgsSpec1 ==
-    \A A \in SafeAcceptor :
-        recent_msgs[A] \in SUBSET msgs
-
-RecentMsgsSpec2 ==
-    \A A \in SafeAcceptor :
-        \A x \in SentBy(A) :
-            x \notin known_msgs[A] => x \in recent_msgs[A]
-
-\* TODO prove it
-RecentMsgsSpec3 ==
-    \A A \in SafeAcceptor :
-        recent_msgs[A] \in SUBSET known_msgs[A]
-
 KnownMsgsSpec1 ==
     \A AL \in SafeAcceptor \cup Learner :
         known_msgs[AL] \in SUBSET msgs
@@ -46,6 +32,24 @@ KnownMsgsSpec2 ==
             /\ Tran(M) \in SUBSET known_msgs[AL]
             /\ \E b \in Ballot : B(M, b)
 
+RecentMsgsSpec1 ==
+    \A A \in SafeAcceptor :
+        recent_msgs[A] \in SUBSET msgs
+
+\*RecentMsgsSpec2 ==
+\*    \A A \in SafeAcceptor :
+\*        \A M \in TranSet(recent_msgs[A]) :
+\*            M \in known_msgs[A] \/ M = prev_msg[A]
+
+\*RecentMsgsSpec3 ==
+\*    \A A \in SafeAcceptor :
+\*        known_msgs[A] \in SUBSET TranSet(recent_msgs[A])
+
+RecentMsgsSpec3 ==
+    \A A \in SafeAcceptor :
+        LET P == IF prev_msg[A] = NoMessage THEN {} ELSE { prev_msg[A] } IN
+        known_msgs[A] \cup P = TranSet(recent_msgs[A])
+
 CaughtSpec ==
     \A AL \in SafeAcceptor \cup Learner :
         \A M \in known_msgs[AL] :
@@ -55,17 +59,22 @@ DecisionSpec ==
     \A L \in Learner : \A BB \in Ballot : \A VV \in Value :
         VV \in decision[L, BB] => ChosenIn(L, BB, VV)
 
+\* TODO rename
 SafeAcceptorPrevSpec1 ==
     \A A \in SafeAcceptor :
         SentBy(A) = {} <=> prev_msg[A] = NoMessage
 
+\* TODO rename
 SafeAcceptorPrevSpec2 ==
     \A A \in SafeAcceptor :
         prev_msg[A] # NoMessage =>
             /\ prev_msg[A] \in recent_msgs[A]
             /\ prev_msg[A] \in SentBy(A)
+            /\ WellFormed(prev_msg[A])
+            /\ \E bal \in Ballot : B(prev_msg[A], bal)
             /\ \A m \in SentBy(A) : m \in PrevTran(prev_msg[A])
 
+\* TODO rename
 \* TODO not used with the current definition of Caught
 MsgsSafeAcceptorSpec3 ==
     \A A \in SafeAcceptor :
@@ -97,15 +106,6 @@ MsgsSafeAcceptorPrevTranLinearSpec ==
         \A m1, m2 \in SentBy(A) :
             m1 \in PrevTran(m2) \/ m2 \in PrevTran(m1)
 
-\* TODO remove if not used
-OneAProcessed ==
-    \A A \in SafeAcceptor :
-        \A m \in known_msgs[A] :
-            Proposal(m) =>
-            \E m1b \in msgs :
-                OneB(m1b) /\ \* ... for example, SameBallot(m1b, m)
-                m1b.src = A
-
 -----------------------------------------------------------------------------
 Safety ==
     \A L1, L2 \in Learner: \A B1, B2 \in Ballot : \A V1, V2 \in Value :
@@ -116,6 +116,7 @@ Safety ==
 \* TODO check if all used
 FullSafetyInvariant ==
     /\ TypeOK
+    /\ SentFinite
     /\ KnownMsgsSpec1
     /\ KnownMsgsSpec2
     /\ SafeAcceptorPrevSpec1
@@ -128,11 +129,12 @@ FullSafetyInvariant ==
     /\ Safety
 
 -----------------------------------------------------------------------------
+
+\* TODO clean
 FullLivenessInvariant ==
     /\ FullSafetyInvariant
-    /\ RecentMsgsSpec0
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jul 28 11:21:25 CEST 2025 by karbyshev
+\* Last modified Wed Jul 30 22:42:40 CEST 2025 by karbyshev
 \* Created Tue May 20 23:34:17 CEST 2025 by karbyshev
