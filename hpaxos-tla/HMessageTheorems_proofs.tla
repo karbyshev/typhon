@@ -862,6 +862,11 @@ PROOF
 <1> QED BY <1>0, <1>1, NatInduction, Isa
 
 -----------------------------------------------------------------------------
+LEMMA TranSet_ident ==
+    ASSUME NEW S \in SUBSET Message PROVE S \in SUBSET TranSet(S)
+PROOF BY Tran_refl DEF TranSet
+
+-----------------------------------------------------------------------------
 (* Transitive references of prev *)
 
 LEMMA PrevTranBound_def ==
@@ -1109,5 +1114,5 @@ PROOF BY Zenon, Message_prev_PrevTranBound1 DEF PrevTran
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jul 28 10:31:15 CEST 2025 by karbyshev
+\* Last modified Wed Jul 30 20:10:28 CEST 2025 by karbyshev
 \* Created Mon May 19 21:06:36 CEST 2025 by karbyshev

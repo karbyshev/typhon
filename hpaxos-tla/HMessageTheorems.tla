@@ -133,6 +133,9 @@ LEMMA Tran_finite ==
 \*                P(non_proposal(type, acc, prev, M, lrns))
 \*    PROVE  \A m \in Message : P(m)
 
+LEMMA TranSet_ident ==
+    ASSUME NEW S \in SUBSET Message PROVE S \in SUBSET TranSet(S)
+
 -----------------------------------------------------------------------------
 (* Transitive references of prev *)
 
@@ -161,5 +164,5 @@ LEMMA Message_prev_PrevTran ==
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jul 28 10:31:31 CEST 2025 by karbyshev
+\* Last modified Wed Jul 30 20:10:37 CEST 2025 by karbyshev
 \* Created Mon May 19 20:59:25 CEST 2025 by karbyshev
