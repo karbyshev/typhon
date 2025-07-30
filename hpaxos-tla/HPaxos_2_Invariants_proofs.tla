@@ -317,10 +317,12 @@ PROOF
 
 LEMMA SafeAcceptorPrevSpec1Invariant ==
     TypeOK /\ NextTLA /\
+    SentSpec /\
     SafeAcceptorPrevSpec1 =>
     SafeAcceptorPrevSpec1'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA,
+                    SentSpec,
                     SafeAcceptorPrevSpec1
              PROVE  SafeAcceptorPrevSpec1'
     OBVIOUS
@@ -333,7 +335,9 @@ PROOF
 <1>1. CASE \E p \in Proposer : ProposerAction(p)
   <2> PICK p \in Proposer, bal \in Ballot : SendProposal(p, bal)
       BY <1>1 DEF ProposerAction
-  <2> QED BY DEF SendProposal, SentBy, Send, OneA
+  <2> proposal(p, bal, {}).src # A
+      BY AcceptorNotProposer DEF proposal
+  <2> QED BY DEF SendProposal, SentSpec, SentBy, Send, OneA
 <1>3. CASE \E a \in SafeAcceptor : \E m \in msgs : Process(a, m)
   <2> PICK acc \in SafeAcceptor, m \in msgs : Process(acc, m)
       BY <1>3
@@ -361,7 +365,7 @@ PROOF
 <1>7. CASE \E a \in FakeAcceptor : FakeSendControlMessage(a)
   <2> PICK acc \in FakeAcceptor : FakeSendControlMessage(acc)
       BY <1>7
-  <2> QED BY AcceptorAssumption DEF FakeSendControlMessage, Send, SentBy
+  <2> QED BY AcceptorAssumption DEF FakeSendControlMessage, Send, SentBy, non_proposal
 <1> QED BY <1>1, <1>3, <1>6, <1>7
         DEF NextTLA, SafeAcceptorAction, FakeAcceptorAction
 
@@ -379,7 +383,9 @@ PROOF
 <1> TypeOK' BY TypeOKInvariant
 <1> SUFFICES ASSUME NEW A \in SafeAcceptor,
                     prev_msg[A]' # NoMessage
-             PROVE  /\ prev_msg[A]' \in recent_msgs[A]'
+             PROVE  /\ WellFormed(prev_msg[A]')
+                    /\ \E bal \in Ballot : B(prev_msg[A]', bal)
+                    /\ prev_msg[A]' \in recent_msgs[A]'
                     /\ prev_msg[A]' \in SentBy(A)'
                     /\ \A m \in SentBy(A)' : m \in PrevTran(prev_msg[A]')
     BY DEF SafeAcceptorPrevSpec2
@@ -413,6 +419,10 @@ PROOF
           BY <3>1 DEF SentBy, OneA, Reply
       <4> prev_msg[A]' = new
           BY <3>1 DEF Send, TypeOK
+      <4> WellFormed(prev_msg[A]')
+          BY DEF Reply
+      <4> \E bal \in Ballot : B(prev_msg[A]', bal)
+          BY DEF WellFormed
       <4> ASSUME SentBy(A) # {} PROVE prev_msg[A] \in PrevTran(new)
           BY <3>1, Message_prev_PrevTran DEF SafeAcceptorPrevSpec1, Reply
       <4> prev_msg[A]' \in SentBy(A)'
@@ -608,18 +618,21 @@ PROOF
 
 LEMMA MsgsSafeAcceptorPrevTranLinearSpecInvariant ==
     TypeOK /\ NextTLA /\
+    SentSpec /\
     SafeAcceptorPrevSpec1 /\
     SafeAcceptorPrevSpec2 /\
     MsgsSafeAcceptorPrevTranLinearSpec =>
     MsgsSafeAcceptorPrevTranLinearSpec'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA,
+                    SentSpec,
                     SafeAcceptorPrevSpec1,
                     SafeAcceptorPrevSpec2,
                     MsgsSafeAcceptorPrevTranLinearSpec
              PROVE  MsgsSafeAcceptorPrevTranLinearSpec'
     OBVIOUS
 <1> TypeOK' BY TypeOKInvariant
+<1> SentSpec' BY SentSpecInvariant
 <1> SUFFICES ASSUME NEW A \in SafeAcceptor,
                     NEW m1 \in msgs, NEW m2 \in msgs' \ msgs,
                     ~Proposal(m1),
@@ -640,7 +653,7 @@ PROOF
       <3> m1 = m2
           BY UniqueMessageSent
       <3> QED BY PrevTran_refl
-    <2> QED BY DEF SentBy, OneA, Proposal, proposal
+    <2> QED BY DEF SentSpec, SentBy, OneA, Proposal, proposal
 <1> m1 \in SentBy(A)
     BY DEF SentBy, Proposal, OneA
 <1> prev_msg[A] # NoMessage
@@ -679,6 +692,7 @@ PROOF
 
 LEMMA MsgsSafeAcceptorSpec3Invariant ==
     TypeOK /\ NextTLA /\
+    SentSpec /\
     MsgsSafeAcceptorPrevRefSpec /\
     MsgsSafeAcceptorPrevTranSpec /\
     SafeAcceptorPrevSpec1 /\
@@ -686,6 +700,7 @@ LEMMA MsgsSafeAcceptorSpec3Invariant ==
     MsgsSafeAcceptorSpec3 => MsgsSafeAcceptorSpec3'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA,
+                    SentSpec,
                     MsgsSafeAcceptorPrevRefSpec,
                     MsgsSafeAcceptorPrevTranSpec,
                     SafeAcceptorPrevSpec1,
@@ -694,6 +709,7 @@ PROOF
              PROVE  MsgsSafeAcceptorSpec3'
     OBVIOUS
 <1> TypeOK' BY TypeOKInvariant
+<1> SentSpec' BY SentSpecInvariant
 <1> SUFFICES ASSUME NEW A \in SafeAcceptor,
                     NEW m1 \in msgs, NEW m2 \in msgs' \ msgs,
                     m1.src = A,
@@ -702,8 +718,8 @@ PROOF
                     ~Proposal(m2),
                     m1.prev = m2.prev
              PROVE  m1 = m2 
-    BY UniqueMessageSent
-       DEF MsgsSafeAcceptorSpec3, SentBy, OneA, Proposal, TypeOK
+    BY Zenon, UniqueMessageSent
+    DEF MsgsSafeAcceptorSpec3, SentSpec, SentBy, OneA, Proposal, TypeOK
 <1> m1 \in Message
     BY DEF TypeOK
 <1> SentBy(A) # {}
@@ -748,25 +764,28 @@ PROOF
 
 LEMMA MsgsSafeAcceptorPrevRefSpecInvariant ==
     TypeOK /\ NextTLA /\
+    SentSpec /\
     SafeAcceptorPrevSpec1 /\
     SafeAcceptorPrevSpec2 /\
     MsgsSafeAcceptorPrevRefSpec =>
     MsgsSafeAcceptorPrevRefSpec'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA,
+                    SentSpec,
                     SafeAcceptorPrevSpec1,
                     SafeAcceptorPrevSpec2,
                     MsgsSafeAcceptorPrevRefSpec
              PROVE  MsgsSafeAcceptorPrevRefSpec'
     OBVIOUS
 <1> TypeOK' BY TypeOKInvariant
+<1> SentSpec' BY SentSpecInvariant
 <1> SUFFICES ASSUME NEW A \in SafeAcceptor,
                     NEW mm \in msgs', mm \notin msgs,
                     mm.src = A,
                     ~Proposal(mm),
                     mm.prev # NoMessage
              PROVE  mm.prev \in mm.refs
-    BY DEF MsgsSafeAcceptorPrevRefSpec, SentBy, Send, Proposal, OneA
+    BY DEF MsgsSafeAcceptorPrevRefSpec, SentSpec, SentBy, Send, Proposal, OneA
 <1> A \in Acceptor BY DEF Acceptor
 <1> USE DEF MsgsSafeAcceptorPrevRefSpec
 <1>1. CASE \E p \in Proposer : ProposerAction(p)
@@ -799,16 +818,19 @@ PROOF
 
 LEMMA MsgsSafeAcceptorPrevTranSpecInvariant ==
     TypeOK /\ NextTLA /\
+    SentSpec /\
     SafeAcceptorPrevSpec2 /\
     MsgsSafeAcceptorPrevTranSpec =>
     MsgsSafeAcceptorPrevTranSpec'
 PROOF
 <1> SUFFICES ASSUME TypeOK, NextTLA,
+                    SentSpec,
                     SafeAcceptorPrevSpec2,
                     MsgsSafeAcceptorPrevTranSpec
              PROVE  MsgsSafeAcceptorPrevTranSpec'
     OBVIOUS
 <1> TypeOK' BY TypeOKInvariant
+<1> SentSpec' BY SentSpecInvariant
 <1> SUFFICES ASSUME NEW A \in SafeAcceptor,
                     NEW m1 \in msgs' \ msgs,
                     m1.src = A,
@@ -816,7 +838,7 @@ PROOF
                     NEW m2 \in PrevTran(m1), m2 # m1
              PROVE  m2 \in Tran(m1)
     BY Tran_refl
-    DEF MsgsSafeAcceptorPrevTranSpec, SentBy, Send, Proposal, OneA, TypeOK
+    DEF MsgsSafeAcceptorPrevTranSpec, SentSpec, SentBy, Send, Proposal, OneA, TypeOK
 <1> m1 \in Message
     BY DEF TypeOK
 <1> A \in Acceptor BY DEF Acceptor
@@ -955,5 +977,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jul 29 17:57:43 CEST 2025 by karbyshev
+\* Last modified Thu Jul 31 01:25:24 CEST 2025 by karbyshev
 \* Created Tue May 20 23:09:22 CEST 2025 by karbyshev
