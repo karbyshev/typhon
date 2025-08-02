@@ -31,7 +31,7 @@ LOCAL INSTANCE FiniteSetTheorems
 \*            /\ ~Proposal(m)
 \*            /\ \E m1 \in Tran(x) :
 \*                /\ ~Proposal(m1)
-\*                /\ m.acc = m1.acc
+\*                /\ m.src = m1.src
 \*                /\ m # m1
 \*                /\ m \notin PrevTran(m1)
 \*                /\ m1 \notin PrevTran(m)
@@ -39,14 +39,14 @@ LOCAL INSTANCE FiniteSetTheorems
 \*\* TODO revert the change?
 \*         }
 \*
-\*    Caught(x) == { m.acc : m \in CaughtMsg(x) }
+\*    Caught(x) == { m.src : m \in CaughtMsg(x) }
 
 \*    CaughtMsg(x) ==
 \*        { m \in Tran(M) :
 \*            /\ ~Proposal(m)
 \*            /\ \E m1 \in Tran(M) :
 \*                /\ ~Proposal(m1)
-\*                /\ m.acc = m1.acc
+\*                /\ m.src = m1.src
 \*                /\ m # m1
 \*                /\ m \notin PrevTran(m1)
 \*                /\ m1 \notin PrevTran(m)
@@ -60,7 +60,7 @@ LOCAL INSTANCE FiniteSetTheorems
 \*            /\ ~Proposal(m)
 \*            /\ \E m1 \in Tran(M) :
 \*                /\ ~Proposal(m1)
-\*                /\ m.acc = m1.acc
+\*                /\ m.src = m1.src
 \*                /\ m # m1
 \*                /\ m \notin PrevTran(m1)
 \*                /\ m1 \notin PrevTran(m)
@@ -68,7 +68,7 @@ LOCAL INSTANCE FiniteSetTheorems
 
 \* {beta \in Learner : \E S \in BQ :
 \*        /\ [from |-> alpha, to |-> beta, q |-> S] \in TrustSafe
-\*        /\ S \cap { m.acc : m \in CaughtMsgOfSet(M) } = {}
+\*        /\ S \cap { m.src : m \in CaughtMsgOfSet(M) } = {}
 \* }
 
 \*    ConOfSet(alpha, M) == \* alpha : Learner, x : 1b
@@ -86,14 +86,14 @@ LOCAL INSTANCE FiniteSetTheorems
 \*
 \*    Reply(new, m, acc) ==
 \*        /\ ReplyType(m, new.type)
-\*        /\ new.acc = acc
+\*        /\ new.src = acc
 \*        /\ new.prev = prev_msg[acc]
 \*        /\ new.refs = recent_msgs[acc] \cup {m}
 \*        /\ WellFormed(new)
 
 \*RecentMsgsSpec3 ==
 \*    \A A \in SafeAcceptor :
-\*        recent_msgs[A] = known_msgs[A]
+\*        TranSet(recent_msgs[A]) = known_msgs[A]
 
 \*    KnownRefs(a, m) == \A r \in m.refs : r \in known_msgs[a]
 
@@ -105,11 +105,21 @@ LOCAL INSTANCE FiniteSetTheorems
 \*            /\ Tran(M) \in SUBSET known_msgs[AL]
 \*            /\ \E b \in Ballot : B(M, b)
 
+LEMMA RecentMsgsBallot ==
+    ASSUME KnownMsgsSpec2,
+           RecentMsgsSpec3,
+           SafeAcceptorPrevSpec2,
+           NEW acc \in SafeAcceptor,
+           NEW m \in TranSet(recent_msgs[acc])
+    PROVE  /\ WellFormed(m)
+           /\ \E bal \in Ballot : B(m, bal)
+PROOF BY DEF KnownMsgsSpec2, RecentMsgsSpec3, SafeAcceptorPrevSpec2 
+
 LEMMA ProposalReplyExistence ==
     ASSUME TypeOK,
            SentFinite,
            RecentMsgsSpec1,
-           RecentMsgsSpec4,
+           RecentMsgsSpec3,
            SafeAcceptorPrevSpec2,
            KnownMsgsSpec2,
            NEW acc \in SafeAcceptor,
@@ -123,7 +133,7 @@ LEMMA ProposalReplyExistence ==
 PROOF
 <1> acc \in Acceptor
     BY DEF Acceptor
-<1> DEFINE reply == [ type |-> "1b", acc |-> acc, prev |-> prev_msg[acc], refs |-> recent_msgs[acc] \cup {p}, lrns |-> {} ]
+<1> DEFINE reply == [ type |-> "1b", src |-> acc, prev |-> prev_msg[acc], refs |-> recent_msgs[acc] \cup {p}, lrns |-> {} ]
 <1> reply.lrns = {}
     OBVIOUS
 <1> reply \in Message /\ OneB(reply)
@@ -147,7 +157,7 @@ PROOF
         <5> QED BY DEF ChainRef, SafeAcceptorPrevSpec2, SentBy
       <4> QED OBVIOUS
     <3>q. {} = { alpha \in Learner :
-                [lr |-> alpha, q |-> {mm.acc : mm \in qd(alpha, reply, 1)}] \in TrustLive }
+                [lr |-> alpha, q |-> {mm.src : mm \in qd(alpha, reply, 1)}] \in TrustLive }
         <4> ~TwoA(reply)
             BY MessageTypeSpec
         <4> \A alpha \in Learner : qd(alpha, reply, 1) = {}
@@ -173,27 +183,56 @@ PROOF
                 BY <5>1
           <6> r \in Message
               BY MessageSpec
-\*          <6>1. r \in Tran(p)
-\*                BY Tran_refl, Tran_eq
+          <6> r \in Tran(p)
+              BY Tran_eq
+          <6>0. r \in known_msgs[acc]
+              BY DEF KnownRefs
+          \* therefore,
           <6> PICK br \in Ballot : B(r, br)
-              BY DEF KnownRefs, KnownMsgsSpec2
+              BY <6>0 DEF KnownMsgsSpec2
+          \* therefore,
+          <6>1. y \in known_msgs[acc]
+              BY <6>0 DEF KnownMsgsSpec2
+          \* and
           <6> PICK by \in Ballot : B(y, by)
-              BY DEF KnownRefs, KnownMsgsSpec2
-            <6> QED BY DEF Proposal, OneA, RecentMsgsSpec3, KnownMsgsSpec2, KnownRefs
+              BY <6>1 DEF KnownMsgsSpec2
+          <6> br =< bal
+              BY TranBallot_bis DEF BallotUpperBound
+          <6> by =< br
+              BY TranBallot_bis DEF BallotUpperBound
+          <6> by = bal0
+              BY B_func DEF SameBallot
+          <6> by = bal
+              BY DEF Ballot
+          <6> y \in TranSet(recent_msgs[acc])
+              BY <6>1 DEF RecentMsgsSpec3
+         \* There exists x \in recent_msgs[acc] : y \in Tran(x)
+          <6> PICK x \in recent_msgs[acc] : y \in Tran(x)
+              BY DEF TranSet
+          <6> PICK bx \in Ballot : B(x, bx)
+            <7> x \in TranSet(recent_msgs[acc])
+                BY Tran_refl DEF TranSet, TypeOK
+            <7> QED BY DEF RecentMsgsSpec3, SafeAcceptorPrevSpec2, KnownMsgsSpec2
+          <6> by =< bx
+              BY TranBallot_bis DEF BallotUpperBound, TypeOK
+          <6> bx < bal
+              BY DEF BallotStrictUpperBound
+          \* Therefore, by < bal which constradicts SameBallot(reply, y)
+          <6> QED BY DEF Ballot
         <5> QED BY <4>1, <5>0, <5>1, Tran_eq
       <4>2. CASE \E r \in recent_msgs[acc] : y \in Tran(r)
         <5> PICK r \in recent_msgs[acc] : y \in Tran(r)
             BY <4>2
-        <5> r \in known_msgs[acc]
-            BY DEF RecentMsgsSpec3
         <5> r \in Message
-            BY MessageSpec
+            BY DEF TypeOK
         <5> r \in Tran(reply)
             BY Tran_eq, Tran_refl, Tran_trans
         <5> PICK br \in Ballot : B(r, br)
-            BY DEF KnownMsgsSpec2
+            BY RecentMsgsBallot, TranSet_ident DEF TypeOK
         <5> PICK by \in Ballot : B(y, by)
-            BY DEF KnownRefs, KnownMsgsSpec2
+          <6> y \in TranSet(recent_msgs[acc])
+              BY DEF TranSet
+          <6> QED BY RecentMsgsBallot DEF TypeOK
         <5> by =< br
             BY TranBallot_bis DEF BallotUpperBound
         <5> br =< bal0
@@ -559,5 +598,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Sat Jul 26 22:46:29 CEST 2025 by karbyshev
+\* Last modified Thu Jul 31 22:37:12 CEST 2025 by karbyshev
 \* Created Wed Jun 25 11:47:50 CEST 2025 by karbyshev
