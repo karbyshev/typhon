@@ -37,6 +37,14 @@ LEMMA SmallestIndexExists ==
            P(seq[n0])
     PROVE  \E i \in 1..n : SmallestIndex(seq, P, i)
 
+LEMMA SmallestIndexExistsSpecialization ==
+    ASSUME NEW S, NEW P(_),
+           NEW n \in Nat,
+           0 < n,
+           NEW seq \in [1..n -> S],
+           P(seq[n])
+    PROVE  \E i \in 1..n : SmallestIndex(seq, P, i)
+
 LEMMA NatInductionShifted ==
     ASSUME NEW P(_),
            P(0),
@@ -57,5 +65,5 @@ LEMMA FinSubset_subset ==
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jul 08 15:05:51 CEST 2025 by karbyshev
+\* Last modified Sat Aug 02 16:13:29 CEST 2025 by karbyshev
 \* Created Mon May 19 20:15:40 CEST 2025 by karbyshev

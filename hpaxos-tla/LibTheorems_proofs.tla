@@ -86,6 +86,17 @@ PROOF
 <1> HIDE DEF A
 <1> QED BY <1>1, SmallestNatural, Blast
 
+LEMMA SmallestIndexExistsSpecialization ==
+    ASSUME NEW S, NEW P(_),
+           NEW n \in Nat,
+           0 < n,
+           NEW seq \in [1..n -> S],
+           P(seq[n])
+    PROVE  \E i \in 1..n : SmallestIndex(seq, P, i)
+PROOF
+<1> n \in 1..n OBVIOUS
+<1> QED BY SmallestIndexExists, Blast
+
 LEMMA NatInductionShifted ==
     ASSUME NEW P(_),
            P(0),
@@ -119,5 +130,5 @@ PROOF BY FS_Subset DEF FINSUBSET
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jul 08 14:51:42 CEST 2025 by karbyshev
+\* Last modified Sat Aug 02 16:12:57 CEST 2025 by karbyshev
 \* Created Tue May 20 00:05:14 CEST 2025 by karbyshev

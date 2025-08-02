@@ -591,7 +591,7 @@ PROOF
     <3> bal < B_m0 \* Property (1)
       \* Since m0 is a latest message, we get non-strict inequality
       <4> bal =< B_m0
-          BY <3>9 DEF Latest
+          BY <3>9 DEF Latest, BallotUpperBound
       <4> SUFFICES ASSUME bal = B_m0 PROVE FALSE
           BY DEF Ballot
       \* now we use the facts that m0 is of value V_M and s has value val, which are not equal by the lemma assumption 
@@ -758,10 +758,8 @@ PROOF
         <5> PICK k_star \in 1..k : SmallestIndex(seq, R, k_star)
           <6> R(seq[k])
               OBVIOUS
-          <6> k \in 1..k
-              OBVIOUS
           <6> HIDE DEF R
-          <6> QED BY SmallestIndexExists, Isa
+          <6> QED BY SmallestIndexExistsSpecialization, IsaT(90)
         <5> k_star \in Nat
             OBVIOUS
         <5>1. CASE k_star = k
@@ -1948,5 +1946,5 @@ PROOF BY PTL, FullSafetyInvariantInit, FullSafetyInvariantNext
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jul 28 19:53:59 CEST 2025 by karbyshev
+\* Last modified Sat Aug 02 16:16:34 CEST 2025 by karbyshev
 \* Created Wed May 21 15:35:55 CEST 2025 by karbyshev
