@@ -99,6 +99,12 @@ LEMMA ReplyNotOneA ==
     ASSUME NEW acc, NEW msg, NEW reply, Reply(reply, msg, acc)
     PROVE ~OneA(reply)
 
+LEMMA BallotProposalExistence ==
+    ASSUME NEW msg \in Message,
+           NEW bal \in Ballot,
+           B(msg, bal)
+    PROVE  \E x \in Tran(msg) : OneA(x) /\ B(x, bal)
+
 -----------------------------------------------------------------------------
 \* Facts about Latest
 
@@ -332,5 +338,5 @@ LEMMA WellFormedTwoALearners ==
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jul 28 11:14:55 CEST 2025 by karbyshev
+\* Last modified Sun Aug 03 00:12:28 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev

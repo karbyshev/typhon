@@ -221,6 +221,24 @@ LEMMA ReplyNotOneA ==
     PROVE ~OneA(reply)
 PROOF BY DEF Reply, ReplyType, OneA
 
+LEMMA BallotProposalExistence ==
+    ASSUME NEW msg \in Message,
+           NEW bal \in Ballot,
+           B(msg, bal)
+    PROVE  \E x \in Tran(msg) : OneA(x) /\ B(x, bal)
+PROOF
+<1> PICK x \in Tran(msg) :
+            /\ OneA(x)
+            /\ bal = x.bal
+            /\ \A y \in Tran(msg) : OneA(y) => y.bal =< x.bal
+    BY DEF B, Get1a
+<1> B(x, bal)
+  <2> x \in Get1a(x)
+      BY Tran_refl, Tran_trans, Tran_Message DEF Get1a
+  <2> QED BY DEF B
+<1> WITNESS x \in Tran(msg)
+<1> QED OBVIOUS
+
 -----------------------------------------------------------------------------
 \* Facts about Latest
 
@@ -1129,5 +1147,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jul 28 11:14:42 CEST 2025 by karbyshev
+\* Last modified Sun Aug 03 00:07:38 CEST 2025 by karbyshev
 \* Created Tue May 20 22:50:04 CEST 2025 by karbyshev
