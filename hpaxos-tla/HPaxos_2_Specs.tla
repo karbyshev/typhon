@@ -131,44 +131,31 @@ FullSafetyInvariant ==
 -----------------------------------------------------------------------------
 \* Liveness specs
 
-\* TODO refactor
-Prophecy_1(f) == \A acc \in SafeAcceptor : (known_msgs[acc] \in SUBSET f[acc])
-
-\* This spec describes:
-\* always the case that either the acceptor knows the last propsal P or the ballot of the last proposal is the strict upper bound of the all the messages
+\* It is the case that either the acceptor knows the last propsal P or the ballot of the last proposal is the strict upper bound of the all the messages
 \* that the safe acceptor have learned so far (see RecentMsgsSpec3).
-\*XXX ==
-\*    \A safe \in SafeAcceptor, bal \in Ballot, M \in SUBSET msgs :
-\*        \A safe_msgs \in [SafeAcceptor -> SUBSET Message] : \* <- ?
+LastProposalSpec ==
+    \A safe \in SafeAcceptor :
+    \A pr \in Proposer :
+    \A bal \in Ballot :
+    \A M \in SUBSET msgs :
+        LET p == proposal(pr, bal, M) IN
+             \* (2) assume that the proposal p has "just" been proposed and it is the last proposal that will ever be heard by any safe acceptor
+            /\ \A x \in known_msgs[safe] :
+                \A xbal \in Ballot :
+                    Proposal(x) /\ B(x, xbal) /\ bal =< xbal => x = p
+            /\ ~BallotStrictUpperBound(recent_msgs[safe], bal)
+            =>
+            p \in known_msgs[safe]
+
+\*ZZZ ==
+\*    \A safe \in SafeAcceptor :
+\*    \A bal \in Ballot :
+\*    \A M \in SUBSET msgs :
 \*        LET p == proposal(pr, bal, M) IN
-\*            (
-\*            /\ Prophecy_1(safe_msgs)
-\*            \* (1) M covers all the messages of the smaller ballot number that will ever be received by safe acceptors
-\*            /\ (\A acc \in SafeAcceptor :
-\*                \A x \in safe_msgs[acc] :
-\*                \A xbal \in Ballot :
-\*                    B(x, xbal) /\ xbal < bal => x \in M)
-\*            \* (2) assume that the proposal p has "just" been proposed and it is the last proposal that will ever be heard by any safe acceptor
-\*            /\ /\ V(p, val) \* val = BVal(bal)
-\*               /\ (\A acc \in SafeAcceptor :
-\*                   \A x \in safe_msgs[acc] :
-\*                   \A xbal \in Ballot :
-\*                       Proposal(x) /\ B(x, xbal) /\ bal =< xbal => x = p)
-\*\*            /\ M \in SUBSET known_msgs[safe]
-\*            ) =>
-\*            p \in known_msgs[safe] \/ BallotStrictUpperBound(recent_msgs[acc], bal)
-
-\* all sets of safe messages if propecy(safe_msgs) then
-\* given a set of messages M,
-\* p = proposal(src=safe, bal=bal, refs=M)
-\* p \in known_msgs[safe] /\ ~BallotStrictUpperBound(recent_msgs[acc], bal) for bal = B(p) =>
-\* \E reply \in msgs : Reply(reply, p, safe)
-
+\*        (\*...
+\*        /\ p \in received_msgs[safe]) => TRUE \* \exists oneb-reply \in msgs
 
 -----------------------------------------------------------------------------
-
-
-
 
 \* TODO clean
 FullLivenessInvariant ==
@@ -176,5 +163,5 @@ FullLivenessInvariant ==
 
 =============================================================================
 \* Modification History
-\* Last modified Wed Jul 30 22:42:40 CEST 2025 by karbyshev
+\* Last modified Sun Aug 03 02:23:20 CEST 2025 by karbyshev
 \* Created Tue May 20 23:34:17 CEST 2025 by karbyshev
