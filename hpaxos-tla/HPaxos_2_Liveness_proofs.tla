@@ -451,15 +451,15 @@ PROOF
 
 Prophecy(f) == \A acc \in SafeAcceptor : (known_msgs[acc] \in SUBSET f[acc])
 
-MSpec(safe_msgs, bal, val, safe, M) ==
+MSpec(safe_msgs, pr, bal, val, safe, M) ==
             \* (0) M is a subset of sent messages, and
             \* (1) M covers all the messages of the smaller ballot number that will ever be received by safe acceptors
             /\ (\A acc \in SafeAcceptor :
                 \A x \in safe_msgs[acc] :
                 \A xbal \in Ballot :
                     B(x, xbal) /\ xbal < bal => x \in M)
-            \* (2) assume that the proposal p has "just" been proposed and it is the last proposal that will ever be heard by a safe acceptor
-            /\ LET p == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> M ] IN
+            \* (2) assume that the proposal p has "just" been proposed and it is the last proposal that will ever be heard by any safe acceptor
+            /\ LET p == proposal(pr, bal, M) IN
                 /\ p \in msgs
                 /\ V(p, val) \* val = BVal(bal)
                 /\ (\A acc \in SafeAcceptor :
@@ -467,7 +467,7 @@ MSpec(safe_msgs, bal, val, safe, M) ==
                     \A xbal \in Ballot :
                         Proposal(x) /\ B(x, xbal) /\ bal =< xbal => x = p)
             /\ M \in SUBSET known_msgs[safe]
-            ~> \E m1b \in msgs : OneB(m1b) /\ m1b.acc = safe /\ B(m1b, bal)
+            ~> \E m1b \in msgs : OneB(m1b) /\ m1b.src = safe /\ B(m1b, bal)
 
 
 \*    ReplyType(m, t) ==
@@ -477,7 +477,7 @@ MSpec(safe_msgs, bal, val, safe, M) ==
 \*
 \*    Reply(new, m, acc) ==
 \*        /\ ReplyType(m, new.type)
-\*        /\ new.acc = acc
+\*        /\ new.src = acc
 \*        /\ new.prev = prev_msg[acc]
 \*        /\ new.refs = recent_msgs[acc] \cup {m}
 \*        /\ WellFormed(new)
@@ -487,18 +487,20 @@ THEOREM Attempt1 ==
            [] Prophecy(safe_msgs)
     PROVE  Spec /\ WF_vars(Next)
            =>
+           \A pr \in Proposer :
            \A bal \in Ballot :
            \A val \in Value :
            \A safe \in SafeAcceptor :
            \A M \in SUBSET msgs :
-            MSpec(safe_msgs, bal, val, safe, M)
+            MSpec(safe_msgs, pr, bal, val, safe, M)
 PROOF
 
-<1> SUFFICES ASSUME NEW bal \in Ballot,
+<1> SUFFICES ASSUME NEW pr \in Proposer,
+                    NEW bal \in Ballot,
                     NEW val \in Value,
                     NEW safe \in SafeAcceptor,
                     NEW M \in SUBSET msgs
-             PROVE  Spec /\ WF_vars(Next) => MSpec(safe_msgs, bal, val, safe, M)
+             PROVE  Spec /\ WF_vars(Next) => MSpec(safe_msgs, pr, bal, val, safe, M)
     BY Isa
 <1> safe \in Acceptor
     BY DEF Acceptor
@@ -507,7 +509,7 @@ PROOF
             \A x \in safe_msgs[acc] :
             \A xbal \in Ballot :
                 B(x, xbal) /\ xbal < bal => x \in M)
-        /\ LET p == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> M ] IN
+        /\ LET p == proposal(pr, bal, M) IN
             /\ p \in msgs
             /\ V(p, val)
             /\ (\A acc \in SafeAcceptor :
@@ -515,11 +517,12 @@ PROOF
                     \A xbal \in Ballot :
                         Proposal(x) /\ B(x, xbal) /\ bal =< xbal => x = p)
         /\ M \in SUBSET known_msgs[safe]
-<1> DEFINE G == \E m1b \in msgs : OneB(m1b) /\ m1b.acc = safe /\ B(m1b, bal)
+<1> DEFINE G == \E m1b \in msgs : OneB(m1b) /\ m1b.src = safe /\ B(m1b, bal)
 <1> SUFFICES []FullSafetyInvariant /\ [][Next]_vars /\ WF_vars(Next) => F ~> G
     BY PTL, FullSafetyInvariant_always DEF Spec, MSpec
 <1> SUFFICES [][Next]_vars /\ WF_vars(Next) => ((FullSafetyInvariant /\ F) ~> G)
     BY PTL
+<1> DEFINE p == proposal(pr, bal, M)
 \*  <2>2. (TypeOK /\ F) /\ [Next]_vars => ((TypeOK' /\ F') \/ G')
 \*        BY invariant DEF Next, vars
 
@@ -538,14 +541,24 @@ PROOF
 \*        BY enabled
 \*  <2> HIDE DEF F, G
 \*  <2> QED BY <2>2, <2>3, <2>4, PTL
+
+\*****************************************************************************************
+\* PROOF SCHEME
+\*<1>2. (FullSafetyInvariant /\ F) /\ [Next]_vars => ((FullSafetyInvariant' /\ F') \/ G')
+\*<1>3. (FullSafetyInvariant /\ F) /\ <<Next>>_vars => G'
+\*<1>4. FullSafetyInvariant /\ F => ENABLED <<Next>>_vars
+\*<1> HIDE DEF F, G
+\*<1> QED BY <1>2, <1>3, <1>4, PTL
+\*****************************************************************************************
+
 <1>2. (FullSafetyInvariant /\ F) /\ [Next]_vars => ((FullSafetyInvariant' /\ F') \/ G')
 \*      BY FullSafetyInvariantNext, Sent_monotone DEF Next, vars
 <1>3. (FullSafetyInvariant /\ F) /\ <<Next>>_vars => G'
 \*        BY DEF Next, vars
 \*<1>4. FullSafetyInvariant /\ F => ENABLED <<Next>>_vars
-<1>4. FullSafetyInvariant /\ F => ENABLED <<Process(safe, [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> M ])>>_vars
+<1>4. FullSafetyInvariant /\ F => ENABLED <<Process(safe, p)>>_vars
   <2> SUFFICES ASSUME FullSafetyInvariant, F
-               PROVE  ENABLED <<Process(safe, [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> M ])>>_vars
+               PROVE  ENABLED <<Process(safe, p)>>_vars
       OBVIOUS
   <2> M \in SUBSET Message
       BY DEF FullSafetyInvariant, KnownMsgsSpec1, TypeOK
@@ -567,15 +580,34 @@ PROOF
 \*
 \*    Reply(new, m, acc) ==
 \*        /\ ReplyType(m, new.type)
-\*        /\ new.acc = acc
+\*        /\ new.src = acc
 \*        /\ new.prev = prev_msg[acc]
 \*        /\ new.refs = recent_msgs[acc] \cup {m}
 \*        /\ WellFormed(new)
 
-      <2> p == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> M ]
-      <2> p \in Message
-          BY DEF FullSafetyInvariant, TypeOK
-      <2> reply == [ type |-> "1b", acc |-> safe, prev |-> prev_msg[safe], refs |-> recent_msgs[safe] \cup {p}, lrns |-> {} ]
+  <2> p \in Message
+      BY DEF FullSafetyInvariant, TypeOK
+
+\*LEMMA ProposalReplyExistence ==
+\*    ASSUME TypeOK,
+\*           SentFinite,
+\*           RecentMsgsSpec1,
+\*           RecentMsgsSpec3,
+\*           SafeAcceptorPrevSpec2,
+\*           KnownMsgsSpec2,
+\*           NEW acc \in SafeAcceptor,
+\*           NEW p \in Message,
+\*           Proposal(p),
+\*           KnownRefs(acc, p),
+\*           NEW bal \in Ballot,
+\*           B(p, bal),
+\*           BallotStrictUpperBound(recent_msgs[acc], bal)
+\*    PROVE  \E msg \in Message : Reply(msg, p, acc)
+  <2> KnownRefs(safe, p)
+      BY DEF KnownRefs, proposal
+  <2> PICK reply \in Message : Reply(reply, p, safe)
+      BY ProposalReplyExistence DEF FullSafetyInvariant
+\*      <2> DEFINE reply == [ type |-> "1b", acc |-> safe, prev |-> prev_msg[safe], refs |-> recent_msgs[safe] \cup {p}, lrns |-> {} ]
       <2> Reply(reply, p, safe)
         <3> ReplyType(p, reply.type)
             BY DEF ReplyType, OneA
