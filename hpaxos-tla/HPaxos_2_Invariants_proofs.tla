@@ -975,7 +975,97 @@ PROOF
 <1> QED BY <1>1, <1>3, <1>6, <1>7, <1>8
         DEF NextTLA, SafeAcceptorAction, FakeAcceptorAction, LearnerAction
 
+
+\*LEMMA BallotProposalExistence ==
+\*    ASSUME NEW msg \in Message,
+\*           NEW bal \in Ballot,
+\*           B(msg, bal)
+\*    PROVE  \E x \in Tran(msg) : OneA(x) /\ B(x, bal)
+
+\*YYY ==
+\*    \A safe \in SafeAcceptor :
+\*    \A pr \in Proposer :
+\*    \A bal \in Ballot :
+\*    \A M \in SUBSET msgs :
+\*        LET p == proposal(pr, bal, M) IN
+\*            (
+\*            /\ (\A x \in known_msgs[safe] :
+\*                \A xbal \in Ballot :
+\*                    Proposal(x) /\ B(x, xbal) /\ bal =< xbal => x = p)
+\*            ) =>
+\*            p \in known_msgs[safe] \/ BallotStrictUpperBound(recent_msgs[safe], bal)
+
+\*SafeAcceptorPrevSpec2 ==
+\*    \A A \in SafeAcceptor :
+\*        prev_msg[A] # NoMessage =>
+\*            /\ prev_msg[A] \in recent_msgs[A]
+\*            /\ prev_msg[A] \in SentBy(A)
+\*            /\ WellFormed(prev_msg[A])
+\*            /\ \E bal \in Ballot : B(prev_msg[A], bal)
+\*            /\ \A m \in SentBy(A) : m \in PrevTran(prev_msg[A])
+
+LEMMA LastProposalSpecCondition ==
+    ASSUME TypeOK,
+           SentSpec,
+           KnownMsgsSpec2,
+           RecentMsgsSpec3,
+           SafeAcceptorPrevSpec2
+    PROVE  LastProposalSpec
+PROOF
+<1> SUFFICES ASSUME NEW acc \in SafeAcceptor,
+                    NEW pr \in Proposer,
+                    NEW bal \in Ballot,
+                    NEW M \in SUBSET msgs,
+                    \A x \in known_msgs[acc] :
+                        \A xbal \in Ballot :
+                             Proposal(x) /\ B(x, xbal) /\ bal =< xbal =>
+                             x = proposal(pr, bal, M),
+                    ~BallotStrictUpperBound(recent_msgs[acc], bal)
+             PROVE  proposal(pr, bal, M) \in known_msgs[acc]
+    BY DEF LastProposalSpec
+<1> acc \in Acceptor
+    BY DEF Acceptor
+<1> DEFINE p == proposal(pr, bal, M)
+\* Since ~BallotStrictUpperBound(recent_msgs[acc], bal),
+\* then there exists y \in recent_msgs[acc] s.t. bal =< B(y).
+<1> PICK y \in recent_msgs[acc], by \in Ballot : B(y, by) /\ bal =< by
+    BY DEF BallotStrictUpperBound, Ballot
+<1> y \in Message
+    BY DEF TypeOK
+<1> y # NoMessage
+    BY NoMessageIsNotAMessage
+\* There are two options: either y \in known_msgs[acc] or y = prev_msg[acc].
+<1>0. y \in known_msgs[acc] \/ y = prev_msg[acc]
+  <2> y \in TranSet(recent_msgs[acc])
+      BY TranSet_ident DEF TypeOK
+  <2> QED BY DEF RecentMsgsSpec3
+<1>1. CASE y \in known_msgs[acc]
+  <2> PICK z \in Tran(y) : OneA(z) /\ B(z, by)
+      BY BallotProposalExistence
+  <2> z \in known_msgs[acc]
+      BY <1>1 DEF KnownMsgsSpec2
+  <2> z = p
+      BY DEF Proposal, OneA
+  <2> QED OBVIOUS
+<1>2. CASE y = prev_msg[acc]
+  <2> ~OneA(y)
+      BY <1>2 DEF SafeAcceptorPrevSpec2, SentSpec
+  <2> y # p
+      BY DEF OneA, proposal
+  <2> PICK z \in Tran(y) : OneA(z) /\ B(z, by)
+      BY BallotProposalExistence
+  <2> z # y
+      OBVIOUS
+  <2> z \in known_msgs[acc]
+    <3> z \in TranSet(recent_msgs[acc])
+        BY DEF TranSet
+    <3> QED BY <1>2 DEF RecentMsgsSpec3
+  <2> z = p
+      BY DEF Proposal, OneA
+  <2> QED OBVIOUS
+<1> QED BY <1>0, <1>1, <1>2
+
 =============================================================================
 \* Modification History
-\* Last modified Thu Jul 31 01:25:24 CEST 2025 by karbyshev
+\* Last modified Sun Aug 03 18:59:14 CEST 2025 by karbyshev
 \* Created Tue May 20 23:09:22 CEST 2025 by karbyshev
