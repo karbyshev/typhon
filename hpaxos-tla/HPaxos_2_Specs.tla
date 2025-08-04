@@ -134,18 +134,17 @@ FullSafetyInvariant ==
 \* It is the case that either the acceptor knows the last propsal P or the ballot of the last proposal is the strict upper bound of the all the messages
 \* that the safe acceptor have learned so far (see RecentMsgsSpec3).
 LastProposalSpec ==
-    \A safe \in SafeAcceptor :
+    \A acc \in SafeAcceptor :
     \A pr \in Proposer :
     \A bal \in Ballot :
     \A M \in SUBSET msgs :
         LET p == proposal(pr, bal, M) IN
              \* (2) assume that the proposal p has "just" been proposed and it is the last proposal that will ever be heard by any safe acceptor
-            /\ \A x \in known_msgs[safe] :
-                \A xbal \in Ballot :
-                    Proposal(x) /\ B(x, xbal) /\ bal =< xbal => x = p
-            /\ ~BallotStrictUpperBound(recent_msgs[safe], bal)
+            /\ \A x \in known_msgs[acc], xbal \in Ballot :
+                Proposal(x) /\ B(x, xbal) /\ bal =< xbal => x = p
+            /\ ~BallotStrictUpperBound(recent_msgs[acc], bal)
             =>
-            p \in known_msgs[safe]
+            p \in known_msgs[acc]
 
 \*ZZZ ==
 \*    \A safe \in SafeAcceptor :
@@ -163,5 +162,5 @@ FullLivenessInvariant ==
 
 =============================================================================
 \* Modification History
-\* Last modified Sun Aug 03 02:23:20 CEST 2025 by karbyshev
+\* Last modified Mon Aug 04 19:06:47 CEST 2025 by karbyshev
 \* Created Tue May 20 23:34:17 CEST 2025 by karbyshev

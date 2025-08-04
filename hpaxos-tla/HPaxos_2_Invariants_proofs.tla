@@ -975,35 +975,6 @@ PROOF
 <1> QED BY <1>1, <1>3, <1>6, <1>7, <1>8
         DEF NextTLA, SafeAcceptorAction, FakeAcceptorAction, LearnerAction
 
-
-\*LEMMA BallotProposalExistence ==
-\*    ASSUME NEW msg \in Message,
-\*           NEW bal \in Ballot,
-\*           B(msg, bal)
-\*    PROVE  \E x \in Tran(msg) : OneA(x) /\ B(x, bal)
-
-\*YYY ==
-\*    \A safe \in SafeAcceptor :
-\*    \A pr \in Proposer :
-\*    \A bal \in Ballot :
-\*    \A M \in SUBSET msgs :
-\*        LET p == proposal(pr, bal, M) IN
-\*            (
-\*            /\ (\A x \in known_msgs[safe] :
-\*                \A xbal \in Ballot :
-\*                    Proposal(x) /\ B(x, xbal) /\ bal =< xbal => x = p)
-\*            ) =>
-\*            p \in known_msgs[safe] \/ BallotStrictUpperBound(recent_msgs[safe], bal)
-
-\*SafeAcceptorPrevSpec2 ==
-\*    \A A \in SafeAcceptor :
-\*        prev_msg[A] # NoMessage =>
-\*            /\ prev_msg[A] \in recent_msgs[A]
-\*            /\ prev_msg[A] \in SentBy(A)
-\*            /\ WellFormed(prev_msg[A])
-\*            /\ \E bal \in Ballot : B(prev_msg[A], bal)
-\*            /\ \A m \in SentBy(A) : m \in PrevTran(prev_msg[A])
-
 LEMMA LastProposalSpecCondition ==
     ASSUME TypeOK,
            SentSpec,
@@ -1016,10 +987,9 @@ PROOF
                     NEW pr \in Proposer,
                     NEW bal \in Ballot,
                     NEW M \in SUBSET msgs,
-                    \A x \in known_msgs[acc] :
-                        \A xbal \in Ballot :
-                             Proposal(x) /\ B(x, xbal) /\ bal =< xbal =>
-                             x = proposal(pr, bal, M),
+                    \A x \in known_msgs[acc], xbal \in Ballot :
+                        Proposal(x) /\ B(x, xbal) /\ bal =< xbal =>
+                        x = proposal(pr, bal, M),
                     ~BallotStrictUpperBound(recent_msgs[acc], bal)
              PROVE  proposal(pr, bal, M) \in known_msgs[acc]
     BY DEF LastProposalSpec
@@ -1067,5 +1037,5 @@ PROOF
 
 =============================================================================
 \* Modification History
-\* Last modified Sun Aug 03 18:59:14 CEST 2025 by karbyshev
+\* Last modified Mon Aug 04 19:08:08 CEST 2025 by karbyshev
 \* Created Tue May 20 23:09:22 CEST 2025 by karbyshev
