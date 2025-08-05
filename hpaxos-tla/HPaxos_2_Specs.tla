@@ -116,6 +116,7 @@ Safety ==
 \* TODO check if all used
 FullSafetyInvariant ==
     /\ TypeOK
+    /\ SentSpec
     /\ SentFinite
     /\ KnownMsgsSpec1
     /\ KnownMsgsSpec2
@@ -159,8 +160,10 @@ LastProposalSpec ==
 \* TODO clean
 FullLivenessInvariant ==
     /\ FullSafetyInvariant
+    /\ RecentMsgsSpec1
+    /\ RecentMsgsSpec3
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Aug 04 19:06:47 CEST 2025 by karbyshev
+\* Last modified Tue Aug 05 11:52:54 CEST 2025 by karbyshev
 \* Created Tue May 20 23:34:17 CEST 2025 by karbyshev
