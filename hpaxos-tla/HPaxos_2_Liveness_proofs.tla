@@ -2,6 +2,7 @@
 
 EXTENDS HMessageTheorems,
         HPaxos_2_Structures,
+        HPaxos_2_Invariants,
         HPaxos_2_Safety,
         TLAPS
 
@@ -467,7 +468,11 @@ MSpec(safe_msgs, pr, bal, val, safe, M) ==
                     \A xbal \in Ballot :
                         Proposal(x) /\ B(x, xbal) /\ bal =< xbal => x = p)
             /\ M \in SUBSET known_msgs[safe]
-            ~> \E m1b \in msgs : OneB(m1b) /\ m1b.src = safe /\ B(m1b, bal)
+            \* (3) p is not known yet and well-formed
+            /\ proposal(pr, bal, M) \notin known_msgs[safe]
+            /\ WellFormed(proposal(pr, bal, M))
+            ~>
+            \E m1b \in msgs : OneB(m1b) /\ m1b.src = safe /\ B(m1b, bal)
 
 
 \*    ReplyType(m, t) ==
@@ -513,14 +518,16 @@ PROOF
             /\ p \in msgs
             /\ V(p, val)
             /\ (\A acc \in SafeAcceptor :
-                    \A x \in safe_msgs[acc] :
-                    \A xbal \in Ballot :
-                        Proposal(x) /\ B(x, xbal) /\ bal =< xbal => x = p)
+                \A x \in safe_msgs[acc] :
+                \A xbal \in Ballot :
+                    Proposal(x) /\ B(x, xbal) /\ bal =< xbal => x = p)
         /\ M \in SUBSET known_msgs[safe]
+        /\ proposal(pr, bal, M) \notin known_msgs[safe]
+        /\ WellFormed(proposal(pr, bal, M))
 <1> DEFINE G == \E m1b \in msgs : OneB(m1b) /\ m1b.src = safe /\ B(m1b, bal)
-<1> SUFFICES []FullSafetyInvariant /\ [][Next]_vars /\ WF_vars(Next) => F ~> G
+<1> SUFFICES []FullLivenessInvariant /\ [][Next]_vars /\ WF_vars(Next) => F ~> G
     BY PTL, FullSafetyInvariant_always DEF Spec, MSpec
-<1> SUFFICES [][Next]_vars /\ WF_vars(Next) => ((FullSafetyInvariant /\ F) ~> G)
+<1> SUFFICES [][Next]_vars /\ WF_vars(Next) => ((FullLivenessInvariant /\ F) ~> G)
     BY PTL
 <1> DEFINE p == proposal(pr, bal, M)
 \*  <2>2. (TypeOK /\ F) /\ [Next]_vars => ((TypeOK' /\ F') \/ G')
@@ -544,91 +551,57 @@ PROOF
 
 \*****************************************************************************************
 \* PROOF SCHEME
-\*<1>2. (FullSafetyInvariant /\ F) /\ [Next]_vars => ((FullSafetyInvariant' /\ F') \/ G')
-\*<1>3. (FullSafetyInvariant /\ F) /\ <<Next>>_vars => G'
-\*<1>4. FullSafetyInvariant /\ F => ENABLED <<Next>>_vars
+\*<1>2. (FullLivenessInvariant /\ F) /\ [Next]_vars => ((FullLivenessInvariant' /\ F') \/ G')
+\*<1>3. (FullLivenessInvariant /\ F) /\ <<Next>>_vars => G'
+\*<1>4. FullLivenessInvariant /\ F => ENABLED <<Next>>_vars
 \*<1> HIDE DEF F, G
 \*<1> QED BY <1>2, <1>3, <1>4, PTL
 \*****************************************************************************************
 
-<1>2. (FullSafetyInvariant /\ F) /\ [Next]_vars => ((FullSafetyInvariant' /\ F') \/ G')
-\*      BY FullSafetyInvariantNext, Sent_monotone DEF Next, vars
-<1>3. (FullSafetyInvariant /\ F) /\ <<Next>>_vars => G'
+<1>2. (FullLivenessInvariant /\ F) /\ [Next]_vars => ((FullLivenessInvariant' /\ F') \/ G')
+\*      BY FullLivenessInvariantNext, Sent_monotone DEF Next, vars
+<1>3. (FullLivenessInvariant /\ F) /\ <<Next>>_vars => G'
 \*        BY DEF Next, vars
-\*<1>4. FullSafetyInvariant /\ F => ENABLED <<Next>>_vars
-<1>4. FullSafetyInvariant /\ F => ENABLED <<Process(safe, p)>>_vars
-  <2> SUFFICES ASSUME FullSafetyInvariant, F
+\*<1>4. FullLivenessInvariant /\ F => ENABLED <<Next>>_vars
+<1>4. FullLivenessInvariant /\ F => ENABLED <<Process(safe, p)>>_vars
+  <2> SUFFICES ASSUME FullLivenessInvariant, F
                PROVE  ENABLED <<Process(safe, p)>>_vars
       OBVIOUS
-  <2> M \in SUBSET Message
-      BY DEF FullSafetyInvariant, KnownMsgsSpec1, TypeOK
-  <2> IsFiniteSet(M)
-      BY FS_Subset DEF FullSafetyInvariant, KnownMsgsSpec1
-\*MessageRec1(M, n) ==
-\*    M
-\*    \cup [ type : {"1a"}, bal : Ballot, prev : {NoMessage}, refs : FINSUBSET(M) ]
-\*    \cup [ type : {"1b", "2a"},
-\*           acc  : Acceptor,
-\*           prev : M \cup {NoMessage},
-\*           refs : FINSUBSET(M),
-\*           lrns : SUBSET Learner ]
-
-\*    ReplyType(m, t) ==
-\*        \/ OneA(m) /\ t = "1b"
-\*        \/ OneB(m) /\ t = "2a"
-\*        \/ TwoA(m) /\ t = "2a"
-\*
-\*    Reply(new, m, acc) ==
-\*        /\ ReplyType(m, new.type)
-\*        /\ new.src = acc
-\*        /\ new.prev = prev_msg[acc]
-\*        /\ new.refs = recent_msgs[acc] \cup {m}
-\*        /\ WellFormed(new)
-
+  <2> USE DEF FullLivenessInvariant, FullSafetyInvariant
   <2> p \in Message
-      BY DEF FullSafetyInvariant, TypeOK
-
-\*LEMMA ProposalReplyExistence ==
-\*    ASSUME TypeOK,
-\*           SentFinite,
-\*           RecentMsgsSpec1,
-\*           RecentMsgsSpec3,
-\*           SafeAcceptorPrevSpec2,
-\*           KnownMsgsSpec2,
-\*           NEW acc \in SafeAcceptor,
-\*           NEW p \in Message,
-\*           Proposal(p),
-\*           KnownRefs(acc, p),
-\*           NEW bal \in Ballot,
-\*           B(p, bal),
-\*           BallotStrictUpperBound(recent_msgs[acc], bal)
-\*    PROVE  \E msg \in Message : Reply(msg, p, acc)
-  <2> KnownRefs(safe, p)
+      BY DEF TypeOK
+  <2> Proposal(p)
+      BY DEF Proposal, proposal
+  <2> B(p, bal)
+      BY B_func DEF WellFormed, OneA, Proposal, proposal
+  <2> M \in SUBSET Message
+      BY DEF KnownMsgsSpec1, TypeOK
+  <2> IsFiniteSet(M)
+      BY FS_Subset DEF KnownMsgsSpec1, SentFinite
+  <2>1. KnownRefs(safe, p)
       BY DEF KnownRefs, proposal
+  <2> DEFINE known_msgs1 == [ known_msgs EXCEPT ![safe] = known_msgs[safe] \cup {p} ]
+  <2>known. known_msgs1 # known_msgs
+    <3> QED BY DEF TypeOK
+  <2>2. BallotStrictUpperBound(recent_msgs[safe], bal)
+    <3> \A x \in known_msgs[safe] :
+        \A xbal \in Ballot :
+            Proposal(x) /\ B(x, xbal) /\ bal =< xbal
+            =>
+            x = proposal(pr, bal, M)
+      <4> known_msgs[safe] \in SUBSET safe_msgs[safe]
+        <5> Prophecy(safe_msgs)
+            BY PTL
+        <5> QED BY DEF Prophecy
+      <4> QED OBVIOUS
+    <3> QED BY LastProposalSpecCondition DEF LastProposalSpec
   <2> PICK reply \in Message : Reply(reply, p, safe)
-      BY ProposalReplyExistence DEF FullSafetyInvariant
-\*      <2> DEFINE reply == [ type |-> "1b", acc |-> safe, prev |-> prev_msg[safe], refs |-> recent_msgs[safe] \cup {p}, lrns |-> {} ]
-      <2> Reply(reply, p, safe)
-        <3> ReplyType(p, reply.type)
-            BY DEF ReplyType, OneA
-        <3> WellFormed(reply)
-          <4> prev_msg[safe] \in Message \cup {NoMessage}
-              BY DEF FullSafetyInvariant, SafeAcceptorPrevSpec2, SentBy, TypeOK
-          <4> recent_msgs[safe] \in SUBSET Message
-              BY DEF FullSafetyInvariant, TypeOK
-          <4> IsFiniteSet(recent_msgs[safe])
-          <4> reply \in Message /\ OneB(reply)
-              BY OneB_Message
-          <4> QED BY DEF WellFormed
-        <3> QED BY DEF Reply
-      <2> QED BY ExpandENABLED DEF Process, Recv, vars
-
-\*      BY enabled
-
-
+    <3> HIDE DEF p
+    <3> QED BY <2>1, <2>2, ProposalReplyExistence
+  <2> QED BY Isa, <2>1, <2>known, ExpandENABLED DEF Process, ProcessWithReply, ProcessNoReply, Recv, vars
 <1> QED BY <1>2, <1>3, <1>4, PTL
 
 =============================================================================
 \* Modification History
-\* Last modified Thu Jul 31 22:37:12 CEST 2025 by karbyshev
+\* Last modified Tue Aug 05 12:48:41 CEST 2025 by karbyshev
 \* Created Wed Jun 25 11:47:50 CEST 2025 by karbyshev
