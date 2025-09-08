@@ -1,5 +1,7 @@
 ------------------------- MODULE LibTheorems_proofs -------------------------
-EXTENDS FiniteSetTheorems, SequenceTheorems, Lib, TLAPS
+EXTENDS SequenceTheorems, Lib, TLAPS
+
+LOCAL INSTANCE FiniteSetTheorems
 
 LEMMA InitialSegmentIsFinite ==
     ASSUME NEW n \in Nat PROVE IsFiniteSet(0..n)
@@ -84,6 +86,17 @@ PROOF
 <1> HIDE DEF A
 <1> QED BY <1>1, SmallestNatural, Blast
 
+LEMMA SmallestIndexExistsSpecialization ==
+    ASSUME NEW S, NEW P(_),
+           NEW n \in Nat,
+           0 < n,
+           NEW seq \in [1..n -> S],
+           P(seq[n])
+    PROVE  \E i \in 1..n : SmallestIndex(seq, P, i)
+PROOF
+<1> n \in 1..n OBVIOUS
+<1> QED BY SmallestIndexExists, Blast
+
 LEMMA NatInductionShifted ==
     ASSUME NEW P(_),
            P(0),
@@ -104,9 +117,18 @@ LEMMA FinSubset_sub ==
     ASSUME NEW S,
            NEW F \in FINSUBSET(S)
     PROVE  F \subseteq S
-PROOF BY DEF Range, FINSUBSET
+PROOF BY DEF FINSUBSET
+
+LEMMA FinSubset_empty ==
+    ASSUME NEW S PROVE {} \in FINSUBSET(S)
+PROOF BY FS_EmptySet DEF FINSUBSET
+
+LEMMA FinSubset_subset ==
+    ASSUME NEW S, NEW Q \in SUBSET S
+    PROVE  FINSUBSET(Q) \in SUBSET FINSUBSET(S)
+PROOF BY FS_Subset DEF FINSUBSET
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 01:29:12 CEST 2025 by karbyshev
+\* Last modified Sat Aug 02 16:12:57 CEST 2025 by karbyshev
 \* Created Tue May 20 00:05:14 CEST 2025 by karbyshev

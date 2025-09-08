@@ -7,8 +7,18 @@ LOCAL INSTANCE FiniteSets
 (* Messages *)
 
 LEMMA OneA_Message ==
-    ASSUME NEW bal \in Ballot
-    PROVE  LET msg == [ type |-> "1a", bal |-> bal, prev |-> NoMessage, refs |-> {} ] IN
+    ASSUME NEW pr \in Proposer,
+           NEW bal \in Ballot,
+           NEW R \in SUBSET Message,
+           IsFiniteSet(R)
+    PROVE  LET msg == [ type |-> "1a", src |-> pr, bal |-> bal, prev |-> NoMessage, refs |-> R ] IN
+           /\ msg \in Message
+           /\ OneA(msg)
+
+LEMMA OneA_Message_base ==
+    ASSUME NEW pr \in Proposer,
+           NEW bal \in Ballot
+    PROVE  LET msg == [ type |-> "1a", src |-> pr, bal |-> bal, prev |-> NoMessage, refs |-> {} ] IN
            /\ msg \in Message
            /\ OneA(msg)
 
@@ -16,9 +26,8 @@ LEMMA OneB_Message ==
     ASSUME NEW A \in Acceptor,
            NEW P \in Message \cup {NoMessage},
            NEW R \in SUBSET Message,
-           IsFiniteSet(R),
-           P \in R
-    PROVE  LET msg == [ type |-> "1b", acc |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
+           IsFiniteSet(R)
+    PROVE  LET msg == [ type |-> "1b", src |-> A, prev |-> P, refs |-> R, lrns |-> {} ] IN
            /\ msg \in Message
            /\ OneB(msg)
 
@@ -27,9 +36,8 @@ LEMMA TwoA_Message ==
            NEW P \in Message \cup {NoMessage},
            NEW R \in SUBSET Message,
            IsFiniteSet(R),
-           P \in R,
            NEW L \in SUBSET Learner
-    PROVE  LET msg == [ type |-> "2a", acc |-> A, prev |-> P, refs |-> R, lrns |-> L ] IN
+    PROVE  LET msg == [ type |-> "2a", src |-> A, prev |-> P, refs |-> R, lrns |-> L ] IN
            /\ msg \in Message
            /\ TwoA(msg)
 
@@ -52,12 +60,13 @@ LEMMA NoMessageIsNotAMessage ==
 LEMMA MessageSpec ==
     ASSUME NEW m \in Message
     PROVE  \/ /\ m.type = "1a"
+              /\ m.src \in Proposer
               /\ m.bal \in Ballot
               /\ m.prev = NoMessage
               /\ m.refs \in SUBSET Message
            \/ /\ \/ m.type = "1b"
                  \/ m.type = "2a"
-              /\ m.acc \in Acceptor
+              /\ m.src \in Acceptor
               /\ m.prev \in Message \cup {NoMessage}
               /\ m.refs \in SUBSET Message
               /\ m.lrns \in SUBSET Learner
@@ -105,6 +114,28 @@ LEMMA Tran_acyclic ==
            m1 \in Tran(m2)
     PROVE  m1 = m2
 
+LEMMA Tran_finite ==
+    ASSUME NEW m \in Message
+    PROVE  IsFiniteSet(Tran(m))
+
+\*LEMMA Message_Induction ==
+\*    ASSUME NEW P(_),
+\*           \A pr \in Proposer :
+\*           \A M \in FINSUBSET(Message) :
+\*            (\A m \in M : P(m)) =>
+\*            \A bal \in Ballot : P(proposal(pr, bal, M)),
+\*           \A M \in FINSUBSET(Message) :
+\*            (\A m \in M : P(m)) =>
+\*            \A type \in {"1b", "2a"} :
+\*            \A acc \in Acceptor :
+\*            \A prev \in Message \cup {NoMessage} :
+\*            \A lrns \in SUBSET Learner :
+\*                P(non_proposal(type, acc, prev, M, lrns))
+\*    PROVE  \A m \in Message : P(m)
+
+LEMMA TranSet_ident ==
+    ASSUME NEW S \in SUBSET Message PROVE S \in SUBSET TranSet(S)
+
 -----------------------------------------------------------------------------
 (* Transitive references of prev *)
 
@@ -133,5 +164,5 @@ LEMMA Message_prev_PrevTran ==
 
 =============================================================================
 \* Modification History
-\* Last modified Fri Jun 06 21:50:09 CEST 2025 by karbyshev
+\* Last modified Wed Jul 30 20:10:37 CEST 2025 by karbyshev
 \* Created Mon May 19 20:59:25 CEST 2025 by karbyshev

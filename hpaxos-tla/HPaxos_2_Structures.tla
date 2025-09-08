@@ -38,12 +38,6 @@ LEMMA B_def ==
            NEW x \in Get1a(m)
     PROVE  \E b \in Ballot : B(m, b)
 
-LEMMA B_1a ==
-    ASSUME NEW m \in Message,
-               OneA(m),
-               m.refs = {}
-    PROVE  B(m, m.bal)
-
 LEMMA V_func ==
     ASSUME NEW m \in Message,
            NEW v1 \in Value, V(m, v1),
@@ -70,24 +64,76 @@ LEMMA SameBallotValue ==
            SameBallot(x, y)
     PROVE  SameValue(x, y)
 
+\* TODO replace it by TranBallot_bis
 LEMMA TranBallot ==
     ASSUME NEW m1 \in Message, NEW m2 \in Tran(m1),
            NEW b1 \in Ballot, NEW b2 \in Ballot,
            B(m1, b1), B(m2, b2)
     PROVE  b2 =< b1
 
+LEMMA TranBallot_bis ==
+    ASSUME NEW m \in Message,
+           NEW b \in Ballot,
+           B(m, b)
+    PROVE  BallotUpperBound(Tran(m), b)
+
+LEMMA B_1a ==
+    ASSUME NEW m \in Message,
+           OneA(m),
+           m.refs = {}
+    PROVE  B(m, m.bal)
+
+LEMMA B_exists ==
+    ASSUME NEW m \in Message,
+           NEW z \in Tran(m),
+           OneA(z)
+    PROVE  \E bal \in Ballot : B(m, bal)
+
+LEMMA B_1a_refs ==
+    ASSUME NEW m \in Message,
+           OneA(m),
+           BallotUpperBound(m.refs, m.bal)
+    PROVE  B(m, m.bal)
+
+LEMMA ReplyNotOneA ==
+    ASSUME NEW acc, NEW msg, NEW reply, Reply(reply, msg, acc)
+    PROVE ~OneA(reply)
+
+LEMMA BallotProposalExistence ==
+    ASSUME NEW msg \in Message,
+           NEW bal \in Ballot,
+           B(msg, bal)
+    PROVE  \E x \in Tran(msg) : OneA(x) /\ B(x, bal)
+
 -----------------------------------------------------------------------------
 \* Facts about Latest
 
 LEMMA LatestSubset ==
-    ASSUME NEW P \in SUBSET Message
-    PROVE  Latest(P) \in SUBSET P
+    ASSUME NEW M PROVE Latest(M) \in SUBSET M
 
 LEMMA LatestNonEmpty ==
-    ASSUME NEW P \in SUBSET { m \in Message : WellFormed(m) },
-           P # {},
-           IsFiniteSet(P)
-    PROVE  Latest(P) # {}
+    ASSUME NEW M \in SUBSET { m \in Message : WellFormed(m) },
+           M # {},
+           IsFiniteSet(M)
+    PROVE  Latest(M) # {}
+
+LEMMA LatestEqBallot ==
+    ASSUME NEW M
+    PROVE  \A x, y \in Latest(M) : \A bx, by \in Ballot :
+            B(x, bx) /\ B(y, by) => bx = by
+
+-----------------------------------------------------------------------------
+
+LEMMA BallotUpperBoundLeq ==
+    ASSUME NEW M,
+           NEW x \in Ballot,
+           BallotUpperBound(M, x)
+    PROVE  \A y \in Ballot: x =< y => BallotUpperBound(M, y)
+
+LEMMA BallotUpperBoundExistence ==
+    ASSUME NEW M \in SUBSET { m \in Message : WellFormed(m) },
+           IsFiniteSet(M)
+    PROVE  \E bal \in Ballot : BallotUpperBound(M, bal)
 
 -----------------------------------------------------------------------------
 
@@ -186,11 +232,11 @@ LEMMA LiveQuorumEntIntersection ==
            <<alpha, beta>> \in Ent,
            NEW Qalpha \in SUBSET Message,
            NEW Qbeta \in SUBSET Message,
-           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
-           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive
+           [lr |-> alpha, q |-> { mm.src : mm \in Qalpha }] \in TrustLive,
+           [lr |-> beta, q |-> { mm.src : mm \in Qbeta }] \in TrustLive
     PROVE  \E p \in SafeAcceptor, ma \in Qalpha, mb \in Qbeta :
-            /\ ma.acc = p
-            /\ mb.acc = p
+            /\ ma.src = p
+            /\ mb.src = p
 
 LEMMA LiveQuorumConIntersection ==
     ASSUME TypeOK,
@@ -198,14 +244,14 @@ LEMMA LiveQuorumConIntersection ==
            NEW beta \in Learner,
            NEW Qalpha \in SUBSET Message,
            NEW Qbeta \in SUBSET Message,
-           [lr |-> alpha, q |-> { mm.acc : mm \in Qalpha }] \in TrustLive,
-           [lr |-> beta, q |-> { mm.acc : mm \in Qbeta }] \in TrustLive,
+           [lr |-> alpha, q |-> { mm.src : mm \in Qalpha }] \in TrustLive,
+           [lr |-> beta, q |-> { mm.src : mm \in Qbeta }] \in TrustLive,
            NEW M \in Message,
            beta \in Con(alpha, M)
     PROVE  \E p \in Acceptor, ma \in Qalpha, mb \in Qbeta :
             /\ p \notin Caught(M)
-            /\ ma.acc = p
-            /\ mb.acc = p
+            /\ ma.src = p
+            /\ mb.src = p
 
 -----------------------------------------------------------------------------
 
@@ -259,7 +305,7 @@ LEMMA Qd_eq ==
                         { m \in Tran(x) :
                             /\ SameBallot(m, x)
                             /\ TwoA(m)
-                            /\ [ lr |-> alpha, q  |-> { z.acc : z \in qd(alpha, m, d - 1) } ] \in TrustLive }
+                            /\ [ lr |-> alpha, q  |-> { z.src : z \in qd(alpha, m, d - 1) } ] \in TrustLive }
                 )
             )
             ELSE {}
@@ -279,8 +325,8 @@ LEMMA QdProperty4 ==
            NEW m \in Message,
            NEW d \in Nat, 1 =< d,
            NEW d1 \in Nat, d =< d1
-    PROVE  [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d1) }] \in TrustLive =>
-           [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, d) }] \in TrustLive
+    PROVE  [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, d1) }] \in TrustLive =>
+           [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, d) }] \in TrustLive
 
 -----------------------------------------------------------------------------
 
@@ -292,5 +338,5 @@ LEMMA WellFormedTwoALearners ==
 
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 16:37:30 CEST 2025 by karbyshev
+\* Last modified Sun Aug 03 00:12:28 CEST 2025 by karbyshev
 \* Created Tue May 20 22:46:05 CEST 2025 by karbyshev

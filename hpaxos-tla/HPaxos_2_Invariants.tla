@@ -88,7 +88,15 @@ LEMMA KnownMsgsPrevTranSpecInvariant ==
     KnownMsgsPrevTranSpec =>
     KnownMsgsPrevTranSpec'
 
+LEMMA LastProposalSpecCondition ==
+    ASSUME TypeOK,
+           SentSpec,
+           KnownMsgsSpec2,
+           RecentMsgsSpec3,
+           SafeAcceptorPrevSpec2
+    PROVE  LastProposalSpec
+
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 10:53:01 CEST 2025 by karbyshev
+\* Last modified Tue Aug 05 10:41:40 CEST 2025 by karbyshev
 \* Created Tue May 20 23:06:45 CEST 2025 by karbyshev

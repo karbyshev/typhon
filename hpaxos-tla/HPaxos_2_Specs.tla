@@ -12,23 +12,17 @@ TypeOK ==
     /\ decision \in [Learner \X Ballot -> SUBSET Value]
 
 -----------------------------------------------------------------------------
-SentBy(acc) == { mm \in msgs : ~OneA(mm) /\ mm.acc = acc }
+SentBy(acc) == { mm \in msgs : mm.src = acc }
 
-\* TODO not used (remove?)
-RecentMsgsSpec1 ==
+SentSpec ==
     \A A \in SafeAcceptor :
-        \A x \in recent_msgs[A] :
-            x.acc = A => x \in SentBy(A)
+        \A m \in SentBy(A) : ~OneA(m)
 
-RecentMsgsSpec2 ==
-    \A A \in SafeAcceptor :
-        \A x \in SentBy(A) :
-            x \notin known_msgs[A] => x \in recent_msgs[A]
+SentFinite == IsFiniteSet(msgs)
 
 KnownMsgsSpec1 ==
     \A AL \in SafeAcceptor \cup Learner :
-        /\ known_msgs[AL] \in SUBSET msgs
-        /\ IsFiniteSet(known_msgs[AL])
+        known_msgs[AL] \in SUBSET msgs
 
 KnownMsgsSpec2 ==
     \A AL \in SafeAcceptor \cup Learner :
@@ -37,6 +31,24 @@ KnownMsgsSpec2 ==
             /\ WellFormed(M)
             /\ Tran(M) \in SUBSET known_msgs[AL]
             /\ \E b \in Ballot : B(M, b)
+
+RecentMsgsSpec1 ==
+    \A A \in SafeAcceptor :
+        recent_msgs[A] \in SUBSET msgs
+
+\*RecentMsgsSpec2 ==
+\*    \A A \in SafeAcceptor :
+\*        \A M \in TranSet(recent_msgs[A]) :
+\*            M \in known_msgs[A] \/ M = prev_msg[A]
+
+\*RecentMsgsSpec3 ==
+\*    \A A \in SafeAcceptor :
+\*        known_msgs[A] \in SUBSET TranSet(recent_msgs[A])
+
+RecentMsgsSpec3 ==
+    \A A \in SafeAcceptor :
+        LET P == IF prev_msg[A] = NoMessage THEN {} ELSE { prev_msg[A] } IN
+        known_msgs[A] \cup P = TranSet(recent_msgs[A])
 
 CaughtSpec ==
     \A AL \in SafeAcceptor \cup Learner :
@@ -47,17 +59,22 @@ DecisionSpec ==
     \A L \in Learner : \A BB \in Ballot : \A VV \in Value :
         VV \in decision[L, BB] => ChosenIn(L, BB, VV)
 
+\* TODO rename
 SafeAcceptorPrevSpec1 ==
     \A A \in SafeAcceptor :
         SentBy(A) = {} <=> prev_msg[A] = NoMessage
 
+\* TODO rename
 SafeAcceptorPrevSpec2 ==
     \A A \in SafeAcceptor :
         prev_msg[A] # NoMessage =>
             /\ prev_msg[A] \in recent_msgs[A]
             /\ prev_msg[A] \in SentBy(A)
+            /\ WellFormed(prev_msg[A])
+            /\ \E bal \in Ballot : B(prev_msg[A], bal)
             /\ \A m \in SentBy(A) : m \in PrevTran(prev_msg[A])
 
+\* TODO rename
 \* TODO not used with the current definition of Caught
 MsgsSafeAcceptorSpec3 ==
     \A A \in SafeAcceptor :
@@ -89,7 +106,64 @@ MsgsSafeAcceptorPrevTranLinearSpec ==
         \A m1, m2 \in SentBy(A) :
             m1 \in PrevTran(m2) \/ m2 \in PrevTran(m1)
 
+-----------------------------------------------------------------------------
+Safety ==
+    \A L1, L2 \in Learner: \A B1, B2 \in Ballot : \A V1, V2 \in Value :
+        <<L1, L2>> \in Ent /\
+        V1 \in decision[L1, B1] /\ V2 \in decision[L2, B2] =>
+        V1 = V2
+
+\* TODO check if all used
+FullSafetyInvariant ==
+    /\ TypeOK
+    /\ SentSpec
+    /\ SentFinite
+    /\ KnownMsgsSpec1
+    /\ KnownMsgsSpec2
+    /\ SafeAcceptorPrevSpec1
+    /\ SafeAcceptorPrevSpec2
+    /\ MsgsSafeAcceptorPrevTranLinearSpec
+\*    /\ MsgsSafeAcceptorSpec3
+    /\ MsgsSafeAcceptorPrevRefSpec
+    /\ KnownMsgsPrevTranSpec
+    /\ DecisionSpec
+    /\ Safety
+
+-----------------------------------------------------------------------------
+\* Liveness specs
+
+\* It is the case that either the acceptor knows the last propsal P or the ballot of the last proposal is the strict upper bound of the all the messages
+\* that the safe acceptor have learned so far (see RecentMsgsSpec3).
+LastProposalSpec ==
+    \A acc \in SafeAcceptor :
+    \A pr \in Proposer :
+    \A bal \in Ballot :
+    \A M \in SUBSET msgs :
+        LET p == proposal(pr, bal, M) IN
+             \* (2) assume that the proposal p has "just" been proposed and it is the last proposal that will ever be heard by any safe acceptor
+            /\ \A x \in known_msgs[acc], xbal \in Ballot :
+                Proposal(x) /\ B(x, xbal) /\ bal =< xbal => x = p
+            /\ ~BallotStrictUpperBound(recent_msgs[acc], bal)
+            =>
+            p \in known_msgs[acc]
+
+\*ZZZ ==
+\*    \A safe \in SafeAcceptor :
+\*    \A bal \in Ballot :
+\*    \A M \in SUBSET msgs :
+\*        LET p == proposal(pr, bal, M) IN
+\*        (\*...
+\*        /\ p \in received_msgs[safe]) => TRUE \* \exists oneb-reply \in msgs
+
+-----------------------------------------------------------------------------
+
+\* TODO clean
+FullLivenessInvariant ==
+    /\ FullSafetyInvariant
+    /\ RecentMsgsSpec1
+    /\ RecentMsgsSpec3
+
 =============================================================================
 \* Modification History
-\* Last modified Mon Jun 09 10:58:18 CEST 2025 by karbyshev
+\* Last modified Tue Aug 05 11:52:54 CEST 2025 by karbyshev
 \* Created Tue May 20 23:34:17 CEST 2025 by karbyshev

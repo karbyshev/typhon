@@ -45,7 +45,7 @@ CONSTANT WellFormed2a(_)
             /\ ~Proposal(m)
             /\ \E m1 \in Tran(x) :
                 /\ ~Proposal(m1)
-                /\ m.acc = m1.acc
+                /\ m.src = m1.src
                 /\ m # m1
                 /\ m \notin PrevTran(m1)
                 /\ m1 \notin PrevTran(m)
@@ -53,14 +53,14 @@ CONSTANT WellFormed2a(_)
 \* TODO revert the change?
          }
 
-    Caught(x) == { m.acc : m \in CaughtMsg(x) }
+    Caught(x) == { m.src : m \in CaughtMsg(x) }
 
     \* Connected
     ConByQuorum(alpha, beta, x, S) == \* alpha : Learner, beta : Learner, x : 1b, S \in ByzQuorum
         /\ [from |-> alpha, to |-> beta, q |-> S] \in TrustSafe
         /\ S \cap Caught(x) = {}
 
-    Con(alpha, x) == \* alpha : Learner, x : 1b
+    Con(alpha, x) == \* alpha : Learner, x : 1b \* originally, x was supposed to be 1b; used with 1a in ValueExistence lemma
         { beta \in Learner :
             \E S \in ByzQuorum : ConByQuorum(alpha, beta, x, S) }
 
@@ -69,13 +69,14 @@ CONSTANT WellFormed2a(_)
         \* /\ TwoA(m) \* implied by the following since the intersection is non-empty
         /\ m.lrns \cap Con(alpha, x) # {}
 
-    \* TODO define Latest in terms of Max, as existence of Max is proven?
+    BallotUpperBound(M, bal) ==
+        \A m \in M : \A bm \in Ballot : B(m, bm) => bm =< bal
+
+    BallotStrictUpperBound(M, bal) ==
+        \A m \in M : \A bm \in Ballot : B(m, bm) => bm < bal
+
     Latest(P) ==
-        { x \in P :
-            \A bx \in Ballot :
-                B(x, bx) =>
-                \A y \in P, by \in Ballot :
-                    B(y, by) => by <= bx }
+        { x \in P : \A bx \in Ballot : B(x, bx) => BallotUpperBound(P, bx) }
 
     Fresh(alpha, x) == \* alpha : Learner, x : 1b
         \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
@@ -98,7 +99,7 @@ CONSTANT WellFormed2a(_)
                             /\ TwoA(m)
                             /\ SameBallot(m, y)
                             /\ [ lr |-> alpha,
-                                 q  |-> { z.acc : z \in Q[LM][m] } ] \in TrustLive } ]
+                                 q  |-> { z.src : z \in Q[LM][m] } ] \in TrustLive } ]
         ]
 
     QRec[n \in Nat] ==
@@ -123,7 +124,7 @@ CONSTANT WellFormed2a(_)
     ChainRef(m) ==
         \/ m.prev = NoMessage
         \/ /\ m.prev \in m.refs
-           /\ m.prev.acc = m.acc
+           /\ m.prev.src = m.src
 
     WellFormed1b(m) ==
         \A y \in Tran(m) :
@@ -133,7 +134,7 @@ CONSTANT WellFormed2a(_)
         /\ m \in Message
         /\ \E b \in Ballot : B(m, b) \* TODO prove it
         /\ ChainRef(m)
-        /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
+        /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, 1) }] \in TrustLive }
         /\ OneA(m) => B(m, m.bal)
         /\ OneB(m) => WellFormed1b(m)
         /\ TwoA(m) =>
@@ -152,20 +153,25 @@ CONSTANT WellFormed2a(_)
 
     ChosenIn(alpha, b, v) ==
         \E S \in SUBSET Known2a(alpha, b, v) :
-            /\ \A x \in S : [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
-            /\ [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
+            /\ \A x \in S : [lr |-> alpha, q |-> { m.src : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+            /\ [lr |-> alpha, q |-> { m.src : m \in S }] \in TrustLive
 
     ReplyType(m, t) ==
         \/ OneA(m) /\ t = "1b"
         \/ OneB(m) /\ t = "2a"
         \/ TwoA(m) /\ t = "2a"
+
+    Reply(new, m, acc) ==
+        /\ ReplyType(m, new.type)
+        /\ new.src = acc
+        /\ new.prev = prev_msg[acc]
+        /\ new.refs = recent_msgs[acc] \cup {m}
+        /\ WellFormed(new)
   } \* define
 
   macro Send(m) { msgs := msgs \cup {m} }
 
-  macro SendProposal(b) {
-    Send([type |-> "1a", bal |-> b, prev |-> NoMessage, refs |-> {}])
-  }
+  macro SendProposal(pr, b) { Send(proposal(pr, b, {})) }
 
   macro Receive(m) {
     when /\ m \notin known_msgs[self]
@@ -174,42 +180,29 @@ CONSTANT WellFormed2a(_)
   }
 
   macro Process(m) {
-    with (T \in {"1b", "2a"},
-          LL \in SUBSET Learner,
-          new = [type |-> T,
-                 acc  |-> self,
-                 prev |-> prev_msg[self],
-                 refs |-> recent_msgs[self] \cup {m},
-                 lrns |-> LL])
-    {
-      \* TODO prove that new \in Message
-      assert new \in Message ;
-      either {
-        when ReplyType(m, T);
-        when WellFormed(new) ;
+    \* TODO formulate a lemma that claims that given a Message m a reply Message can be contructed?
+    either {
+      with (new \in {reply \in Message : Reply(reply, m, self)})
+      {
         prev_msg[self] := new ;
         recent_msgs[self] := {new} ;
         Send(new)
       }
-      or {
-        \* TODO fix liveness: this branch might triggered when LL is picked to be non-wellformed
-        \* TODO replace non-determinism by picking the correct set
-        when ReplyType(m, T);
-        when ~WellFormed(new) ;
-        when ~OneA(m) ;
-        recent_msgs[self] := recent_msgs[self] \cup {m}
-      }
+    }
+    or {
+      when \A new \in Message : ~Reply(new, m, self) ;
+      recent_msgs[self] := recent_msgs[self] \cup {m}
     }
   }
 
   macro FakeSendControlMessage() {
     with (fin \in FINSUBSET(msgs),
+          P \in msgs \cup {NoMessage},
           LL \in SUBSET Learner,
           T \in {"1b", "2a"},
-          msg = [type |-> T, acc |-> self, refs |-> fin, lrns |-> LL])
+          msg = non_proposal(T, self, P, fin, LL))
     {
-      \* TODO can we remove the well-formedness condition here?
-      when WellFormed(msg) ;
+      when T = "2a" \/ LL = {} ;
       Send(msg)
     }
   }
@@ -226,7 +219,7 @@ CONSTANT WellFormed2a(_)
 
   process (proposer \in Proposer) {
     propose: while (TRUE) {
-      with (b \in Ballot) { SendProposal(b) }
+      with (b \in Ballot) { SendProposal(self, b) }
     }
   }
 
@@ -255,7 +248,7 @@ CONSTANT WellFormed2a(_)
 }
 
 ****************************************************************************)
-\* BEGIN TRANSLATION (chksum(pcal) = "79ad88a3" /\ chksum(tla) = "e8aaadbe")
+\* BEGIN TRANSLATION (chksum(pcal) = "525e21c4" /\ chksum(tla) = "eb927199")
 VARIABLES msgs, known_msgs, recent_msgs, prev_msg, decision
 
 (* define statement *)
@@ -285,7 +278,7 @@ CaughtMsg(x) ==
         /\ ~Proposal(m)
         /\ \E m1 \in Tran(x) :
             /\ ~Proposal(m1)
-            /\ m.acc = m1.acc
+            /\ m.src = m1.src
             /\ m # m1
             /\ m \notin PrevTran(m1)
             /\ m1 \notin PrevTran(m)
@@ -293,7 +286,7 @@ CaughtMsg(x) ==
 
      }
 
-Caught(x) == { m.acc : m \in CaughtMsg(x) }
+Caught(x) == { m.src : m \in CaughtMsg(x) }
 
 
 ConByQuorum(alpha, beta, x, S) ==
@@ -309,13 +302,14 @@ D(alpha, x, m) ==
 
     /\ m.lrns \cap Con(alpha, x) # {}
 
+BallotUpperBound(M, bal) ==
+    \A m \in M : \A bm \in Ballot : B(m, bm) => bm =< bal
+
+BallotStrictUpperBound(M, bal) ==
+    \A m \in M : \A bm \in Ballot : B(m, bm) => bm < bal
 
 Latest(P) ==
-    { x \in P :
-        \A bx \in Ballot :
-            B(x, bx) =>
-            \A y \in P, by \in Ballot :
-                B(y, by) => by <= bx }
+    { x \in P : \A bx \in Ballot : B(x, bx) => BallotUpperBound(P, bx) }
 
 Fresh(alpha, x) ==
     \A m \in Latest({ mm \in Tran(x) : D(alpha, x, mm) }) : SameValue(m, x)
@@ -338,7 +332,7 @@ QRec1(Q, n) ==
                         /\ TwoA(m)
                         /\ SameBallot(m, y)
                         /\ [ lr |-> alpha,
-                             q  |-> { z.acc : z \in Q[LM][m] } ] \in TrustLive } ]
+                             q  |-> { z.src : z \in Q[LM][m] } ] \in TrustLive } ]
     ]
 
 QRec[n \in Nat] ==
@@ -363,7 +357,7 @@ maxDepth(alpha) ==
 ChainRef(m) ==
     \/ m.prev = NoMessage
     \/ /\ m.prev \in m.refs
-       /\ m.prev.acc = m.acc
+       /\ m.prev.src = m.src
 
 WellFormed1b(m) ==
     \A y \in Tran(m) :
@@ -373,7 +367,7 @@ WellFormed(m) ==
     /\ m \in Message
     /\ \E b \in Ballot : B(m, b)
     /\ ChainRef(m)
-    /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.acc : mm \in qd(alpha, m, 1) }] \in TrustLive }
+    /\ m.lrns = { alpha \in Learner : [lr |-> alpha, q |-> { mm.src : mm \in qd(alpha, m, 1) }] \in TrustLive }
     /\ OneA(m) => B(m, m.bal)
     /\ OneB(m) => WellFormed1b(m)
     /\ TwoA(m) =>
@@ -392,13 +386,20 @@ Known2a(alpha, b, v) ==
 
 ChosenIn(alpha, b, v) ==
     \E S \in SUBSET Known2a(alpha, b, v) :
-        /\ \A x \in S : [lr |-> alpha, q |-> { m.acc : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
-        /\ [lr |-> alpha, q |-> { m.acc : m \in S }] \in TrustLive
+        /\ \A x \in S : [lr |-> alpha, q |-> { m.src : m \in qd(alpha, x, maxDepth(alpha)) }] \in TrustLive
+        /\ [lr |-> alpha, q |-> { m.src : m \in S }] \in TrustLive
 
 ReplyType(m, t) ==
     \/ OneA(m) /\ t = "1b"
     \/ OneB(m) /\ t = "2a"
     \/ TwoA(m) /\ t = "2a"
+
+Reply(new, m, acc) ==
+    /\ ReplyType(m, new.type)
+    /\ new.src = acc
+    /\ new.prev = prev_msg[acc]
+    /\ new.refs = recent_msgs[acc] \cup {m}
+    /\ WellFormed(new)
 
 
 vars == << msgs, known_msgs, recent_msgs, prev_msg, decision >>
@@ -413,7 +414,7 @@ Init == (* Global variables *)
         /\ decision = [lb \in Learner \X Ballot |-> {}]
 
 proposer(self) == /\ \E b \in Ballot:
-                       msgs' = (msgs \cup {([type |-> "1a", bal |-> b, prev |-> NoMessage, refs |-> {}])})
+                       msgs' = (msgs \cup {(proposal(self, b, {}))})
                   /\ UNCHANGED << known_msgs, recent_msgs, prev_msg, decision >>
 
 safe_acceptor(self) == /\ \E m \in msgs:
@@ -421,25 +422,13 @@ safe_acceptor(self) == /\ \E m \in msgs:
                                /\ KnownRefs(self, m)
                             /\ known_msgs' = [known_msgs EXCEPT ![self] = known_msgs[self] \cup {m}]
                             /\ WellFormed(m)
-                            /\ \E T \in {"1b", "2a"}:
-                                 \E LL \in SUBSET Learner:
-                                   LET new == [type |-> T,
-                                               acc  |-> self,
-                                               prev |-> prev_msg[self],
-                                               refs |-> recent_msgs[self] \cup {m},
-                                               lrns |-> LL] IN
-                                     /\ Assert(new \in Message, 
-                                               "Failure of assertion at line 186, column 7 of macro called at line 238, column 9.")
-                                     /\ \/ /\ ReplyType(m, T)
-                                           /\ WellFormed(new)
-                                           /\ prev_msg' = [prev_msg EXCEPT ![self] = new]
-                                           /\ recent_msgs' = [recent_msgs EXCEPT ![self] = {new}]
-                                           /\ msgs' = (msgs \cup {new})
-                                        \/ /\ ReplyType(m, T)
-                                           /\ ~WellFormed(new)
-                                           /\ ~OneA(m)
-                                           /\ recent_msgs' = [recent_msgs EXCEPT ![self] = recent_msgs[self] \cup {m}]
-                                           /\ UNCHANGED <<msgs, prev_msg>>
+                            /\ \/ /\ \E new \in {reply \in Message : Reply(reply, m, self)}:
+                                       /\ prev_msg' = [prev_msg EXCEPT ![self] = new]
+                                       /\ recent_msgs' = [recent_msgs EXCEPT ![self] = {new}]
+                                       /\ msgs' = (msgs \cup {new})
+                               \/ /\ \A new \in Message : ~Reply(new, m, self)
+                                  /\ recent_msgs' = [recent_msgs EXCEPT ![self] = recent_msgs[self] \cup {m}]
+                                  /\ UNCHANGED <<msgs, prev_msg>>
                        /\ UNCHANGED decision
 
 learner(self) == /\ \/ /\ \E m \in msgs:
@@ -456,11 +445,12 @@ learner(self) == /\ \/ /\ \E m \in msgs:
                  /\ UNCHANGED << msgs, recent_msgs, prev_msg >>
 
 fake_acceptor(self) == /\ \E fin \in FINSUBSET(msgs):
-                            \E LL \in SUBSET Learner:
-                              \E T \in {"1b", "2a"}:
-                                LET msg == [type |-> T, acc |-> self, refs |-> fin, lrns |-> LL] IN
-                                  /\ WellFormed(msg)
-                                  /\ msgs' = (msgs \cup {msg})
+                            \E P \in msgs \cup {NoMessage}:
+                              \E LL \in SUBSET Learner:
+                                \E T \in {"1b", "2a"}:
+                                  LET msg == non_proposal(T, self, P, fin, LL) IN
+                                    /\ T = "2a" \/ LL = {}
+                                    /\ msgs' = (msgs \cup {msg})
                        /\ UNCHANGED << known_msgs, recent_msgs, prev_msg, 
                                        decision >>
 
@@ -481,47 +471,42 @@ Recv(a, m) ==
     /\ KnownRefs(a, m)
     /\ known_msgs' = [known_msgs EXCEPT ![a] = known_msgs[a] \cup {m}]
 
-SendProposal(b) ==
-    /\ Send([type |-> "1a", bal |-> b, prev |-> NoMessage, refs |-> {}])
+SendProposal(p, b) ==
+    /\ Send(proposal(p, b, {}))
     /\ UNCHANGED << known_msgs, recent_msgs, prev_msg >>
     /\ UNCHANGED decision
+
+ProcessWithReply(a, m) ==
+    \E new \in {reply \in Message : Reply(reply, m, a)}:
+        /\ prev_msg' = [prev_msg EXCEPT ![a] = new]
+        /\ recent_msgs' = [recent_msgs EXCEPT ![a] = {new}]
+        /\ msgs' = msgs \cup {new}
+
+ProcessNoReply(a, m) ==
+    /\ \A new \in Message : ~Reply(new, m, a)
+    /\ recent_msgs' = [recent_msgs EXCEPT ![a] = recent_msgs[a] \cup {m}]
+    /\ UNCHANGED <<msgs, prev_msg>>
 
 Process(a, m) ==
     /\ Recv(a, m)
     /\ WellFormed(m)
-    /\ \E LL \in SUBSET Learner :
-       \E T \in {"1b", "2a"} :
-        LET new == [type |-> T,
-                    acc  |-> a,
-                    prev |-> prev_msg[a],
-                    refs |-> recent_msgs[a] \cup {m},
-                    lrns |-> LL] IN
-        /\ new \in Message
-        /\ \/ /\ ReplyType(m, T)
-              /\ WellFormed(new)
-              /\ prev_msg' = [prev_msg EXCEPT ![a] = new]
-              /\ recent_msgs' = [recent_msgs EXCEPT ![a] = {new}]
-              /\ Send(new)
-           \/ /\ ReplyType(m, T)
-              /\ ~WellFormed(new)
-              /\ ~OneA(m)
-              /\ recent_msgs' = [recent_msgs EXCEPT ![a] = recent_msgs[a] \cup {m}]
-              /\ UNCHANGED << msgs, prev_msg >>
+    /\ \/ ProcessWithReply(a, m)
+       \/ ProcessNoReply(a, m)
     /\ UNCHANGED decision
 
 ProposerAction(p) ==
-    \E bal \in Ballot : SendProposal(bal)
+    \E bal \in Ballot : SendProposal(p, bal)
 
 SafeAcceptorAction(a) ==
     \E m \in msgs : Process(a, m)
 
 FakeSendControlMessage(a) ==
     /\ \E fin \in FINSUBSET(msgs) :
+        \E P \in msgs \cup {NoMessage} :
         \E LL \in SUBSET Learner :
         \E T \in {"1b", "2a"} :
-            LET new == [type |-> T, acc |-> a, refs |-> fin, lrns |-> LL] IN
-            /\ WellFormed(new)
-            /\ Send(new)
+            /\ T = "2a" \/ LL = {}
+            /\ Send(non_proposal(T, a, P, fin, LL))
     /\ UNCHANGED << known_msgs, recent_msgs, prev_msg  >>
     /\ UNCHANGED decision
 
@@ -561,7 +546,7 @@ THEOREM NextDef == Next <=> NextTLA
       BY DEF proposer, ProposerAction, SendProposal, Send
 <1>2. ASSUME NEW self \in SafeAcceptor
       PROVE safe_acceptor(self) <=> SafeAcceptorAction(self)
-      BY Zenon DEF safe_acceptor, SafeAcceptorAction, Process, Recv, Send, Assert
+      BY Zenon DEF safe_acceptor, SafeAcceptorAction, Process, ProcessWithReply, ProcessNoReply, Recv, Send, Assert
 <1>3. ASSUME NEW self \in Learner
       PROVE learner(self) <=> LearnerAction(self)
       BY Zenon DEF learner, LearnerAction, LearnerRecv, LearnerDecide, Recv
@@ -585,10 +570,10 @@ SanityCheck1 ==
     \A M \in msgs : ~TwoA(M)
 
 2aNotSentBySafeAcceptor ==
-    \A M \in msgs : TwoA(M) => M.acc \notin SafeAcceptor
+    \A M \in msgs : TwoA(M) => M.src \notin SafeAcceptor
 
 1bNotSentBySafeAcceptor ==
-    \A M \in msgs : OneB(M) => M.acc \notin SafeAcceptor
+    \A M \in msgs : OneB(M) => M.src \notin SafeAcceptor
 
 NoDecision ==
     \A L \in Learner : \A BB \in Ballot : \A VV \in Value :
@@ -601,5 +586,5 @@ UniqueDecision ==
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jun 10 22:43:16 CEST 2025 by karbyshev
+\* Last modified Mon Jul 28 12:51:04 CEST 2025 by karbyshev
 \* Created Mon Jun 19 12:24:03 CEST 2022 by karbyshev
